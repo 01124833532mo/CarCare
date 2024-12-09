@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Extinsions\" />
+    <Folder Include="Middlewares\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CarCare.Apis.Controllers\CarCare.Apis.Controllers.csproj" />
+    <ProjectReference Include="..\CarCare.Application\CarCare.Core.Application.csproj" />
+    <ProjectReference Include="..\CarCare.Infrastructure.Persistence\CarCare.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\CarCare.Infrastructure\CarCare.Infrastructure.csproj" />
+    <ProjectReference Include="..\CareCare.Application.Abstraction\CareCare.Core.Application.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>

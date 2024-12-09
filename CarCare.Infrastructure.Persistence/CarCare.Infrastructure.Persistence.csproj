@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Generic Repository\" />
+    <Folder Include="UnitOfWork\" />
+    <Folder Include="_Common\" />
+    <Folder Include="_Data\Config\" />
+    <Folder Include="_Data\Interceptors\" />
+    <Folder Include="_Data\Migrations\" />
+    <Folder Include="_Data\Seeds\" />
+    <Folder Include="_Identity\Config\" />
+    <Folder Include="_Identity\Interceptors\" />
+    <Folder Include="_Identity\Migrations\" />
+    <Folder Include="_Identity\Seeds\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CarCare.Core.Domain\CarCare.Core.Domain.csproj" />
+    <ProjectReference Include="..\CareCare.Application.Abstraction\CareCare.Core.Application.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>
