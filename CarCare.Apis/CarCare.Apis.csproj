@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Extinsions\" />
-    <Folder Include="Middlewares\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
@@ -27,6 +26,7 @@
     <ProjectReference Include="..\CarCare.Application\CarCare.Core.Application.csproj" />
     <ProjectReference Include="..\CarCare.Infrastructure.Persistence\CarCare.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\CarCare.Infrastructure\CarCare.Infrastructure.csproj" />
+    <ProjectReference Include="..\CarCare.Shared\CarCare.Shared.csproj" />
     <ProjectReference Include="..\CareCare.Application.Abstraction\CareCare.Core.Application.Abstraction.csproj" />
   </ItemGroup>
 
