@@ -10,8 +10,6 @@
     <Folder Include="Common\" />
     <Folder Include="Contracts\Infrastructure\" />
     <Folder Include="Contracts\Specifications\" />
-    <Folder Include="Contracts\Persistence\DbInitializers\" />
-    <Folder Include="Entities\" />
   </ItemGroup>
 
   <ItemGroup>
