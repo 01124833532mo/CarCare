@@ -10,7 +10,6 @@
     <Folder Include="Common\" />
     <Folder Include="Exeptions\" />
     <Folder Include="Extenstions\" />
-    <Folder Include="Mapping\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CarCare.Core.Domain\CarCare.Core.Domain.csproj" />
+    <ProjectReference Include="..\CarCare.Shared\CarCare.Shared.csproj" />
     <ProjectReference Include="..\CareCare.Application.Abstraction\CareCare.Core.Application.Abstraction.csproj" />
   </ItemGroup>
 

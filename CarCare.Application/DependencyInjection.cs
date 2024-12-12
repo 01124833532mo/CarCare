@@ -1,4 +1,5 @@
-﻿using CarCare.Core.Application.Services;
+﻿using CarCare.Core.Application.Mapping;
+using CarCare.Core.Application.Services;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Services.Auth;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,8 @@ namespace CarCare.Core.Application
             {
                 return () => serviceprovider.GetRequiredService<IAuthService>();
             });
+
+            services.AddAutoMapper(typeof(MappingProfile));
             return services;
         }
     }
