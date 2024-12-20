@@ -11,20 +11,22 @@ using System.Threading.Tasks;
 
 namespace CarCare.Core.Application
 {
-    public static class DependencyInjection
-    {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services) {
+	public static class DependencyInjection
+	{
+		public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+		{
 
 
-            services.AddScoped(typeof(IServiceManager), typeof(ServiceManger));
-            services.AddScoped(typeof(IAuthService), typeof(AuthService));
-            services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>
-            {
-                return () => serviceprovider.GetRequiredService<IAuthService>();
-            });
+			services.AddScoped(typeof(IServiceManager), typeof(ServiceManger));
+			services.AddScoped(typeof(IAuthService), typeof(AuthService));
+			services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>
+			{
+				return () => serviceprovider.GetRequiredService<IAuthService>();
+			});
 
-            services.AddAutoMapper(typeof(MappingProfile));
-            return services;
-        }
-    }
+			services.AddAutoMapper(typeof(MappingProfile));
+
+			return services;
+		}
+	}
 }

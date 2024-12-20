@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Identity.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    [Migration("20241211190028_AddIdentityEntitiesMigration")]
+    [Migration("20241212011824_AddIdentityEntitiesMigration")]
     partial class AddIdentityEntitiesMigration
     {
         /// <inheritdoc />
@@ -28,20 +28,17 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
             modelBuilder.Entity("CarCare.Core.Domain.Entities.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("BirthDate")
+                    b.Property<DateTime?>("BirthDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("CartNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -62,6 +59,9 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NationalId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NormalizedEmail")
@@ -90,8 +90,9 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)

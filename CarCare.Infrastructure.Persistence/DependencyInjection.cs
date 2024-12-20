@@ -1,6 +1,8 @@
 ﻿using CarCare.Core.Domain.Contracts.Persistence.DbInitializers;
 using CarCare.Infrastructure.Persistence._Identity;
+using CarCare.Infrastructure.Persistence._Identity.Interceptors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -22,6 +24,8 @@ namespace CarCare.Infrastructure.Persistence
 			});
 
 			services.AddScoped(typeof(ICarCareIdentityDbInitializer), typeof(CarCareIdentityDbInitializer));
+
+			services.AddScoped(typeof(ISaveChangesInterceptor), typeof(IdentityInterceptor));
 
 			return services;
 		}

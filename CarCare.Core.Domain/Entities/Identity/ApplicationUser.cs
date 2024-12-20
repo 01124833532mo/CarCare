@@ -10,14 +10,14 @@ namespace CarCare.Core.Domain.Entities.Identity
 {
 	public class ApplicationUser : IdentityUser
 	{
-		public required DateTime BirthDate { get; set; }
-		public required string Address { get; set; }
-		public string? Specialization { get; set; }
+		public DateTime? BirthDate { get; set; }
+		public string? Address { get; set; }
+		public Specialization? Specialization { get; set; }
 
 		[Length(14, 14)]
-		public string? CartNumber { get; set; }
+		public string? NationalId { get; set; }
 		public required string Name { get; set; }
-		public Type Type { get; set; }
+		public Types Type { get; set; }
 
 	}
 }

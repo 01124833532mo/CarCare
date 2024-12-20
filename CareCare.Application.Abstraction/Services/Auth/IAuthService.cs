@@ -1,14 +1,10 @@
 ﻿using CareCare.Core.Application.Abstraction.Models.Auth;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
+using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 
 namespace CareCare.Core.Application.Abstraction.Services.Auth
 {
-    public interface IAuthService
+	public interface IAuthService
     {
 
          Task<IEnumerable<RolesToReturn>> GetRolesAsync();
@@ -19,5 +15,11 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
         Task UpdateRole(string id,RoleDto roleDto);
 
-    }
+    	Task<BaseUserDto> LoginAsync(LoginDto loginDto);
+		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);
+		Task<TechDto> RegisterTechAsync(TechRegisterDto userRegisterDto);
+
+
+
+	}
 }

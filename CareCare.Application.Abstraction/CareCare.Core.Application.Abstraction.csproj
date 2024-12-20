@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CarCare.Core.Domain\CarCare.Core.Domain.csproj" />
     <ProjectReference Include="..\CarCare.Shared\CarCare.Shared.csproj" />
   </ItemGroup>
 
