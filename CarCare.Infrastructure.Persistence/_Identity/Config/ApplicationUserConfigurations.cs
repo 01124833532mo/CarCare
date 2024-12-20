@@ -13,8 +13,22 @@ namespace CarCare.Infrastructure.Persistence._Identity.Config
 	{
 		public void Configure(EntityTypeBuilder<ApplicationUser> builder)
 		{
-			builder.Property(u => u.Address)
-				.IsRequired();
+			builder.Property(p => p.Id)
+				.ValueGeneratedOnAdd();
+
+			builder.Property(user => user.Type)
+				.HasConversion
+				(
+				(UStatus) => UStatus.ToString(),
+				(UStatus) => (Types)Enum.Parse(typeof(Types), UStatus)
+				);
+
+			builder.Property(user => user.Specialization)
+				.HasConversion
+				(
+				(UStatus) => UStatus.ToString(),
+				(UStatus) => (Specialization)Enum.Parse(typeof(Specialization), UStatus)
+				);
 
 		}
 	}

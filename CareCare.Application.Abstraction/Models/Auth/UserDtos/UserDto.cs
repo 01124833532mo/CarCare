@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CarCare.Core.Domain.Entities.Identity
+namespace CareCare.Core.Application.Abstraction.Models.Auth.UserDtos
 {
-	public enum Type
+	public class UserDto : BaseUserDto
 	{
-		Technical,
-		User
+
 	}
 }

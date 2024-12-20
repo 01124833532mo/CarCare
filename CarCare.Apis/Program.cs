@@ -2,10 +2,13 @@
 using CarCare.Apis.Controllers;
 using CarCare.Apis.Extinsions;
 using CarCare.Apis.Middlewares;
+using CarCare.Core.Application;
+using CarCare.Infrastructure;
 using CarCare.Infrastructure.Persistence;
 using CarCare.Shared.ErrorModoule.Errors;
 using LinkDev.Talabat.APIs.Services;
 using LinkDev.Talabat.Core.Application.Abstraction;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -31,7 +34,7 @@ namespace CarCare.Apis
 
 				});
 			}
-			).AddApplicationPart(typeof(AssemblyInformation).Assembly);
+			).AddApplicationPart(typeof(Controllers.AssemblyInformation).Assembly);
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen();
@@ -39,8 +42,10 @@ namespace CarCare.Apis
 			builder.Services.AddHttpContextAccessor();
 			builder.Services.AddScoped(typeof(ILoggedInUserService), typeof(LoggedInUserService));
 
+			builder.Services.AddApplicationServices();
 			builder.Services.AddPersistenceServices(builder.Configuration);
-			builder.Services.AddIdentityServices();
+			builder.Services.AddIdentityServices(builder.Configuration);
+			builder.Services.AddInfrastructureServices(builder.Configuration);
 
 
 			var app = builder.Build();
