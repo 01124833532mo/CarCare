@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CarCare.Infrastructure.Persistence._Identity.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIdentityEntitiesMigration : Migration
+    public partial class fexMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
