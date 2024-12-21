@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Identity.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    [Migration("20241212011824_AddIdentityEntitiesMigration")]
-    partial class AddIdentityEntitiesMigration
+    [Migration("20241221003300_fexMigration")]
+    partial class fexMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
