@@ -11,9 +11,6 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos
 	public class BaseRegisterDto
 	{
 		[Required]
-		public required string Name { get; set; }
-
-		[Required]
 		public required string UserName { get; set; }
 
 		[Required]
