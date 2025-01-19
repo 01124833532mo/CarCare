@@ -54,10 +54,6 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("NationalId")
                         .HasColumnType("nvarchar(max)");
 
@@ -79,9 +75,6 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Specialization")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")

@@ -17,66 +17,66 @@ using System.Text;
 namespace CarCare.Core.Application.Services
 {
 
-	public class AuthService(IOptions<JwtSettings> jwtSettings, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager,RoleManager<IdentityRole> roleManager,IMapper mapper) : IAuthService
+	public class AuthService(IOptions<JwtSettings> jwtSettings, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, IMapper mapper) : IAuthService
 	{
 
 		private readonly JwtSettings _jwtSettings = jwtSettings.Value;
-    
-        public async Task CreateRoleAsync(RoleDto roleDto)
-        {
-            var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
 
-            if (!roleExsits)
-            {
-                var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
+		public async Task CreateRoleAsync(RoleDto roleDto)
+		{
+			var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
 
-            }
-            else
-            {
-                throw new BadRequestExeption("This Role already Exists");
-            }
+			if (!roleExsits)
+			{
+				var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
 
-
-        }
+			}
+			else
+			{
+				throw new BadRequestExeption("This Role already Exists");
+			}
 
 
-
-        public async Task<IEnumerable<RolesToReturn>> GetRolesAsync()
-        {
-
-            var roles = await roleManager.Roles.ToListAsync();
-            var result = mapper.Map<IEnumerable<RolesToReturn>>(roles);
-            return result;
-
-        }
+		}
 
 
-        public async Task UpdateRole(string id, RoleDto roleDto)
-        {
-            var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
-            if (!roleExsists)
-            {
-                var role =await roleManager.FindByIdAsync(id);
-                role.Name = roleDto.Name; 
-                await roleManager.UpdateAsync(role);
-            }
-            else
-            {
-                throw new BadRequestExeption("this Role Already is Exsists");
-            }
-        }
 
-        public async Task DeleteRole(string id)
-        {
-            var role= await roleManager.FindByIdAsync(id);
-            if(role is null)
-            {
-                throw new NotFoundExeption(nameof(role), id);
-            }
-            await roleManager.DeleteAsync(role!);
-        }
+		public async Task<IEnumerable<RolesToReturn>> GetRolesAsync()
+		{
 
-       
+			var roles = await roleManager.Roles.ToListAsync();
+			var result = mapper.Map<IEnumerable<RolesToReturn>>(roles);
+			return result;
+
+		}
+
+
+		public async Task UpdateRole(string id, RoleDto roleDto)
+		{
+			var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
+			if (!roleExsists)
+			{
+				var role = await roleManager.FindByIdAsync(id);
+				role!.Name = roleDto.Name;
+				await roleManager.UpdateAsync(role);
+			}
+			else
+			{
+				throw new BadRequestExeption("this Role Already is Exsists");
+			}
+		}
+
+		public async Task DeleteRole(string id)
+		{
+			var role = await roleManager.FindByIdAsync(id);
+			if (role is null)
+			{
+				throw new NotFoundExeption(nameof(role), id);
+			}
+			await roleManager.DeleteAsync(role!);
+		}
+
+
 
 		public async Task<BaseUserDto> LoginAsync(LoginDto loginDto)
 		{
@@ -100,7 +100,7 @@ namespace CarCare.Core.Application.Services
 				var response = new UserDto
 				{
 					Id = user.Id,
-					Name = user.Name,
+					UserName = user.UserName!,
 					PhoneNumber = user.PhoneNumber!,
 					Type = user.Type.ToString(),
 					Token = await GenerateTokenAsync(user)
@@ -112,11 +112,10 @@ namespace CarCare.Core.Application.Services
 				var response = new TechDto
 				{
 					Id = user.Id,
-					Name = user.Name,
+					UserName = user.UserName!,
 					Email = user.Email!,
 					NationalId = user.NationalId!,
 					PhoneNumber = user.PhoneNumber!,
-					Specialization = user.Specialization!.Value.ToString(),
 					Type = user.Type.ToString(),
 					Token = await GenerateTokenAsync(user)
 				};
@@ -128,9 +127,8 @@ namespace CarCare.Core.Application.Services
 		{
 			var user = new ApplicationUser
 			{
-				Name = userRegisterDto.Name,
-				PhoneNumber = userRegisterDto.PhoneNumber,
 				UserName = userRegisterDto.UserName,
+				PhoneNumber = userRegisterDto.PhoneNumber,
 				Type = userRegisterDto.Type,
 			};
 
@@ -149,7 +147,7 @@ namespace CarCare.Core.Application.Services
 			var respone = new UserDto
 			{
 				Id = user.Id,
-				Name = user.Name,
+				UserName = user.UserName,
 				PhoneNumber = user.PhoneNumber,
 				Type = user.Type.ToString(),
 				Token = await GenerateTokenAsync(user)
@@ -162,12 +160,10 @@ namespace CarCare.Core.Application.Services
 			var tech = new ApplicationUser
 			{
 				UserName = techRegisterDto.UserName,
-				Name = techRegisterDto.Name,
 				PhoneNumber = techRegisterDto.PhoneNumber,
 				Email = techRegisterDto.Email,
 				NationalId = techRegisterDto.NationalId,
 				Type = techRegisterDto.Type,
-				Specialization = techRegisterDto.Specialization,
 			};
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == tech.PhoneNumber).FirstOrDefaultAsync();
@@ -183,12 +179,11 @@ namespace CarCare.Core.Application.Services
 			var response = new TechDto
 			{
 				Id = tech.Id,
-				Email = techRegisterDto.Email,
-				Name = techRegisterDto.Name,
-				PhoneNumber = techRegisterDto.PhoneNumber,
-				NationalId = techRegisterDto.NationalId,
-				Specialization = techRegisterDto.Specialization.ToString(),
-				Type = techRegisterDto.Type.ToString(),
+				Email = tech.Email,
+				UserName = tech.UserName,
+				PhoneNumber = tech.PhoneNumber,
+				NationalId = tech.NationalId,
+				Type = tech.Type.ToString(),
 				Token = await GenerateTokenAsync(tech)
 			};
 			return response;
@@ -213,9 +208,8 @@ namespace CarCare.Core.Application.Services
 				{
 				new Claim(ClaimTypes.PrimarySid,user.Id),
 				new Claim(ClaimTypes.Email,user.Email!),
-				new Claim(ClaimTypes.GivenName,user.Name),
+				new Claim(ClaimTypes.GivenName,user.UserName!),
 				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
-				new Claim("Specialization",user.Specialization.ToString()!),
 				new Claim("Type",user.Type.ToString()),
 				new Claim("NationalId",user.NationalId!)
 				}
@@ -227,7 +221,7 @@ namespace CarCare.Core.Application.Services
 				claims = new List<Claim>()
 				{
 				new Claim(ClaimTypes.PrimarySid,user.Id),
-				new Claim(ClaimTypes.GivenName,user.Name),
+				new Claim(ClaimTypes.GivenName,user.UserName!),
 				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
 				new Claim("Type",user.Type.ToString()),
 				}

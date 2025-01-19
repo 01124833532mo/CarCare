@@ -12,11 +12,9 @@ namespace CarCare.Core.Domain.Entities.Identity
 	{
 		public DateTime? BirthDate { get; set; }
 		public string? Address { get; set; }
-		public Specialization? Specialization { get; set; }
 
 		[Length(14, 14)]
 		public string? NationalId { get; set; }
-		public required string Name { get; set; }
 		public Types Type { get; set; }
 
 	}

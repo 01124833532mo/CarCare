@@ -23,12 +23,7 @@ namespace CarCare.Infrastructure.Persistence._Identity.Config
 				(UStatus) => (Types)Enum.Parse(typeof(Types), UStatus)
 				);
 
-			builder.Property(user => user.Specialization)
-				.HasConversion
-				(
-				(UStatus) => UStatus.ToString(),
-				(UStatus) => (Specialization)Enum.Parse(typeof(Specialization), UStatus)
-				);
+			
 
 		}
 	}

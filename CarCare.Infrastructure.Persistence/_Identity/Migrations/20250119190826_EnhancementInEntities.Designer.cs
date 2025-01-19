@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Identity.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    [Migration("20241221003300_fexMigration")]
-    partial class fexMigration
+    [Migration("20250119190826_EnhancementInEntities")]
+    partial class EnhancementInEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,10 +57,6 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("NationalId")
                         .HasColumnType("nvarchar(max)");
 
@@ -82,9 +78,6 @@ namespace CarCare.Infrastructure.Persistence._Identity.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Specialization")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")

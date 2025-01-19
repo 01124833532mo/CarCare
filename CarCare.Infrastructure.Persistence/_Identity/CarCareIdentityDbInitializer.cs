@@ -33,10 +33,9 @@ namespace CarCare.Infrastructure.Persistence._Identity
 					UserName = "Mahmoud.Ahmed",
 					Email = "Mahmoud.Ahmed@gmail.com",
 					PhoneNumber = "01029442023",
-					Name = "Mahmoud Ahmed",
 					Type = Types.Technical,
 					NationalId = "12345678909876",
-					Specialization = Specialization.Mechanic
+					
 				};
 
 				await userManager.CreateAsync(user, "P@ssw0rd");

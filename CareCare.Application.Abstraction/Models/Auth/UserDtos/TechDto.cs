@@ -11,6 +11,5 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.UserDtos
 	{
 		public required string Email { get; set; }
 		public required string NationalId { get; set; }
-		public required string Specialization { get; set; }
 	}
 }
