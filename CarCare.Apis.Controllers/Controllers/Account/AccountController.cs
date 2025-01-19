@@ -1,6 +1,7 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.Auth;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CarCare.Apis.Controllers.Controllers.Account
 {
 
-	public class AccountController(IServiceManager serviceManager) : BaseApiController
+    public class AccountController(IServiceManager serviceManager) : BaseApiController
     {
 
 
@@ -63,5 +64,5 @@ namespace CarCare.Apis.Controllers.Controllers.Account
         }
 
     }
-    
+
 }
