@@ -18,6 +18,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace CarCare.Core.Application.Services
@@ -626,6 +627,26 @@ namespace CarCare.Core.Application.Services
                 Message = "Password changed successfully.",
                 Token = newToken
             };
+
+        }
+
+        private RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+
+            var genrator = new RNGCryptoServiceProvider();
+
+            genrator.GetBytes(randomNumber);
+
+            return new RefreshToken()
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                CreatedOn = DateTime.UtcNow,
+                ExpireOn = DateTime.UtcNow.AddDays(_jwtSettings.JWTRefreshTokenExpire)
+
+
+            };
+
 
         }
     }
