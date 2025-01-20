@@ -71,6 +71,21 @@ namespace CarCare.Apis.Controllers.Controllers.Account
             var result = await serviceManager.AuthService.ChangePasswordAsynce(User, changePasswordDto);
             return Ok(result);
         }
+
+        [HttpPost("Get-Refresh-Token")]
+
+        public async Task<ActionResult<UserDto>> GetRefreshToken([FromBody] RefreshDto model)
+        {
+            var result = await serviceManager.AuthService.GetRefreshTokenAsync(model);
+            return Ok(result);
+        }
+        [HttpPost("Revoke-Refresh-Token")]
+        public async Task<ActionResult> RevokeRefreshToken([FromBody] RefreshDto model)
+        {
+            var result = await serviceManager.AuthService.RevokeRefreshTokenAsync(model);
+            return result is false ? BadRequest("Operation Not Successed") : Ok("Revoed Successfully!");
+
+        }
     }
 
 }

@@ -102,6 +102,7 @@ namespace CarCare.Core.Application.Services
             if (!result.Succeeded)
                 throw new UnAuthorizedExeption("Invalid Login");
 
+
             if (user.Type == Types.User)
             {
                 var response = new UserDto
@@ -112,6 +113,8 @@ namespace CarCare.Core.Application.Services
                     Type = user.Type.ToString(),
                     Token = await GenerateTokenAsync(user)
                 };
+                await CheckRefreskToken(userManager, user, response);
+
                 return response;
             }
             else
@@ -126,9 +129,13 @@ namespace CarCare.Core.Application.Services
                     Type = user.Type.ToString(),
                     Token = await GenerateTokenAsync(user)
                 };
+                await CheckRefreskToken(userManager, user, response);
+
                 return response;
             }
         }
+
+
 
         public async Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto)
         {
@@ -648,6 +655,147 @@ namespace CarCare.Core.Application.Services
             };
 
 
+        }
+        private async Task CheckRefreskToken(UserManager<ApplicationUser> userManager, ApplicationUser? user, BaseUserDto response)
+        {
+            if (user!.RefreshTokens.Any(t => t.IsActice))
+            {
+                var acticetoken = user.RefreshTokens.FirstOrDefault(x => x.IsActice);
+                response.RefreshToken = acticetoken!.Token;
+                response.RefreshTokenExpirationDate = acticetoken.ExpireOn;
+            }
+            else
+            {
+
+                var refreshtoken = GenerateRefreshToken();
+                response.RefreshToken = refreshtoken.Token;
+                response.RefreshTokenExpirationDate = refreshtoken.ExpireOn;
+
+                user.RefreshTokens.Add(new RefreshToken()
+                {
+                    Token = refreshtoken.Token,
+                    ExpireOn = refreshtoken.ExpireOn,
+                });
+                await userManager.UpdateAsync(user);
+            }
+        }
+
+        private string? ValidateToken(string token)
+        {
+            var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+
+            var TokenHandler = new JwtSecurityTokenHandler();
+
+            try
+            {
+                TokenHandler.ValidateToken(token, new TokenValidationParameters()
+                {
+                    IssuerSigningKey = authKey,
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero,
+
+                }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+
+                return jwtToken.Claims.First(x => x.Type == ClaimTypes.PrimarySid).Value;
+
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private async Task<BaseUserDto> UserRetuen(ApplicationUser? user, RefreshToken newrefreshtoken)
+        {
+            if (user.Type == Types.User)
+            {
+                var response = new UserDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName!,
+                    PhoneNumber = user.PhoneNumber!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user),
+                    RefreshToken = newrefreshtoken.Token,
+                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+                };
+
+                return response;
+            }
+            else
+            {
+                var response = new TechDto
+                {
+                    Id = user.Id,
+                    UserName = user.UserName!,
+                    Email = user.Email!,
+                    NationalId = user.NationalId!,
+                    PhoneNumber = user.PhoneNumber!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user),
+                    RefreshToken = newrefreshtoken.Token,
+                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+                };
+
+                return response;
+            }
+        }
+
+
+        public async Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
+        {
+            var userId = ValidateToken(refreshDto.Token);
+
+            if (userId is null) throw new NotFoundExeption("User id Not Found", nameof(userId));
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) throw new NotFoundExeption("User Do Not Exists", nameof(user.Id));
+
+            var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
+
+            if (UserRefreshToken is null) throw new NotFoundExeption("Invalid Token", nameof(userId));
+
+            UserRefreshToken.RevokedOn = DateTime.UtcNow;
+
+            var newtoken = await GenerateTokenAsync(user);
+
+            var newrefreshtoken = GenerateRefreshToken();
+
+            user.RefreshTokens.Add(new RefreshToken()
+            {
+                Token = newrefreshtoken.Token,
+                ExpireOn = newrefreshtoken.ExpireOn
+            });
+
+            await userManager.UpdateAsync(user);
+
+            return await UserRetuen(user, newrefreshtoken);
+
+        }
+
+
+        public async Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
+        {
+            var userId = ValidateToken(refreshDto.Token);
+
+            if (userId is null) return false;
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return false;
+
+            var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
+
+            if (UserRefreshToken is null) return false;
+
+            UserRefreshToken.RevokedOn = DateTime.UtcNow;
+
+            await userManager.UpdateAsync(user);
+            return true;
         }
     }
 }
