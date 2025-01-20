@@ -1,44 +1,19 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CareCare.Core.Application.Abstraction;
-using CareCare.Core.Application.Abstraction.Models.Auth;
+using CareCare.Core.Application.Abstraction.Models.Auth._Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarCare.Apis.Controllers.Controllers.Account
 {
 
-	public class AccountController(IServiceManager serviceManager) : BaseApiController
+    public class AccountController(IServiceManager serviceManager) : BaseApiController
     {
 
 
 
-        [HttpGet("GetRoles")]
-        public async Task<ActionResult> GetRoles()
-        {
-            var result = await serviceManager.AuthService.GetRolesAsync();
-            return Ok(result);
-        }
-
-        [HttpPost("CreateRole")]
-        public async Task<ActionResult> CreateRole(RoleDto roleDto)
-        {
-            await serviceManager.AuthService.CreateRoleAsync(roleDto);
-            return Ok(roleDto);
-
-        }
-        [HttpDelete("DeleteRole/{id}")]
-        public async Task<ActionResult> DeleteRole(string id)
-        {
-            await serviceManager.AuthService.DeleteRole(id);
-            return Ok();
-        }
-        [HttpPut("UpdateRole/{id}")]
-        public async Task<ActionResult> UpdateRole(string id, RoleDto roleDto)
-        {
-            await serviceManager.AuthService.UpdateRole(id, roleDto);
-            return Ok(roleDto);
-        }
 
 
         [HttpPost("login")]
@@ -62,6 +37,55 @@ namespace CarCare.Apis.Controllers.Controllers.Account
             return Ok(result);
         }
 
+
+        [Authorize]
+        [HttpGet("GetCurrentUser")]
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        {
+            var result = await serviceManager.AuthService.GetCurrentUser(User);
+            return Ok(result);
+        }
+
+
+        [Authorize]
+        [HttpGet("GetCurrentTechnical")]
+        public async Task<ActionResult<TechDto>> GetCurrentTech()
+        {
+            var result = await serviceManager.AuthService.GetCurrentTechnical(User);
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("GetCurrentAdmin")]
+        public async Task<ActionResult<TechDto>> GetCurrentAdmin()
+        {
+            var result = await serviceManager.AuthService.GetCurrentAdmin(User);
+            return Ok(result);
+        }
+
+        [Authorize]
+
+        [HttpPost("Change-Password")]
+        public async Task<ActionResult<ChangePasswordDto>> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            var result = await serviceManager.AuthService.ChangePasswordAsynce(User, changePasswordDto);
+            return Ok(result);
+        }
+
+        [HttpPost("Get-Refresh-Token")]
+
+        public async Task<ActionResult<UserDto>> GetRefreshToken([FromBody] RefreshDto model)
+        {
+            var result = await serviceManager.AuthService.GetRefreshTokenAsync(model);
+            return Ok(result);
+        }
+        [HttpPost("Revoke-Refresh-Token")]
+        public async Task<ActionResult> RevokeRefreshToken([FromBody] RefreshDto model)
+        {
+            var result = await serviceManager.AuthService.RevokeRefreshTokenAsync(model);
+            return result is false ? BadRequest("Operation Not Successed") : Ok("Revoed Successfully!");
+
+        }
     }
-    
+
 }

@@ -6,56 +6,60 @@ using CareCare.Core.Application.Abstraction.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using StackExchange.Redis;
 using System.Text;
 
 namespace CarCare.Apis.Extinsions
 {
-	public static class IdentityExtension
-	{
-		public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
-		{
+    public static class IdentityExtension
+    {
+        public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
+        {
 
-			services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-			services.AddIdentity<ApplicationUser, IdentityRole>((identityOptions) =>
-			{
-				//identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
+            services.AddIdentity<ApplicationUser, IdentityRole>((identityOptions) =>
+            {
+                //identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
+                identityOptions.Password.RequireDigit = true;
+                identityOptions.Password.RequireLowercase = false;
+                identityOptions.Password.RequireNonAlphanumeric = false;
+                identityOptions.Password.RequireUppercase = false;
+                identityOptions.Lockout.AllowedForNewUsers = true;
+                identityOptions.Lockout.MaxFailedAccessAttempts = 5;
+                identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(5);
+            })
+                .AddEntityFrameworkStores<CarCarIdentityDbContext>();
 
-				identityOptions.Lockout.AllowedForNewUsers = true;
-				identityOptions.Lockout.MaxFailedAccessAttempts = 5;
-				identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(5);
-			})
-				.AddEntityFrameworkStores<CarCarIdentityDbContext>();
+            services.AddScoped(typeof(IAuthService), typeof(AuthService));
+            services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>
+            {
+                return () => serviceprovider.GetRequiredService<IAuthService>();
+            });
 
-			services.AddScoped(typeof(IAuthService), typeof(AuthService));
-			services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>
-			{
-				return () => serviceprovider.GetRequiredService<IAuthService>();
-			});
+            services.AddAuthentication((configurationOptions) =>
+            {
+                configurationOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                configurationOptions.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-			services.AddAuthentication((configurationOptions) =>
-			{
-				configurationOptions.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-			})
-				.AddJwtBearer((configurationOptions) =>
-				{
-					configurationOptions.TokenValidationParameters = new TokenValidationParameters()
-					{
-						ValidateAudience = true,
-						ValidateIssuer = true,
-						ValidateIssuerSigningKey = true,
-						ValidateLifetime = true,
+            })
+                .AddJwtBearer((configurationOptions) =>
+                {
+                    configurationOptions.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateAudience = true,
+                        ValidateIssuer = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
 
 
-						ClockSkew = TimeSpan.FromHours(0),
-						ValidAudience = configuration["JwtSettings:Audience"],
-						ValidIssuer = configuration["JwtSettings:Issuer"],
-						IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]!))
-					};
-				});
+                        ClockSkew = TimeSpan.FromHours(0),
+                        ValidAudience = configuration["JwtSettings:Audience"],
+                        ValidIssuer = configuration["JwtSettings:Issuer"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Key"]!))
+                    };
+                });
 
-			return services;
-		}
-	}
+            return services;
+        }
+    }
 }

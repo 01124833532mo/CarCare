@@ -1,20 +1,19 @@
 ﻿using AutoMapper;
-using CareCare.Core.Application.Abstraction.Models.Auth;
+using CarCare.Core.Domain.Entities.Identity;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
+using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarCare.Core.Application.Mapping
 {
-    public class MappingProfile:Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            CreateMap< IdentityRole, RolesToReturn>().ReverseMap();
+            CreateMap<IdentityRole, RolesToReturn>().ReverseMap();
             CreateMap<IdentityRole, RoleDto>().ReverseMap();
+            CreateMap<ApplicationUser, UserDto>().ReverseMap();
+            CreateMap<ApplicationUser, TechDto>().ReverseMap();
 
         }
     }
