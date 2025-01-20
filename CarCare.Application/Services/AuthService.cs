@@ -3,7 +3,9 @@ using AutoMapper;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Shared.ErrorModoule.Exeptions;
 using CareCare.Core.Application.Abstraction.Models.Auth;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
@@ -251,7 +253,7 @@ namespace CarCare.Core.Application.Services
     .Select(u => new UserViewModel
     {
         Id = u.Id,
-        Name = u.UserName!,
+        UserName = u.UserName!,
         PhoneNumber = u.PhoneNumber!,
         Type = u.Type.ToString()
     })
@@ -313,14 +315,14 @@ namespace CarCare.Core.Application.Services
             var viewModel = new UserRoleViewModel()
             {
                 Id = user.Id,
-                Name = user.UserName,
-                PhoneNumber = user.PhoneNumber,
+                Name = user.UserName!,
+                PhoneNumber = user.PhoneNumber!,
                 Type = user.Type.ToString(),
                 Roles = allRoles.Select(
                     r => new RoleDto()
                     {
                         Id = r.Id,
-                        Name = r.Name,
+                        Name = r.Name!,
                         IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
                     }).Where(u => u.IsSelected == true).ToList()
             };
@@ -346,7 +348,7 @@ namespace CarCare.Core.Application.Services
 
         }
 
-        public async Task<UserRoleViewModel> EditeUser(string id, UserEditeDto viewModel)
+        public async Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel)
         {
 
 
@@ -377,15 +379,163 @@ namespace CarCare.Core.Application.Services
             {
 
                 Id = user.Id,
-                Name = user.UserName,
-                PhoneNumber = user.PhoneNumber,
+                Name = user.UserName!,
+                PhoneNumber = user.PhoneNumber!,
                 Type = user.Type.ToString(),
-                RolesToReturn = ExistedRoles
+                Roles = ExistedRoles
 
             };
 
             return usertoreturn;
 
+        }
+
+        public async Task<IEnumerable<TechViewModel>> GetAllTechnicals()
+        {
+            var techs = await userManager.Users.Where(u => u.Type == Types.Technical)
+   .Select(u => new TechViewModel
+   {
+       Id = u.Id,
+       UserName = u.UserName!,
+       PhoneNumber = u.PhoneNumber!,
+       Email = u.Email!,
+       NationalId = u.NationalId!,
+       Type = u.Type.ToString()
+   })
+   .ToListAsync();
+
+            foreach (var tech in techs)
+            {
+                // Await the GetRolesAsync call properly here
+                tech.Roles = await userManager.GetRolesAsync(await userManager.FindByIdAsync(tech.Id));
+            }
+
+            return techs;
+        }
+
+        public async Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = createTechnicalDto.Name,
+                PhoneNumber = createTechnicalDto.PhoneNumber,
+                Type = createTechnicalDto.Type,
+                Email = createTechnicalDto.Email,
+                NationalId = createTechnicalDto.NationalId,
+            };
+
+            var getphone = await userManager.Users
+                .Where(u => u.PhoneNumber == user.PhoneNumber)
+                .FirstOrDefaultAsync();
+
+            if (getphone is not null && getphone.PhoneNumber == createTechnicalDto.PhoneNumber)
+                throw new UnAuthorizedExeption("Phone is Already Registered");
+
+            var result = await userManager.CreateAsync(user, createTechnicalDto.Password);
+
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+
+            // Assign the "User" role to the newly created user
+            var roleResult = await userManager.AddToRoleAsync(user, Types.Technical.ToString());
+            if (!roleResult.Succeeded)
+                throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
+
+            var response = new TechDto
+            {
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber,
+                Type = user.Type.ToString(),
+                UserName = user.UserName,
+                Email = user.Email,
+                NationalId = user.NationalId,
+                Token = await GenerateTokenAsync(user)
+            };
+
+            return response;
+        }
+
+        public async Task<TechRoleViewModel> GetTechnical(string id)
+        {
+            var tech = await userManager.FindByIdAsync(id);
+            if (tech is null) throw new NotFoundExeption("This Technical Not Found", nameof(id));
+            var allRoles = await roleManager.Roles.ToListAsync();
+            var viewModel = new TechRoleViewModel()
+            {
+                Id = tech.Id,
+                Name = tech.UserName!,
+                PhoneNumber = tech.PhoneNumber!,
+                Email = tech.Email!,
+                NationalId = tech.NationalId!,
+                Type = tech.Type.ToString(),
+                Roles = allRoles.Select(
+                    r => new RoleDto()
+                    {
+                        Id = r.Id,
+                        Name = r.Name!,
+                        IsSelected = userManager.IsInRoleAsync(tech, r.Name!).Result
+                    }).Where(u => u.IsSelected == true).ToList()
+            };
+
+            return viewModel;
+        }
+
+        public async Task<string> DeleteTechnical(string id)
+        {
+
+            var tech = await userManager.FindByIdAsync(id);
+
+            if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
+
+            var result = await userManager.DeleteAsync(tech);
+
+            if (result.Succeeded)
+                return "Delete Successed";
+            else
+                return "Operation Faild";
+
+        }
+
+
+        public async Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel)
+        {
+            var tech = await userManager.FindByIdAsync(id);
+            if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
+
+            var userRoles = await userManager.GetRolesAsync(tech);
+            if (userRoles is null) throw new NotFoundExeption("Do Not Roles For This Technical", nameof(id));
+
+
+
+            foreach (var role in viewModel.Roles)
+            {
+                if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
+                {
+                    await userManager.RemoveFromRoleAsync(tech, role.Name);
+                }
+
+                if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
+                {
+                    await userManager.AddToRoleAsync(tech, role.Name);
+                }
+            }
+
+            var ExistedRoles = await userManager.GetRolesAsync(tech);
+
+            var usertoreturn = new TechRoleViewModel()
+            {
+
+                Id = tech.Id,
+                Name = tech.UserName!,
+                PhoneNumber = tech.PhoneNumber!,
+                Email = tech.Email!,
+                NationalId = tech.NationalId!,
+                Type = tech.Type.ToString(),
+                Roles = ExistedRoles,
+
+            };
+
+            return usertoreturn;
         }
     }
 }

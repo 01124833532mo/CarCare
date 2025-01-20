@@ -1,6 +1,4 @@
-﻿using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
-
-namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users
+﻿namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users
 {
     public class UserRoleViewModel
     {
@@ -9,7 +7,6 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users
         public required string PhoneNumber { get; set; }
         public required string Type { get; set; }
 
-        public IEnumerable<RoleDto> Roles { get; set; }
-        public IEnumerable<string> RolesToReturn { get; set; }
+        public IEnumerable<object> Roles { get; set; }
     }
 }

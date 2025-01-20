@@ -1,5 +1,7 @@
 ﻿using CareCare.Core.Application.Abstraction.Models.Auth;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
+using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
@@ -28,8 +30,18 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
         Task<string> DeleteUser(string id);
 
-        Task<UserRoleViewModel> EditeUser(string id, UserEditeDto viewModel);
+        Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel);
 
+
+
+
+        Task<IEnumerable<TechViewModel>> GetAllTechnicals();
+
+        Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto);
+        Task<TechRoleViewModel> GetTechnical(string id);
+
+        Task<string> DeleteTechnical(string id);
+        Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel);
 
     }
 }

@@ -1,8 +1,8 @@
 ﻿using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 
-namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users
+namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common
 {
-    public class UserEditeDto
+    public class EditDashDto
     {
 
         public IEnumerable<RoleDto> Roles { get; set; }

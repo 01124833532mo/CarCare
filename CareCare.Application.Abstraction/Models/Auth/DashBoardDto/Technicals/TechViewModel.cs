@@ -1,11 +1,14 @@
-﻿namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users
+﻿namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals
 {
-    public class UserViewModel
+    public class TechViewModel
     {
         public required string Id { get; set; }
         public required string UserName { get; set; }
         public required string PhoneNumber { get; set; }
         public required string Type { get; set; }
+
+        public required string Email { get; set; }
+        public required string NationalId { get; set; }
 
         public IEnumerable<string> Roles { get; set; }
 
