@@ -2,7 +2,9 @@
 using AutoMapper;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Shared.ErrorModoule.Exeptions;
+using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth;
+using CareCare.Core.Application.Abstraction.Models.Auth._Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
@@ -536,6 +538,95 @@ namespace CarCare.Core.Application.Services
             };
 
             return usertoreturn;
+        }
+
+        public async Task<UserDto> GetCurrentUser(ClaimsPrincipal claims)
+        {
+            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
+            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
+
+            var user = await userManager.Users.Where(u => u.Type == Types.User && u.PhoneNumber == phone).FirstOrDefaultAsync();
+            if (user is null) throw new NotFoundExeption("No User For This Phone Or This Technical Not User ", nameof(phone));
+
+            var mappeduser = mapper.Map<UserDto>(user);
+            mappeduser.Token = await GenerateTokenAsync(user);
+
+            return mappeduser;
+
+        }
+
+        public async Task<TechDto> GetCurrentTechnical(ClaimsPrincipal claims)
+        {
+            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
+            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
+
+            var Tech = await userManager.Users.Where(u => u.Type == Types.Technical && u.PhoneNumber == phone).FirstOrDefaultAsync();
+            if (Tech is null) throw new NotFoundExeption("No Technical For This Phone Or This User Not Technical ", nameof(phone));
+
+            var mappedTech = mapper.Map<TechDto>(Tech);
+            mappedTech.Token = await GenerateTokenAsync(Tech);
+
+            return mappedTech;
+        }
+
+        public async Task<UserDto> GetCurrentAdmin(ClaimsPrincipal claims)
+        {
+            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
+            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
+
+            var Admin = await userManager.Users.Where(u => u.PhoneNumber == phone).FirstOrDefaultAsync();
+            if (Admin is null) throw new NotFoundExeption("No Technical For This Phone Or This User Not Technical ", nameof(phone));
+
+            var mappedTech = mapper.Map<UserDto>(Admin);
+            mappedTech.Token = await GenerateTokenAsync(Admin);
+            mappedTech.Type = Roles.Admin;
+
+            return mappedTech;
+        }
+
+        public async Task<ChangePasswordToReturn> ChangePasswordAsynce(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto)
+        {
+
+
+
+
+            // Get the logged-in user's ID from the token
+            var userId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+            if (userId is null) throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
+
+            // Retrieve the user from the database
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userId));
+
+
+            // Verify the current password
+            var isCurrentPasswordValid = await userManager.CheckPasswordAsync(user, changePasswordDto.CurrentPassword);
+
+            if (!isCurrentPasswordValid)
+            {
+                throw new BadRequestExeption("This Current Password InCorrect");
+            }
+
+            // Change the password
+            var result = await userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new ValidationExeption() { Errors = result.Errors.Select(p => p.Description) };
+            }
+
+            // Optionally, generate a new token for the user
+            var newToken = await GenerateTokenAsync(user);
+
+            return new ChangePasswordToReturn()
+            {
+                Message = "Password changed successfully.",
+                Token = newToken
+            };
+
         }
     }
 }

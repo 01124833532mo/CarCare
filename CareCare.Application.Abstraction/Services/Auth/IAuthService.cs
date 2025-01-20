@@ -1,10 +1,11 @@
-﻿using CareCare.Core.Application.Abstraction.Models.Auth;
+﻿using CareCare.Core.Application.Abstraction.Models.Auth._Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using System.Security.Claims;
 
 namespace CareCare.Core.Application.Abstraction.Services.Auth
 {
@@ -42,6 +43,14 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
         Task<string> DeleteTechnical(string id);
         Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel);
+
+
+        Task<UserDto> GetCurrentUser(ClaimsPrincipal claims);
+        Task<TechDto> GetCurrentTechnical(ClaimsPrincipal claims);
+
+        Task<UserDto> GetCurrentAdmin(ClaimsPrincipal claims);
+
+        Task<ChangePasswordToReturn> ChangePasswordAsynce(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto);
 
     }
 }
