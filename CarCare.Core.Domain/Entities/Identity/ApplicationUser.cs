@@ -13,6 +13,7 @@ namespace CarCare.Core.Domain.Entities.Identity
         public Types Type { get; set; }
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
-
-    }
+		public int? PhoneConfirmResetCode { get; set; }
+		public DateTime? PhoneConfirmResetCodeExpiry { get; set; }
+	}
 }
