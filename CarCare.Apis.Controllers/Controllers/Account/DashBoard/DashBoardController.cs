@@ -21,23 +21,23 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
         }
 
         [HttpPost("CreateRole")]
-        public async Task<ActionResult> CreateRole(RoleDto roleDto)
+        public async Task<ActionResult> CreateRole(RoleDtoBase roleDto)
         {
-            await serviceManager.AuthService.CreateRoleAsync(roleDto);
-            return Ok(roleDto);
+            var result = await serviceManager.AuthService.CreateRoleAsync(roleDto);
+            return Ok(result);
 
         }
         [HttpDelete("DeleteRole/{id}")]
         public async Task<ActionResult> DeleteRole(string id)
         {
             await serviceManager.AuthService.DeleteRole(id);
-            return Ok();
+            return Ok("Delete Successfully");
         }
         [HttpPut("UpdateRole/{id}")]
-        public async Task<ActionResult> UpdateRole(string id, RoleDto roleDto)
+        public async Task<ActionResult> UpdateRole(string id, RoleDtoBase roleDto)
         {
-            await serviceManager.AuthService.UpdateRole(id, roleDto);
-            return Ok(roleDto);
+            var result = await serviceManager.AuthService.UpdateRole(id, roleDto);
+            return Ok(result);
         }
 
         [HttpGet("GetUsers")]
