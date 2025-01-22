@@ -37,19 +37,21 @@ namespace CarCare.Core.Application.Services
 
 		private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
-		public async Task CreateRoleAsync(RoleDto roleDto)
-		{
-			var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
+        public async Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto)
+        {
+            var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
 
-			if (!roleExsits)
-			{
-				var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
-
-			}
-			else
-			{
-				throw new BadRequestExeption("This Role already Exists");
-			}
+            if (!roleExsits)
+            {
+                var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
+                var role = await roleManager.FindByNameAsync(roleDto.Name);
+                var mappedroleresult = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+                return mappedroleresult;
+            }
+            else
+            {
+                throw new BadRequestExeption("This Role already Exists");
+            }
 
 
 		}
@@ -66,20 +68,22 @@ namespace CarCare.Core.Application.Services
 		}
 
 
-		public async Task UpdateRole(string id, RoleDto roleDto)
-		{
-			var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
-			if (!roleExsists)
-			{
-				var role = await roleManager.FindByIdAsync(id);
-				role.Name = roleDto.Name;
-				await roleManager.UpdateAsync(role);
-			}
-			else
-			{
-				throw new BadRequestExeption("this Role Already is Exsists");
-			}
-		}
+        public async Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto)
+        {
+            var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
+            if (!roleExsists)
+            {
+                var role = await roleManager.FindByIdAsync(id);
+                role.Name = roleDto.Name;
+                await roleManager.UpdateAsync(role);
+                var result = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+                return result;
+            }
+            else
+            {
+                throw new BadRequestExeption("this Role Already is Exsists");
+            }
+        }
 
 		public async Task DeleteRole(string id)
 		{

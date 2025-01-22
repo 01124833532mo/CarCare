@@ -15,11 +15,11 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
 		Task<IEnumerable<RolesToReturn>> GetRolesAsync();
 
-		Task CreateRoleAsync(RoleDto roleDto);
+        Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto);
 
 		Task DeleteRole(string id);
 
-		Task UpdateRole(string id, RoleDto roleDto);
+        Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
 
 		Task<BaseUserDto> LoginAsync(LoginDto loginDto);
 		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);

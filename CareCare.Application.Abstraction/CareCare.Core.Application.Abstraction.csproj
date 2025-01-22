@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
-    <Folder Include="Models\Auth\DashBoardDto\Roles\Common\" />
   </ItemGroup>
 
   <ItemGroup>
