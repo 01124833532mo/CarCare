@@ -42,7 +42,7 @@ namespace CarCare.Apis
 			builder.Services.AddHttpContextAccessor();
 			builder.Services.AddScoped(typeof(ILoggedInUserService), typeof(LoggedInUserService));
 
-			builder.Services.AddApplicationServices();
+			builder.Services.AddApplicationServices(builder.Configuration);
 			builder.Services.AddPersistenceServices(builder.Configuration);
 			builder.Services.AddIdentityServices(builder.Configuration);
 			builder.Services.AddInfrastructureServices(builder.Configuration);
