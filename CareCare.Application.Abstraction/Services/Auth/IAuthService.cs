@@ -5,6 +5,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
+using CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using System.Security.Claims;
 
@@ -15,11 +16,11 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
 		Task<IEnumerable<RolesToReturn>> GetRolesAsync();
 
-        Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto);
+		Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto);
 
 		Task DeleteRole(string id);
 
-        Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
+		Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
 
 		Task<BaseUserDto> LoginAsync(LoginDto loginDto);
 		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);
@@ -69,8 +70,9 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
 		Task<SuccessDto> ConfirmationCodeSendAsync(ForgetPasswordDto confirmationCodeDto);
 
-
-
 		Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto);
+
+		Task<UserDto> UpdateUserByUser(ClaimsPrincipal claims, UpdateUserDto userDto);
+		Task<UserDto> UpdateTechByTech(ClaimsPrincipal claims, UpdateTechDto techDto);
 	}
 }

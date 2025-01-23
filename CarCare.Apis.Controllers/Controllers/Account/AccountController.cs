@@ -3,6 +3,7 @@ using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.Auth._Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
+using CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -120,6 +121,20 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 		public async Task<ActionResult> ConfirmPhone(ConfirmationPhoneCodeDto codeDto)
 		{
 			var result = await serviceManager.AuthService.ConfirmPhoneAsync(codeDto);
+			return Ok(result);
+		}
+
+		[HttpPut("UpdateUser")]
+		public async Task<ActionResult> UpdateUserByUser(UpdateUserDto updateUser)
+		{
+			var result = await serviceManager.AuthService.UpdateUserByUser(User, updateUser);
+			return Ok(result);
+		}
+
+		[HttpPut("UpdateTech")]
+		public async Task<ActionResult> UpdateTechByTech(UpdateTechDto updateTech)
+		{
+			var result = await serviceManager.AuthService.UpdateTechByTech(User, updateTech);
 			return Ok(result);
 		}
 	}
