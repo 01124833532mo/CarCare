@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CarCare.Infrastructure.Persistence._Identity.Migrations
+namespace CarCare.Infrastructure.Persistence._Data.Migrations
 {
     /// <inheritdoc />
     public partial class UpdateUserEntity : Migration

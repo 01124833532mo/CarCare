@@ -10,15 +10,11 @@
     <Folder Include="Generic Repository\" />
     <Folder Include="UnitOfWork\" />
     <Folder Include="_Common\" />
-    <Folder Include="_Data\Config\" />
-    <Folder Include="_Data\Interceptors\" />
-    <Folder Include="_Data\Migrations\" />
     <Folder Include="_Data\Seeds\" />
-    <Folder Include="_Identity\Migrations\" />
-    <Folder Include="_Identity\Seeds\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
   </ItemGroup>
 

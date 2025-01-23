@@ -1,6 +1,6 @@
 ﻿using CarCare.Core.Application.Services;
 using CarCare.Core.Domain.Entities.Identity;
-using CarCare.Infrastructure.Persistence._Identity;
+using CarCare.Infrastructure.Persistence._Data;
 using CareCare.Core.Application.Abstraction.Models.Auth;
 using CareCare.Core.Application.Abstraction.Services.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
