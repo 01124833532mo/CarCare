@@ -12,6 +12,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
+using CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Services;
 using CareCare.Core.Application.Abstraction.Services.Auth;
@@ -37,21 +38,21 @@ namespace CarCare.Core.Application.Services
 
 		private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
-        public async Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto)
-        {
-            var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
+		public async Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto)
+		{
+			var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
 
-            if (!roleExsits)
-            {
-                var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
-                var role = await roleManager.FindByNameAsync(roleDto.Name);
-                var mappedroleresult = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
-                return mappedroleresult;
-            }
-            else
-            {
-                throw new BadRequestExeption("This Role already Exists");
-            }
+			if (!roleExsits)
+			{
+				var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
+				var role = await roleManager.FindByNameAsync(roleDto.Name);
+				var mappedroleresult = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+				return mappedroleresult;
+			}
+			else
+			{
+				throw new BadRequestExeption("This Role already Exists");
+			}
 
 
 		}
@@ -68,22 +69,22 @@ namespace CarCare.Core.Application.Services
 		}
 
 
-        public async Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto)
-        {
-            var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
-            if (!roleExsists)
-            {
-                var role = await roleManager.FindByIdAsync(id);
-                role.Name = roleDto.Name;
-                await roleManager.UpdateAsync(role);
-                var result = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
-                return result;
-            }
-            else
-            {
-                throw new BadRequestExeption("this Role Already is Exsists");
-            }
-        }
+		public async Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto)
+		{
+			var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
+			if (!roleExsists)
+			{
+				var role = await roleManager.FindByIdAsync(id);
+				role.Name = roleDto.Name;
+				await roleManager.UpdateAsync(role);
+				var result = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+				return result;
+			}
+			else
+			{
+				throw new BadRequestExeption("this Role Already is Exsists");
+			}
+		}
 
 		public async Task DeleteRole(string id)
 		{
@@ -603,6 +604,93 @@ namespace CarCare.Core.Application.Services
 
 			return mappedTech;
 		}
+
+
+		public async Task<UserDto> UpdateUserByUser(ClaimsPrincipal claims, UpdateUserDto userDto)
+		{
+			var userId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+			if (userId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
+			var user = await userManager.FindByIdAsync(userId);
+
+			if (user is null)
+				throw new NotFoundExeption("No User For This Id", nameof(userId));
+
+			var getphone = await userManager.Users.Where(u => u.PhoneNumber == userDto.PhoneNumber).FirstOrDefaultAsync();
+
+			if (getphone is not null && getphone.PhoneNumber == (userDto.PhoneNumber) && userDto.PhoneNumber != user.PhoneNumber)
+				throw new UnAuthorizedExeption("Phone is Already Registered");
+
+
+			user.PhoneNumber = userDto.PhoneNumber;
+			user.UserName = userDto.UserName!;
+			user.Address = userDto.Address;
+
+
+			var result = await userManager.UpdateAsync(user);
+
+
+			if (!result.Succeeded)
+				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+
+			var respone = new UserDto
+			{
+				Id = user.Id,
+				UserName = user.UserName!,
+				PhoneNumber = user.PhoneNumber!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
+			return respone;
+
+
+		}
+
+		public async Task<UserDto> UpdateTechByTech(ClaimsPrincipal claims, UpdateTechDto techDto)
+		{
+			var techId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+			if (techId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
+			var user = await userManager.FindByIdAsync(techId);
+
+			if (user is null)
+				throw new NotFoundExeption("No User For This Id", nameof(techId));
+
+			var getphone = await userManager.Users.Where(u => u.PhoneNumber == techDto.PhoneNumber).FirstOrDefaultAsync();
+
+			if (getphone is not null && getphone.PhoneNumber == (techDto.PhoneNumber) && techDto.PhoneNumber != user.PhoneNumber)
+				throw new UnAuthorizedExeption("Phone is Already Registered");
+
+
+			user.PhoneNumber = techDto.PhoneNumber;
+			user.UserName = techDto.UserName!;
+			user.Address = techDto.Address;
+			user.NationalId = techDto.NationalId;
+
+
+			var result = await userManager.UpdateAsync(user);
+
+
+			if (!result.Succeeded)
+				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+
+			var respone = new UserDto
+			{
+				Id = user.Id,
+				UserName = user.UserName!,
+				PhoneNumber = user.PhoneNumber!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
+			return respone;
+
+
+		}
+
 
 		public async Task<ChangePasswordToReturn> ChangePasswordAsynce(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto)
 		{
