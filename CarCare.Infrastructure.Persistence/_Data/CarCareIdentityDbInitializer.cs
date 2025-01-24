@@ -4,7 +4,7 @@ using CarCare.Shared.Models.Roles;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace CarCare.Infrastructure.Persistence._Identity
+namespace CarCare.Infrastructure.Persistence._Data
 {
     public class CarCareIdentityDbInitializer(CarCarIdentityDbContext dbContext, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager) : ICarCareIdentityDbInitializer
     {
