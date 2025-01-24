@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+using UniteOfWork = CarCare.Infrastructure.Persistence.UnitOfWork;
+
 namespace CarCare.Infrastructure.Persistence
 {
     public static class DependencyInjection
@@ -25,6 +27,8 @@ namespace CarCare.Infrastructure.Persistence
             services.AddScoped(typeof(ISaveChangesInterceptor), typeof(IdentityInterceptor));
 
             services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+            services.AddScoped(typeof(IUnitOfWork), typeof(UniteOfWork.UnitOfWork));
+
 
             return services;
         }
