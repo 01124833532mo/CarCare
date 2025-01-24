@@ -1,9 +1,10 @@
 ﻿using CarCare.Core.Domain.Common;
+using CarCare.Core.Domain.Entities.Common;
 using CarCare.Core.Domain.Entities.Identity;
 
 namespace CarCare.Core.Domain.Entities.Vehicles
 {
-    public class Vehicle : BaseAuditableEntity<int>
+    public class Vehicle : BaseAuditableEntity<int>, IBaseUserId
     {
         public required int CarNumber { get; set; } // 1234523 // unique
         public required string Color { get; set; }

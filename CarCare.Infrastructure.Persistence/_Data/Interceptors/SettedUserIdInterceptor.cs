@@ -1,14 +1,18 @@
-﻿using CarCare.Core.Domain.Contracts.Common;
+﻿using CarCare.Core.Domain.Entities.Common;
 using LinkDev.Talabat.Core.Application.Abstraction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace CarCare.Infrastructure.Persistence._Data.Interceptors
 {
-    public class AuditInterceptor(ILoggedInUserService _loggedInUser) : SaveChangesInterceptor
+    public class SettedUserIdInterceptor : AuditInterceptor
     {
+        private readonly ILoggedInUserService _loggedInUserService;
 
-
+        public SettedUserIdInterceptor(ILoggedInUserService loggedInUserService) : base(loggedInUserService)
+        {
+            _loggedInUserService = loggedInUserService;
+        }
 
         public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
         {
@@ -18,7 +22,6 @@ namespace CarCare.Infrastructure.Persistence._Data.Interceptors
 
 
         }
-
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
         {
 
@@ -27,33 +30,30 @@ namespace CarCare.Infrastructure.Persistence._Data.Interceptors
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        private protected void UpdateEntities(DbContext? context)
+        private new void UpdateEntities(DbContext? context)
         {
 
             if (context is null) return;
 
-            var Entries = context.ChangeTracker.Entries<IBaseAuditableEntity>()
+            var Entries = context.ChangeTracker.Entries<IBaseUserId>()
                                 .Where(entry => entry.State is EntityState.Added or EntityState.Modified);
 
             foreach (var entry in Entries)
             {
-                if (string.IsNullOrEmpty(_loggedInUser.UserId))
+                if (string.IsNullOrEmpty(_loggedInUserService.UserId))
                 {
-                    _loggedInUser.UserId = "";
+                    _loggedInUserService.UserId = "";
                 }
 
                 if (entry.State is EntityState.Added)
                 {
 
-                    entry.Entity.CreatedBy = _loggedInUser.UserId!;
-                    entry.Entity.CreatedOn = DateTime.UtcNow;
+                    entry.Entity.UserId = _loggedInUserService.UserId;
 
                 }
 
-                entry.Entity.LastModifiedBy = _loggedInUser.UserId!;
-                entry.Entity.LastModifiedOn = DateTime.UtcNow;
-
             }
         }
+
     }
 }

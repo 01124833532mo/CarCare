@@ -1,9 +1,10 @@
 ﻿using CarCare.Core.Domain.Common;
+using CarCare.Core.Domain.Entities.Common;
 using CarCare.Core.Domain.Entities.Identity;
 
 namespace CarCare.Core.Domain.Entities.FeedBacks
 {
-    public class FeedBack : BaseAuditableEntity<int>
+    public class FeedBack : BaseAuditableEntity<int>, IBaseUserId
     {
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
