@@ -1,14 +1,13 @@
-﻿using CarCare.Apis.Controllers.Controllers.Base;
-using CarCare.Shared.ErrorModoule.Errors;
+﻿using CarCare.Shared.ErrorModoule.Errors;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace CarCare.Apis.Controllers.Controllers.Common
+namespace LinkDev.Talabat.Apis.Controllers.Controllers.Common
 {
     [ApiController]
     [Route("Errors/{Code}")]
     [ApiExplorerSettings(IgnoreApi = false)]
-    public class ErrorsController : BaseApiController
+    public class ErrorsController : ControllerBase
     {
         [HttpGet]
         public IActionResult Error(int Code)
@@ -24,9 +23,14 @@ namespace CarCare.Apis.Controllers.Controllers.Common
                 return StatusCode(Code, respnse);
 
             }
+            else if (Code == (int)HttpStatusCode.MethodNotAllowed)
+            {
+                var respnse = new ApiResponse((int)HttpStatusCode.MethodNotAllowed, $"Method Not Allowed");
+                return StatusCode(Code, respnse);
 
-
+            }
             return StatusCode(Code, new ApiResponse(Code));
         }
+
     }
 }
