@@ -27,7 +27,9 @@ namespace CarCare.Apis.Middlewares
 
                 if (httpContext.Response.StatusCode == (int)HttpStatusCode.MethodNotAllowed)
                 {
-                    var respnse = new ApiResponse((int)HttpStatusCode.MethodNotAllowed, $"Method Not Allowed");
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    httpContext.Response.ContentType = "application/json";
+                    var respnse = new ApiResponse((int)HttpStatusCode.Unauthorized, $"You Are Not Authorized");
                     await httpContext.Response.WriteAsync(respnse.ToString());
                 }
 
