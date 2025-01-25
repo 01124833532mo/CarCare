@@ -9,7 +9,6 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.UserDtos
 {
 	public class TechDto : BaseUserDto
 	{
-		public required string Email { get; set; }
 		public required string NationalId { get; set; }
 	}
 }
