@@ -11,9 +11,7 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos
 	public class TechRegisterDto : BaseRegisterDto
 	{
 
-		[Required]
-		[EmailAddress]
-		public required string Email { get; set; }
+		
 
 
 		[Required]
