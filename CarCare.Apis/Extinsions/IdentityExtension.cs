@@ -27,8 +27,11 @@ namespace CarCare.Apis.Extinsions
                 identityOptions.Lockout.AllowedForNewUsers = true;
                 identityOptions.Lockout.MaxFailedAccessAttempts = 5;
                 identityOptions.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(5);
+                identityOptions.User.RequireUniqueEmail = true;
             })
                 .AddEntityFrameworkStores<CarCarIdentityDbContext>();
+
+
 
             services.AddScoped(typeof(IAuthService), typeof(AuthService));
             services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>

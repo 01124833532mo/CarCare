@@ -18,6 +18,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Identity
                 (UStatus) => (Types)Enum.Parse(typeof(Types), UStatus)
                 );
 
+            // builder.HasIndex(u => u.UserName)
+            //.IsUnique(false);
 
 
         }

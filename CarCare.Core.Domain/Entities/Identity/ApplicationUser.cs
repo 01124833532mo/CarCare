@@ -8,6 +8,8 @@ namespace CarCare.Core.Domain.Entities.Identity
 {
     public class ApplicationUser : IdentityUser
     {
+        public override string UserName { get; set; }
+
         public DateTime? BirthDate { get; set; }
         public string? Address { get; set; }
 
