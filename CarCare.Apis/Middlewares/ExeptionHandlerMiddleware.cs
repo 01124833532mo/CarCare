@@ -1,6 +1,5 @@
 ﻿using CarCare.Shared.ErrorModoule.Errors;
 using CarCare.Shared.ErrorModoule.Exeptions;
-using Microsoft.AspNetCore.Http;
 using System.Net;
 
 namespace CarCare.Apis.Middlewares
@@ -26,6 +25,14 @@ namespace CarCare.Apis.Middlewares
 
                 await _next(httpContext);
 
+                if (httpContext.Response.StatusCode == (int)HttpStatusCode.MethodNotAllowed)
+                {
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    httpContext.Response.ContentType = "application/json";
+                    var respnse = new ApiResponse((int)HttpStatusCode.Unauthorized, $"You Are Not Authorized");
+                    await httpContext.Response.WriteAsync(respnse.ToString());
+                }
+
             }
             catch (Exception ex)
             {
@@ -44,9 +51,9 @@ namespace CarCare.Apis.Middlewares
                     // log exeption details t (file | text)
 
                 }
-                    
 
-               await HandleExeptionAsync(httpContext, ex);
+
+                await HandleExeptionAsync(httpContext, ex);
             }
 
 
@@ -104,9 +111,9 @@ namespace CarCare.Apis.Middlewares
                     httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     httpContext.Response.ContentType = "application/json";
 
-                 await   httpContext.Response.WriteAsync(response.ToString());
-                    
-                    
+                    await httpContext.Response.WriteAsync(response.ToString());
+
+
                     break;
             }
 

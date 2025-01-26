@@ -1,15 +1,17 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
+using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
 {
-
+    [Authorize(Roles = Roles.Admin)]
     public class DashBoardController(IServiceManager serviceManager) : BaseApiController
     {
 
@@ -39,7 +41,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             var result = await serviceManager.AuthService.UpdateRole(id, roleDto);
             return Ok(result);
         }
-
+        [AllowAnonymous]
         [HttpGet("GetUsers")]
         public async Task<ActionResult> GetUsers()
         {
@@ -53,7 +55,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             var result = await serviceManager.AuthService.CreateUser(createUserDro);
             return Ok(result);
         }
-
+        [AllowAnonymous]
         [HttpGet("GetUser/{id}")]
         public async Task<ActionResult<UserRoleViewModel>> GetUser([FromRoute] string id)
         {
@@ -75,7 +77,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             return Ok(result);
         }
 
-
+        [AllowAnonymous]
         [HttpGet("GetTechnicals")]
         public async Task<ActionResult> GetTechnicals()
         {
@@ -89,6 +91,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             var result = await serviceManager.AuthService.CreateTech(createTechnicalDto);
             return Ok(result);
         }
+        [AllowAnonymous]
 
         [HttpGet("GetTechnical/{id}")]
         public async Task<ActionResult<TechRoleViewModel>> GetTech([FromRoute] string id)
