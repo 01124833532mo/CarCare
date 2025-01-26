@@ -1,5 +1,6 @@
 ﻿using CarCare.Core.Application.Mapping;
 using CarCare.Core.Application.Services;
+using CarCare.Core.Application.Services.SendServices;
 using CarCare.Core.Application.Services.SMS;
 using CarCare.Shared.AppSettings;
 using CareCare.Core.Application.Abstraction;
@@ -31,6 +32,8 @@ namespace CarCare.Core.Application
 			services.Configure<SMSSettings>(configuration.GetSection("SMSSettings"));
 			services.AddTransient(typeof(ISMSServices), typeof(SMSServices));
 
+			services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+			services.AddTransient(typeof(IEmailServices), typeof(EmailService));
 
 			services.AddAutoMapper(typeof(MappingProfile));
 

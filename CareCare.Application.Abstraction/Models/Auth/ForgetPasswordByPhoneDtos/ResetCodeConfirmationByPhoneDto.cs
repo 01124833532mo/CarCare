@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 
 namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword
 {
-	public class ResetPasswordDto : ForgetPasswordDto
+	public class ResetCodeConfirmationByPhoneDto : ForgetPasswordByPhoneDto
 	{
+
 		[Required]
-		public required string NewPassword { get; set; }
+		public required int ResetCode { get; set; }
 	}
 }
