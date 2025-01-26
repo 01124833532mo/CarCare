@@ -21,8 +21,10 @@ namespace CarCare.Core.Domain.Entities.Identity
         public int? PhoneConfirmResetCode { get; set; }
         public DateTime? PhoneConfirmResetCodeExpiry { get; set; }
 
+		public int? EmailConfirmResetCode { get; set; }
+		public DateTime? EmailConfirmResetCodeExpiry { get; set; }
 
-        public virtual ICollection<FeedBack>? FeedBacks { get; set; } = new HashSet<FeedBack>();
+		public virtual ICollection<FeedBack>? FeedBacks { get; set; } = new HashSet<FeedBack>();
         public virtual ICollection<Vehicle>? Vehicles { get; set; } = new HashSet<Vehicle>();
 
         public int? ServiceId { get; set; }

@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword
+namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPasswordByEmailDtos
 {
-	public class ResetCodeConfirmationDto : ForgetPasswordDto
+	public class ResetCodeConfirmationByEmailDto : ForgetPasswordByEmailDto
 	{
-
 		[Required]
 		public required int ResetCode { get; set; }
 	}

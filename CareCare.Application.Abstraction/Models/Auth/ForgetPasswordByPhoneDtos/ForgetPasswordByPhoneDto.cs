@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword
 {
-	public class ForgetPasswordDto
+	public class ForgetPasswordByPhoneDto
 	{
 		[Required]
 		public required string PhoneNumber { get; set; }

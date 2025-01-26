@@ -4,6 +4,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.ForgetPassword;
+using CareCare.Core.Application.Abstraction.Models.Auth.ForgetPasswordByEmailDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
@@ -13,6 +14,7 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 {
 	public interface IAuthService
 	{
+		#region Role
 
 		Task<IEnumerable<RolesToReturn>> GetRolesAsync();
 
@@ -22,10 +24,19 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
 		Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
 
+		#endregion
+
+
+		#region Sign (in-up)
+
 		Task<BaseUserDto> LoginAsync(LoginDto loginDto);
 		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);
 		Task<TechDto> RegisterTechAsync(TechRegisterDto userRegisterDto);
 
+		#endregion
+
+
+		#region Dashboard
 		Task<IEnumerable<UserViewModel>> GetAllUsers();
 		Task<UserDto> CreateUser(CreateUserDro createUserDro);
 
@@ -52,25 +63,40 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
 		Task<UserDto> GetCurrentAdmin(ClaimsPrincipal claims);
 
-		Task<ChangePasswordToReturn> ChangePasswordAsynce(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto);
+		Task<ChangePasswordToReturn> ChangePasswordAsync(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto);
 
 
 		Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
 
 		Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
 
-
-		Task<SuccessDto> ForgetPasswordAsync(ForgetPasswordDto forgetPasswordDto);
-
-
-		Task<SuccessDto> VerifyCodeAsync(ResetCodeConfirmationDto resetCode);
+		#endregion
 
 
-		Task<UserDto> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
+		#region Confirmation (Email - Phone)
 
-		Task<SuccessDto> ConfirmationCodeSendAsync(ForgetPasswordDto confirmationCodeDto);
+		Task<SuccessDto> ForgetPasswordByEmailasync(ForgetPasswordByEmailDto emailDto);
+
+		Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto);
+
+		Task<SuccessDto> VerifyCodeByEmailAsync(ResetCodeConfirmationByEmailDto resetCodeDto);
+
+		Task<SuccessDto> VerifyCodeByPhoneAsync(ResetCodeConfirmationByPhoneDto resetCode);
+
+		Task<UserDto> ResetPasswordByEmailAsync(ResetPasswordByEmailDto resetCodeDto);
+
+		Task<UserDto> ResetPasswordByPhoneAsync(ResetPasswordByPhoneDto resetPasswordDto);
+
+
+		Task<SuccessDto> ConfirmationCodeSendByEmailAsync(ForgetPasswordByEmailDto confirmationCodeDto);
+
+		Task<SuccessDto> ConfirmationCodeSendByPhoneAsync(ForgetPasswordByPhoneDto confirmationCodeDto);
+
+		Task<SuccessDto> ConfirmEmailAsync(ConfirmationEmailCodeDto codeDto);
 
 		Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto);
+
+		#endregion
 
 		Task<UserDto> UpdateUserByUser(ClaimsPrincipal claims, UpdateUserDto userDto);
 		Task<UserDto> UpdateTechByTech(ClaimsPrincipal claims, UpdateTechDto techDto);
