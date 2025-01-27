@@ -106,18 +106,18 @@ namespace CarCare.Core.Application.Services
         {
             var user = await userManager.Users.Where(u => u.PhoneNumber == loginDto.PhoneNumber).FirstOrDefaultAsync();
             if (user == null)
-                throw new UnAuthorizedExeption("Invalid Login");
+                throw new BadRequestExeption("Invalid Login");
 
             var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
 
-            //if (result.IsNotAllowed)
-            //	throw new UnAuthorizedExeption("Email is not Confirmed");
+			//if (result.IsNotAllowed)
+			//	throw new BadRequestExeption("Email is not Confirmed");
 
-            if (result.IsLockedOut)
-                throw new UnAuthorizedExeption("Email is Locked Out");
+			if (result.IsLockedOut)
+                throw new BadRequestExeption("Email is Locked Out");
 
             if (!result.Succeeded)
-                throw new UnAuthorizedExeption("Invalid Login");
+                throw new BadRequestExeption("Invalid Login");
 
 
             if (user.Type == Types.User)
@@ -223,7 +223,7 @@ namespace CarCare.Core.Application.Services
             var getphone = await userManager.Users.Where(u => u.PhoneNumber == tech.PhoneNumber).FirstOrDefaultAsync();
 
             if (getphone is not null && getphone.PhoneNumber == (techRegisterDto.PhoneNumber))
-                throw new UnAuthorizedExeption("Phone is Already Registered");
+                throw new BadRequestExeption("Phone is Already Registered");
 
             var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
 
@@ -551,7 +551,6 @@ namespace CarCare.Core.Application.Services
 
         }
 
-
         public async Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel)
         {
             var tech = await userManager.FindByIdAsync(id);
@@ -643,7 +642,6 @@ namespace CarCare.Core.Application.Services
 
             return mappedTech;
         }
-
 
         public async Task<UserDto> UpdateUserByUser(ClaimsPrincipal claims, UpdateUserDto userDto)
         {

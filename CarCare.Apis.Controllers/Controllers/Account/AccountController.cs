@@ -189,14 +189,14 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 
 		#region Update (User - Technical)
 
-		//[Authorize(Roles = Roles.User)]
+		[Authorize(Roles = Roles.User)]
 		[HttpPut("UpdateUser")]
 		public async Task<ActionResult> UpdateUserByUser([FromBody] UpdateUserDto updateUser)
 		{
 			var result = await serviceManager.AuthService.UpdateUserByUser(User, updateUser);
 			return Ok(result);
 		}
-		//[Authorize(Roles = Roles.Technical)]
+		[Authorize(Roles = Roles.Technical)]
 
 		[HttpPut("UpdateTech")]
 		public async Task<ActionResult> UpdateTechByTech([FromBody] UpdateTechDto updateTech)

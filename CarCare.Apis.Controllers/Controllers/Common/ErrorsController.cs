@@ -19,7 +19,7 @@ namespace LinkDev.Talabat.Apis.Controllers.Controllers.Common
             }
             else if (Code == (int)HttpStatusCode.Forbidden)
             {
-                var respnse = new ApiResponse((int)HttpStatusCode.Forbidden, $"the requested endpoint  is not Allowed");
+                var respnse = new ApiResponse((int)HttpStatusCode.Unauthorized, $"You Are Not Authorized");
                 return StatusCode(Code, respnse);
 
             }
