@@ -20,7 +20,7 @@ namespace LinkDev.Talabat.Apis.Controllers.Controllers.Common
             else if (Code == (int)HttpStatusCode.Forbidden)
             {
                 var respnse = new ApiResponse((int)HttpStatusCode.Unauthorized, $"You Are Not Authorized");
-                return StatusCode(Code, respnse);
+                return StatusCode((int)HttpStatusCode.Unauthorized, respnse);
 
             }
             else if (Code == (int)HttpStatusCode.MethodNotAllowed)

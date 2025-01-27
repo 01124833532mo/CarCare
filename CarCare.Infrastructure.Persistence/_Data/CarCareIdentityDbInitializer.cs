@@ -24,8 +24,6 @@ namespace CarCare.Infrastructure.Persistence._Data
             {
                 var user = new ApplicationUser
                 {
-                    Address = "Al3abody",
-                    BirthDate = new DateTime(),
                     UserName = "Mahmoud.Ahmed",
                     Email = "Mahmoud.Ahmed@gmail.com",
                     PhoneNumber = "01029442023",

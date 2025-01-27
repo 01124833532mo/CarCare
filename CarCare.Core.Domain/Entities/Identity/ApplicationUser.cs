@@ -10,8 +10,8 @@ namespace CarCare.Core.Domain.Entities.Identity
     {
         public override string UserName { get; set; }
 
-        public DateTime? BirthDate { get; set; }
-        public string? Address { get; set; }
+
+
 
         [Length(14, 14)]
         public string? NationalId { get; set; }
@@ -21,10 +21,10 @@ namespace CarCare.Core.Domain.Entities.Identity
         public int? PhoneConfirmResetCode { get; set; }
         public DateTime? PhoneConfirmResetCodeExpiry { get; set; }
 
-		public int? EmailConfirmResetCode { get; set; }
-		public DateTime? EmailConfirmResetCodeExpiry { get; set; }
+        public int? EmailConfirmResetCode { get; set; }
+        public DateTime? EmailConfirmResetCodeExpiry { get; set; }
 
-		public virtual ICollection<FeedBack>? FeedBacks { get; set; } = new HashSet<FeedBack>();
+        public virtual ICollection<FeedBack>? FeedBacks { get; set; } = new HashSet<FeedBack>();
         public virtual ICollection<Vehicle>? Vehicles { get; set; } = new HashSet<Vehicle>();
 
         public int? ServiceId { get; set; }

@@ -110,10 +110,10 @@ namespace CarCare.Core.Application.Services
 
             var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
 
-			//if (result.IsNotAllowed)
-			//	throw new BadRequestExeption("Email is not Confirmed");
+            //if (result.IsNotAllowed)
+            //	throw new BadRequestExeption("Email is not Confirmed");
 
-			if (result.IsLockedOut)
+            if (result.IsLockedOut)
                 throw new BadRequestExeption("Email is Locked Out");
 
             if (!result.Succeeded)
@@ -663,7 +663,6 @@ namespace CarCare.Core.Application.Services
 
             user.PhoneNumber = userDto.PhoneNumber;
             user.UserName = userDto.UserName!;
-            user.Address = userDto.Address;
 
 
             var result = await userManager.UpdateAsync(user);
@@ -706,7 +705,6 @@ namespace CarCare.Core.Application.Services
 
             user.PhoneNumber = techDto.PhoneNumber;
             user.UserName = techDto.UserName!;
-            user.Address = techDto.Address;
             user.NationalId = techDto.NationalId;
 
 
