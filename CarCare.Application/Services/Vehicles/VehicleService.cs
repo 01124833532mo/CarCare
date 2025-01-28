@@ -1,0 +1,50 @@
+﻿using AutoMapper;
+using CarCare.Core.Domain.Contracts.Persistence;
+using CarCare.Core.Domain.Entities.Identity;
+using CarCare.Core.Domain.Entities.Vehicles;
+using CarCare.Shared.ErrorModoule.Exeptions;
+using CareCare.Core.Application.Abstraction.Models.Vehicles;
+using CareCare.Core.Application.Abstraction.Services.Vehicles;
+using Microsoft.AspNetCore.Identity;
+
+namespace CarCare.Core.Application.Services.Vehicles
+{
+    public class VehicleService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IVehicleService
+    {
+        public async Task<CreateVehicleToReturn> CreateVehicle(CreateVehicleDto createVehicleDto)
+        {
+
+            var checkPlateNumber = await _unitOfWork.VehicleRepository.CheckPlateNumberExist(createVehicleDto.PlateNumber);
+
+            if (checkPlateNumber is true) throw new BadRequestExeption("The PlateNumber Already Exsists Please Enter Anthor One");
+
+            var checkVinNumber = await _unitOfWork.VehicleRepository.CheckVINNumberExist(createVehicleDto.VIN_Number);
+
+            if (checkVinNumber is true) throw new BadRequestExeption("The Vin Number Already Exsists Please Enter Anthor One");
+
+            var mappedresult = _mapper.Map<Vehicle>(createVehicleDto);
+
+
+            var AddResult = _unitOfWork.GetRepository<Vehicle, int>().AddAsync(mappedresult);
+            if (AddResult is null) throw new BadRequestExeption("Operation Not Succeded");
+
+            var Created = await _unitOfWork.CompleteAsync() > 0;
+
+            if (!Created) throw new BadRequestExeption("an error has occured during creating the Vehicle");
+
+
+            var resultToReturn = _mapper.Map<CreateVehicleToReturn>(mappedresult);
+
+            var FullNameUser = await userManager.FindByIdAsync(resultToReturn.UserId);
+
+            if (FullNameUser == null)
+            {
+                throw new BadRequestExeption("User not found");
+            }
+
+            resultToReturn.FullName = FullNameUser.FullName;
+            return resultToReturn;
+
+        }
+    }
+}

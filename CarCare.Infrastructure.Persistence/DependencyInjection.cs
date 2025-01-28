@@ -1,8 +1,10 @@
 ﻿using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Contracts.Persistence.DbInitializers;
+using CarCare.Core.Domain.Contracts.Persistence.Vehicles;
 using CarCare.Infrastructure.Persistence._Data;
 using CarCare.Infrastructure.Persistence._Data.Interceptors;
 using CarCare.Infrastructure.Persistence.Generic_Repository;
+using CarCare.Infrastructure.Persistence.Repositories.Vehicles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,8 @@ namespace CarCare.Infrastructure.Persistence
 
 
             services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+            services.AddScoped(typeof(IVehicleRepository), typeof(VehicleRepository));
+
             services.AddScoped(typeof(IUnitOfWork), typeof(UniteOfWork.UnitOfWork));
 
             return services;

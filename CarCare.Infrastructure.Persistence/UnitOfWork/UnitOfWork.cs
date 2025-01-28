@@ -1,7 +1,9 @@
 ﻿using CarCare.Core.Domain.Common;
 using CarCare.Core.Domain.Contracts.Persistence;
+using CarCare.Core.Domain.Contracts.Persistence.Vehicles;
 using CarCare.Infrastructure.Persistence._Data;
 using CarCare.Infrastructure.Persistence.Generic_Repository;
+using CarCare.Infrastructure.Persistence.Repositories.Vehicles;
 using System.Collections.Concurrent;
 
 namespace CarCare.Infrastructure.Persistence.UnitOfWork
@@ -11,12 +13,16 @@ namespace CarCare.Infrastructure.Persistence.UnitOfWork
 
         private readonly ConcurrentDictionary<string, object> _repositories;
         private readonly CarCarIdentityDbContext _dbContext;
+        private readonly Lazy<IVehicleRepository> _vehicleRepository;
 
         public UnitOfWork(CarCarIdentityDbContext dbContext)
         {
             _repositories = new ConcurrentDictionary<string, object>();
             _dbContext = dbContext;
+            _vehicleRepository = new Lazy<IVehicleRepository>(() => new VehicleRepository(dbContext));
         }
+
+        public IVehicleRepository VehicleRepository => _vehicleRepository.Value;
 
         public async Task<int> CompleteAsync()
         {
