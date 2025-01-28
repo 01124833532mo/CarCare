@@ -1,13 +1,10 @@
 using CarCare.Apis.Extinsions;
 using CarCare.Apis.Middlewares;
 using CarCare.Core.Application;
-using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Infrastructure;
 using CarCare.Infrastructure.Persistence;
 using CarCare.Shared.ErrorModoule.Errors;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace CarCare.Apis
 {
@@ -43,23 +40,7 @@ namespace CarCare.Apis
             builder.Services.AddIdentityServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
-            builder.Services.AddScoped<UserManager<ApplicationUser>>(provider =>
-            {
-                var options = provider.GetRequiredService<IOptions<IdentityOptions>>();
-                var userManager = new UserManager<ApplicationUser>(
-                    provider.GetRequiredService<IUserStore<ApplicationUser>>(),
-                    options,
-                    provider.GetRequiredService<IPasswordHasher<ApplicationUser>>(),
-                    new List<IUserValidator<ApplicationUser>>(), // Remove default validators
-                    new List<IPasswordValidator<ApplicationUser>>(),
-                    provider.GetRequiredService<ILookupNormalizer>(),
-                    provider.GetRequiredService<IdentityErrorDescriber>(),
-                    provider.GetRequiredService<IServiceProvider>(),
-                    provider.GetRequiredService<ILogger<UserManager<ApplicationUser>>>()
-                );
 
-                return userManager;
-            });
 
             var app = builder.Build();
 
