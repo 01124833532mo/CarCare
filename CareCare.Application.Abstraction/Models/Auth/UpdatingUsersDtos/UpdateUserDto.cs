@@ -8,5 +8,6 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos
 {
 	public class UpdateUserDto : BaseUpdateDto
 	{
+		public required string Email { get; set; }
 	}
 }
