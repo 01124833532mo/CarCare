@@ -8,9 +8,7 @@ namespace CarCare.Core.Domain.Entities.Identity
 {
     public class ApplicationUser : IdentityUser
     {
-        public string FullName { get; set; }
-
-
+        public required string FullName { get; set; }
 
 
         [Length(14, 14)]

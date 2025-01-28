@@ -1,4 +1,4 @@
-﻿using CarCare.Core.Application.Services;
+﻿using CarCare.Core.Application.Services.Auth;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Infrastructure.Persistence._Data;
 using CareCare.Core.Application.Abstraction.Models.Auth;
@@ -10,7 +10,7 @@ using System.Text;
 
 namespace CarCare.Apis.Extinsions
 {
-    public static class IdentityExtension
+	public static class IdentityExtension
     {
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {

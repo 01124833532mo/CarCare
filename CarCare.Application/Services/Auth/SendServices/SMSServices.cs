@@ -11,7 +11,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 
-namespace CarCare.Core.Application.Services.SMS
+namespace CarCare.Core.Application.Services.Auth.SendServices
 {
 	public class SMSServices(IOptions<SMSSettings> smsSettings) : ISMSServices
 	{

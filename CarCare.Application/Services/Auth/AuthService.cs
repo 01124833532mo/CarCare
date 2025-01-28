@@ -25,7 +25,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CarCare.Core.Application.Services
+namespace CarCare.Core.Application.Services.Auth
 {
 
 	public class AuthService(
@@ -114,64 +114,65 @@ namespace CarCare.Core.Application.Services
 				throw new BadRequestExeption("Email is not Confirmed");
 
 			if (result.IsLockedOut)
-                throw new BadRequestExeption("Email is Locked Out");
+				throw new BadRequestExeption("Email is Locked Out");
 
 			if (!result.Succeeded)
 				throw new BadRequestExeption("Invalid Login");
 
 
-            if (user.Type == Types.User)
-            {
-                var response = new UserDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName,
-                    PhoneNumber = user.PhoneNumber!,
-                    Email = user.Email!,
-                    Type = user.Type.ToString(),
-                    Token = await GenerateTokenAsync(user)
-                };
-                await CheckRefreshToken(userManager, user, response);
+			if (user.Type == Types.User)
+			{
+				var response = new UserDto
+				{
+					Id = user.Id,
+					FullName = user.FullName,
+					PhoneNumber = user.PhoneNumber!,
+					Email = user.Email!,
+					Type = user.Type.ToString(),
+					Token = await GenerateTokenAsync(user)
+				};
+				await CheckRefreshToken(userManager, user, response);
 
-                return response;
-            }
-            else
-            {
-                var response = new TechDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName!,
-                    PhoneNumber = user.PhoneNumber!,
-                    Email = user.Email!,
-                    NationalId = user.NationalId!,
-                    Type = user.Type.ToString(),
-                    Token = await GenerateTokenAsync(user)
-                };
-                await CheckRefreshToken(userManager, user, response);
+				return response;
+			}
+			else
+			{
+				var response = new TechDto
+				{
+					Id = user.Id,
+					FullName = user.FullName!,
+					PhoneNumber = user.PhoneNumber!,
+					Email = user.Email!,
+					NationalId = user.NationalId!,
+					Type = user.Type.ToString(),
+					Token = await GenerateTokenAsync(user)
+				};
+				await CheckRefreshToken(userManager, user, response);
 
 				return response;
 			}
 		}
 
 
-        public async Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto)
-        {
-            var user = new ApplicationUser
-            {
-                PhoneNumber = userRegisterDto.PhoneNumber,
-                UserName = userRegisterDto.UserName,
-                Type = userRegisterDto.Type,
-                Email = userRegisterDto.Email,
-            };
+		public async Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto)
+		{
+			var user = new ApplicationUser
+			{
+				PhoneNumber = userRegisterDto.PhoneNumber,
+				FullName = userRegisterDto.FullName,
+				Type = userRegisterDto.Type,
+				Email = userRegisterDto.Email,
+				UserName = userRegisterDto.Email
+			};
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == user.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (userRegisterDto.PhoneNumber))
+			if (getphone is not null && getphone.PhoneNumber == userRegisterDto.PhoneNumber)
 				throw new BadRequestExeption("Phone is Already Registered");
 
 			var getmail = await userManager.Users.Where(U => U.Email == user.Email).FirstOrDefaultAsync();
 
-			if (getmail is not null && getmail.Email == (userRegisterDto.Email))
+			if (getmail is not null && getmail.Email == userRegisterDto.Email)
 				throw new BadRequestExeption("Email is Already Registered");
 
 
@@ -196,16 +197,16 @@ namespace CarCare.Core.Application.Services
 				ExpireOn = refresktoken.ExpireOn
 			});
 
-            var respone = new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                PhoneNumber = user.PhoneNumber,
-                Email = user.Email,
-                Type = user.Type.ToString(),
-                Token = await GenerateTokenAsync(user),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
+			var respone = new UserDto
+			{
+				Id = user.Id,
+				FullName = user.FullName,
+				PhoneNumber = user.PhoneNumber,
+				Email = user.Email,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+				RefreshToken = refresktoken.Token,
+				RefreshTokenExpirationDate = refresktoken.ExpireOn
 
 			};
 			return respone;
@@ -215,21 +216,22 @@ namespace CarCare.Core.Application.Services
 		public async Task<TechDto> RegisterTechAsync(TechRegisterDto techRegisterDto)
 		{
 
-            var tech = new ApplicationUser
-            {
-                UserName = techRegisterDto.UserName,
-                PhoneNumber = techRegisterDto.PhoneNumber,
-                Email = techRegisterDto.Email,
-                NationalId = techRegisterDto.NationalId,
-                Type = techRegisterDto.Type,
-            };
+			var tech = new ApplicationUser
+			{
+				FullName = techRegisterDto.FullName,
+				PhoneNumber = techRegisterDto.PhoneNumber,
+				Email = techRegisterDto.Email,
+				UserName = techRegisterDto.Email,
+				NationalId = techRegisterDto.NationalId,
+				Type = techRegisterDto.Type,
+			};
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == tech.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (techRegisterDto.PhoneNumber))
+			if (getphone is not null && getphone.PhoneNumber == techRegisterDto.PhoneNumber)
 				throw new BadRequestExeption("Phone is Already Registered");
 
-            var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
+			var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
 
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
@@ -254,20 +256,20 @@ namespace CarCare.Core.Application.Services
 				ExpireOn = refresktoken.ExpireOn
 			});
 
-            var response = new TechDto
-            {
-                Id = tech.Id,
-                Email = techRegisterDto.Email,
-                UserName = techRegisterDto.UserName,
-                PhoneNumber = techRegisterDto.PhoneNumber,
-                NationalId = techRegisterDto.NationalId,
-                Type = techRegisterDto.Type.ToString(),
-                Token = await GenerateTokenAsync(tech),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
-            };
-            return response;
-        }
+			var response = new TechDto
+			{
+				Id = tech.Id,
+				Email = techRegisterDto.Email,
+				FullName = techRegisterDto.FullName,
+				PhoneNumber = techRegisterDto.PhoneNumber,
+				NationalId = techRegisterDto.NationalId,
+				Type = techRegisterDto.Type.ToString(),
+				Token = await GenerateTokenAsync(tech),
+				RefreshToken = refresktoken.Token,
+				RefreshTokenExpirationDate = refresktoken.ExpireOn
+			};
+			return response;
+		}
 
 
 		#endregion
@@ -278,16 +280,16 @@ namespace CarCare.Core.Application.Services
 		public async Task<IEnumerable<UserViewModel>> GetAllUsers()
 		{
 
-            var users = await userManager.Users.Where(u => u.Type == Types.User)
-    .Select(u => new UserViewModel
-    {
-        Id = u.Id,
-        UserName = u.UserName!,
-        PhoneNumber = u.PhoneNumber!,
-        Email = u.Email!,
-        Type = u.Type.ToString()
-    })
-    .ToListAsync();
+			var users = await userManager.Users.Where(u => u.Type == Types.User)
+	.Select(u => new UserViewModel
+	{
+		Id = u.Id,
+		FullName = u.FullName!,
+		PhoneNumber = u.PhoneNumber!,
+		Email = u.Email!,
+		Type = u.Type.ToString()
+	})
+	.ToListAsync();
 
 			foreach (var user in users)
 			{
@@ -299,15 +301,15 @@ namespace CarCare.Core.Application.Services
 
 		}
 
-        public async Task<UserDto> CreateUser(CreateUserDro createUserDro)
-        {
-            var user = new ApplicationUser
-            {
-                UserName = createUserDro.Name,
-                PhoneNumber = createUserDro.PhoneNumber,
-                Type = createUserDro.Type,
-                Email = createUserDro.Email
-            };
+		public async Task<UserDto> CreateUser(CreateUserDro createUserDro)
+		{
+			var user = new ApplicationUser
+			{
+				FullName = createUserDro.Name,
+				PhoneNumber = createUserDro.PhoneNumber,
+				Type = createUserDro.Type,
+				Email = createUserDro.Email
+			};
 
 			var getphone = await userManager.Users
 				.Where(u => u.PhoneNumber == user.PhoneNumber)
@@ -342,42 +344,42 @@ namespace CarCare.Core.Application.Services
 
 			await userManager.UpdateAsync(user);
 
-            var response = new UserDto
-            {
-                Id = user.Id,
-                PhoneNumber = user.PhoneNumber,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                UserName = user.UserName,
-                Token = await GenerateTokenAsync(user),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
+			var response = new UserDto
+			{
+				Id = user.Id,
+				PhoneNumber = user.PhoneNumber,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				FullName = user.FullName,
+				Token = await GenerateTokenAsync(user),
+				RefreshToken = refresktoken.Token,
+				RefreshTokenExpirationDate = refresktoken.ExpireOn
 
 			};
 
 			return response;
 		}
 
-        public async Task<UserRoleViewModel> GetUser(string id)
-        {
-            var user = await userManager.FindByIdAsync(id);
-            if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
-            var allRoles = await roleManager.Roles.ToListAsync();
-            var viewModel = new UserRoleViewModel()
-            {
-                Id = user.Id,
-                Name = user.UserName!,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Roles = allRoles.Select(
-                    r => new RoleDto()
-                    {
-                        Id = r.Id,
-                        Name = r.Name!,
-                        IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
-                    }).Where(u => u.IsSelected == true).ToList()
-            };
+		public async Task<UserRoleViewModel> GetUser(string id)
+		{
+			var user = await userManager.FindByIdAsync(id);
+			if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
+			var allRoles = await roleManager.Roles.ToListAsync();
+			var viewModel = new UserRoleViewModel()
+			{
+				Id = user.Id,
+				Name = user.FullName!,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Roles = allRoles.Select(
+					r => new RoleDto()
+					{
+						Id = r.Id,
+						Name = r.Name!,
+						IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
+					}).Where(u => u.IsSelected == true).ToList()
+			};
 
 			return viewModel;
 		}
@@ -430,12 +432,12 @@ namespace CarCare.Core.Application.Services
 			var usertoreturn = new UserRoleViewModel()
 			{
 
-                Id = user.Id,
-                Name = user.UserName!,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Roles = ExistedRoles
+				Id = user.Id,
+				Name = user.FullName!,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Roles = ExistedRoles
 
 			};
 
@@ -448,12 +450,12 @@ namespace CarCare.Core.Application.Services
 			var techs = await userManager.Users.Where(u => u.Type == Types.Technical)
    .Select(u => new TechViewModel
    {
-       Id = u.Id,
-       UserName = u.UserName!,
-       PhoneNumber = u.PhoneNumber!,
-       Email = u.Email!,
-       NationalId = u.NationalId!,
-       Type = u.Type.ToString()
+	   Id = u.Id,
+	   FullName = u.FullName!,
+	   PhoneNumber = u.PhoneNumber!,
+	   Email = u.Email!,
+	   NationalId = u.NationalId!,
+	   Type = u.Type.ToString()
    })
    .ToListAsync();
 
@@ -466,16 +468,16 @@ namespace CarCare.Core.Application.Services
 			return techs;
 		}
 
-        public async Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto)
-        {
-            var user = new ApplicationUser
-            {
-                UserName = createTechnicalDto.Name,
-                PhoneNumber = createTechnicalDto.PhoneNumber,
-                Type = createTechnicalDto.Type,
-                Email = createTechnicalDto.Email,
-                NationalId = createTechnicalDto.NationalId,
-            };
+		public async Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto)
+		{
+			var user = new ApplicationUser
+			{
+				FullName = createTechnicalDto.Name,
+				PhoneNumber = createTechnicalDto.PhoneNumber,
+				Type = createTechnicalDto.Type,
+				Email = createTechnicalDto.Email,
+				NationalId = createTechnicalDto.NationalId,
+			};
 
 			var getphone = await userManager.Users
 				.Where(u => u.PhoneNumber == user.PhoneNumber)
@@ -507,43 +509,43 @@ namespace CarCare.Core.Application.Services
 
 			await userManager.UpdateAsync(user);
 
-            var response = new TechDto
-            {
-                Id = user.Id,
-                PhoneNumber = user.PhoneNumber,
-                Type = user.Type.ToString(),
-                UserName = user.UserName,
-                Email = user.Email,
-                NationalId = user.NationalId,
-                Token = await GenerateTokenAsync(user),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
-            };
+			var response = new TechDto
+			{
+				Id = user.Id,
+				PhoneNumber = user.PhoneNumber,
+				Type = user.Type.ToString(),
+				FullName = user.FullName,
+				Email = user.Email,
+				NationalId = user.NationalId,
+				Token = await GenerateTokenAsync(user),
+				RefreshToken = refresktoken.Token,
+				RefreshTokenExpirationDate = refresktoken.ExpireOn
+			};
 
 			return response;
 		}
 
-        public async Task<TechRoleViewModel> GetTechnical(string id)
-        {
-            var tech = await userManager.FindByIdAsync(id);
-            if (tech is null) throw new NotFoundExeption("This Technical Not Found", nameof(id));
-            var allRoles = await roleManager.Roles.ToListAsync();
-            var viewModel = new TechRoleViewModel()
-            {
-                Id = tech.Id,
-                Name = tech.UserName!,
-                PhoneNumber = tech.PhoneNumber!,
-                Email = tech.Email!,
-                NationalId = tech.NationalId!,
-                Type = tech.Type.ToString(),
-                Roles = allRoles.Select(
-                    r => new RoleDto()
-                    {
-                        Id = r.Id,
-                        Name = r.Name!,
-                        IsSelected = userManager.IsInRoleAsync(tech, r.Name!).Result
-                    }).Where(u => u.IsSelected == true).ToList()
-            };
+		public async Task<TechRoleViewModel> GetTechnical(string id)
+		{
+			var tech = await userManager.FindByIdAsync(id);
+			if (tech is null) throw new NotFoundExeption("This Technical Not Found", nameof(id));
+			var allRoles = await roleManager.Roles.ToListAsync();
+			var viewModel = new TechRoleViewModel()
+			{
+				Id = tech.Id,
+				Name = tech.FullName!,
+				PhoneNumber = tech.PhoneNumber!,
+				Email = tech.Email!,
+				NationalId = tech.NationalId!,
+				Type = tech.Type.ToString(),
+				Roles = allRoles.Select(
+					r => new RoleDto()
+					{
+						Id = r.Id,
+						Name = r.Name!,
+						IsSelected = userManager.IsInRoleAsync(tech, r.Name!).Result
+					}).Where(u => u.IsSelected == true).ToList()
+			};
 
 			return viewModel;
 		}
@@ -592,13 +594,13 @@ namespace CarCare.Core.Application.Services
 			var usertoreturn = new TechRoleViewModel()
 			{
 
-                Id = tech.Id,
-                Name = tech.UserName!,
-                PhoneNumber = tech.PhoneNumber!,
-                Email = tech.Email!,
-                NationalId = tech.NationalId!,
-                Type = tech.Type.ToString(),
-                Roles = ExistedRoles,
+				Id = tech.Id,
+				Name = tech.FullName!,
+				PhoneNumber = tech.PhoneNumber!,
+				Email = tech.Email!,
+				NationalId = tech.NationalId!,
+				Type = tech.Type.ToString(),
+				Roles = ExistedRoles,
 
 			};
 
@@ -670,13 +672,13 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == userDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (userDto.PhoneNumber) && userDto.PhoneNumber != user.PhoneNumber)
+			if (getphone is not null && getphone.PhoneNumber == userDto.PhoneNumber && userDto.PhoneNumber != user.PhoneNumber)
 				throw new UnAuthorizedExeption("Phone is Already Registered");
 
 
-            user.PhoneNumber = userDto.PhoneNumber;
-            user.UserName = userDto.UserName!;
-            user.Address = userDto.Address;
+			user.PhoneNumber = userDto.PhoneNumber;
+			user.FullName = userDto.FullName!;
+			user.Email = userDto.Email;
 
 
 			var result = await userManager.UpdateAsync(user);
@@ -685,16 +687,16 @@ namespace CarCare.Core.Application.Services
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-            var respone = new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName!,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Token = await GenerateTokenAsync(user),
-            };
-            return respone;
+			var respone = new UserDto
+			{
+				Id = user.Id,
+				FullName = user.FullName!,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
+			return respone;
 
 
 		}
@@ -713,14 +715,14 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == techDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (techDto.PhoneNumber) && techDto.PhoneNumber != user.PhoneNumber)
+			if (getphone is not null && getphone.PhoneNumber == techDto.PhoneNumber && techDto.PhoneNumber != user.PhoneNumber)
 				throw new UnAuthorizedExeption("Phone is Already Registered");
 
 
-            user.PhoneNumber = techDto.PhoneNumber;
-            user.UserName = techDto.UserName!;
-            user.Address = techDto.Address;
-            user.NationalId = techDto.NationalId;
+			user.PhoneNumber = techDto.PhoneNumber;
+			user.FullName = techDto.FullName!;
+			user.Email = techDto.Email;
+			user.NationalId = techDto.NationalId;
 
 
 			var result = await userManager.UpdateAsync(user);
@@ -729,16 +731,16 @@ namespace CarCare.Core.Application.Services
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-            var respone = new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName!,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Token = await GenerateTokenAsync(user),
-            };
-            return respone;
+			var respone = new UserDto
+			{
+				Id = user.Id,
+				FullName = user.FullName!,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
+			return respone;
 
 
 		}
@@ -791,38 +793,38 @@ namespace CarCare.Core.Application.Services
 
 
 
-        private async Task<BaseUserDto> UserReturn(ApplicationUser? user, RefreshToken newrefreshtoken)
-        {
-            if (user.Type == Types.User)
-            {
-                var response = new UserDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName!,
-                    PhoneNumber = user.PhoneNumber!,
-                    Email = user.Email!,
-                    Type = user.Type.ToString(),
-                    Token = await GenerateTokenAsync(user),
-                    RefreshToken = newrefreshtoken.Token,
-                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
-                };
+		private async Task<BaseUserDto> UserReturn(ApplicationUser? user, RefreshToken newrefreshtoken)
+		{
+			if (user.Type == Types.User)
+			{
+				var response = new UserDto
+				{
+					Id = user.Id,
+					FullName = user.FullName!,
+					PhoneNumber = user.PhoneNumber!,
+					Email = user.Email!,
+					Type = user.Type.ToString(),
+					Token = await GenerateTokenAsync(user),
+					RefreshToken = newrefreshtoken.Token,
+					RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+				};
 
-                return response;
-            }
-            else
-            {
-                var response = new TechDto
-                {
-                    Id = user.Id,
-                    UserName = user.UserName!,
-                    Email = user.Email!,
-                    NationalId = user.NationalId!,
-                    PhoneNumber = user.PhoneNumber!,
-                    Type = user.Type.ToString(),
-                    Token = await GenerateTokenAsync(user),
-                    RefreshToken = newrefreshtoken.Token,
-                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
-                };
+				return response;
+			}
+			else
+			{
+				var response = new TechDto
+				{
+					Id = user.Id,
+					FullName = user.FullName!,
+					Email = user.Email!,
+					NationalId = user.NationalId!,
+					PhoneNumber = user.PhoneNumber!,
+					Type = user.Type.ToString(),
+					Token = await GenerateTokenAsync(user),
+					RefreshToken = newrefreshtoken.Token,
+					RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+				};
 
 				return response;
 			}
@@ -846,33 +848,33 @@ namespace CarCare.Core.Application.Services
 
 			IEnumerable<Claim> claims;
 
-            if (user.Type == Types.Technical)
-            {
-                claims = new List<Claim>()
-                {
-                new Claim(ClaimTypes.PrimarySid,user.Id),
-                new Claim(ClaimTypes.Email,user.Email!),
-                new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
-                new Claim("Type",user.Type.ToString()),
-                new Claim("NationalId",user.NationalId!)
-                }
-               .Union(userClaims)
-               .Union(rolesAsClaims);
-            }
-            else
-            {
-                claims = new List<Claim>()
-                {
-                new Claim(ClaimTypes.PrimarySid,user.Id),
-                new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
-                new Claim(ClaimTypes.Email,user.Email!),
-                new Claim("Type",user.Type.ToString()),
-                }
-               .Union(userClaims)
-               .Union(rolesAsClaims);
-            }
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+			if (user.Type == Types.Technical)
+			{
+				claims = new List<Claim>()
+				{
+				new Claim(ClaimTypes.PrimarySid,user.Id),
+				new Claim(ClaimTypes.Email,user.Email!),
+				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
+				new Claim("Type",user.Type.ToString()),
+				new Claim("NationalId",user.NationalId!)
+				}
+			   .Union(userClaims)
+			   .Union(rolesAsClaims);
+			}
+			else
+			{
+				claims = new List<Claim>()
+				{
+				new Claim(ClaimTypes.PrimarySid,user.Id),
+				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
+				new Claim(ClaimTypes.Email,user.Email!),
+				new Claim("Type",user.Type.ToString()),
+				}
+			   .Union(userClaims)
+			   .Union(rolesAsClaims);
+			}
+			var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+			var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
 			var tokenObj = new JwtSecurityToken(
 
@@ -1149,15 +1151,15 @@ namespace CarCare.Core.Application.Services
 			if (!newPass.Succeeded)
 				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-            var mappedUser = new UserDto
-            {
-                UserName = user.UserName!,
-                Id = user.Id,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Token = await GenerateTokenAsync(user),
-            };
+			var mappedUser = new UserDto
+			{
+				FullName = user.FullName!,
+				Id = user.Id,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
 
 			return mappedUser;
 		}
@@ -1180,15 +1182,15 @@ namespace CarCare.Core.Application.Services
 			if (!newPassword.Succeeded)
 				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-            var mappedUser = new UserDto
-            {
-                UserName = user.UserName!,
-                Id = user.Id,
-                PhoneNumber = user.PhoneNumber!,
-                Email = user.Email!,
-                Type = user.Type.ToString(),
-                Token = await GenerateTokenAsync(user),
-            };
+			var mappedUser = new UserDto
+			{
+				FullName = user.FullName!,
+				Id = user.Id,
+				PhoneNumber = user.PhoneNumber!,
+				Email = user.Email!,
+				Type = user.Type.ToString(),
+				Token = await GenerateTokenAsync(user),
+			};
 
 			return mappedUser;
 		}
