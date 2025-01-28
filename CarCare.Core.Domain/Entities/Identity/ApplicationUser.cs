@@ -8,7 +8,7 @@ namespace CarCare.Core.Domain.Entities.Identity
 {
     public class ApplicationUser : IdentityUser
     {
-        public override string UserName { get; set; }
+        public string FullName { get; set; }
 
 
 

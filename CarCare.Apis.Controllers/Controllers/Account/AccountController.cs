@@ -48,7 +48,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 
         #region Role
 
-        [Authorize(Roles = Roles.User)]
+        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
         [HttpGet("GetCurrentUser")]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
@@ -57,7 +57,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account
         }
 
 
-        [Authorize(Roles = Roles.Technical)]
+        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
         [HttpGet("GetCurrentTechnical")]
         public async Task<ActionResult<TechDto>> GetCurrentTech()
         {

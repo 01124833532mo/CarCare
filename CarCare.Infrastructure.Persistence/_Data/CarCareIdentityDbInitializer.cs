@@ -20,20 +20,6 @@ namespace CarCare.Infrastructure.Persistence._Data
 
         public async Task SeedAsync()
         {
-            if (!dbContext.Users.Any())
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = "Mahmoud.Ahmed",
-                    Email = "Mahmoud.Ahmed@gmail.com",
-                    PhoneNumber = "01029442023",
-                    Type = Types.Technical,
-                    NationalId = "12345678909876",
-
-                };
-
-                await userManager.CreateAsync(user, "P@ssw0rd");
-            }
             if (!dbContext.Roles.Any())
             {
 
@@ -49,6 +35,23 @@ namespace CarCare.Infrastructure.Persistence._Data
 
 
             }
+            if (!dbContext.Users.Any())
+            {
+                var user = new ApplicationUser
+                {
+                    FullName = "Mahmoud.Ahmed",
+                    UserName = "Mahmoud.Ahmed@gmail.com",
+                    Email = "Mahmoud.Ahmed@gmail.com",
+                    PhoneNumber = "01029442023",
+                    Type = Types.Technical,
+                    NationalId = "12345678909876",
+
+                };
+
+                await userManager.CreateAsync(user, "01124833532");
+                await userManager.AddToRoleAsync(user, Roles.Admin);
+            }
+
         }
     }
 }

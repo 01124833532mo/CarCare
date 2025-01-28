@@ -125,7 +125,7 @@ namespace CarCare.Core.Application.Services
                 var response = new UserDto
                 {
                     Id = user.Id,
-                    UserName = user.UserName,
+                    FullName = user.FullName,
                     PhoneNumber = user.PhoneNumber!,
                     Email = user.Email!,
                     Type = user.Type.ToString(),
@@ -140,7 +140,7 @@ namespace CarCare.Core.Application.Services
                 var response = new TechDto
                 {
                     Id = user.Id,
-                    UserName = user.UserName!,
+                    FullName = user.FullName!,
                     PhoneNumber = user.PhoneNumber!,
                     Email = user.Email!,
                     NationalId = user.NationalId!,
@@ -159,7 +159,8 @@ namespace CarCare.Core.Application.Services
             var user = new ApplicationUser
             {
                 PhoneNumber = userRegisterDto.PhoneNumber,
-                UserName = userRegisterDto.UserName,
+                UserName = userRegisterDto.Email,
+                FullName = userRegisterDto.FullName,
                 Type = userRegisterDto.Type,
                 Email = userRegisterDto.Email,
             };
@@ -195,7 +196,7 @@ namespace CarCare.Core.Application.Services
             var respone = new UserDto
             {
                 Id = user.Id,
-                UserName = user.UserName,
+                FullName = user.FullName,
                 PhoneNumber = user.PhoneNumber,
                 Email = user.Email,
                 Type = user.Type.ToString(),
@@ -213,7 +214,8 @@ namespace CarCare.Core.Application.Services
 
             var tech = new ApplicationUser
             {
-                UserName = techRegisterDto.UserName,
+                UserName = techRegisterDto.Email,
+                FullName = techRegisterDto.FullName,
                 PhoneNumber = techRegisterDto.PhoneNumber,
                 Email = techRegisterDto.Email,
                 NationalId = techRegisterDto.NationalId,
@@ -224,6 +226,11 @@ namespace CarCare.Core.Application.Services
 
             if (getphone is not null && getphone.PhoneNumber == (techRegisterDto.PhoneNumber))
                 throw new BadRequestExeption("Phone is Already Registered");
+
+            var getmail = await userManager.Users.Where(U => U.Email == tech.Email).FirstOrDefaultAsync();
+
+            if (getmail is not null && getmail.Email == (techRegisterDto.Email))
+                throw new BadRequestExeption("Email is Already Registered");
 
             var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
 
@@ -245,7 +252,7 @@ namespace CarCare.Core.Application.Services
             {
                 Id = tech.Id,
                 Email = techRegisterDto.Email,
-                UserName = techRegisterDto.UserName,
+                FullName = techRegisterDto.FullName,
                 PhoneNumber = techRegisterDto.PhoneNumber,
                 NationalId = techRegisterDto.NationalId,
                 Type = techRegisterDto.Type.ToString(),
@@ -269,7 +276,7 @@ namespace CarCare.Core.Application.Services
     .Select(u => new UserViewModel
     {
         Id = u.Id,
-        UserName = u.UserName!,
+        FullName = u.FullName!,
         PhoneNumber = u.PhoneNumber!,
         Email = u.Email!,
         Type = u.Type.ToString()
@@ -290,7 +297,8 @@ namespace CarCare.Core.Application.Services
         {
             var user = new ApplicationUser
             {
-                UserName = createUserDro.Name,
+                UserName = createUserDro.Email,
+                FullName = createUserDro.Name,
                 PhoneNumber = createUserDro.PhoneNumber,
                 Type = createUserDro.Type,
                 Email = createUserDro.Email
@@ -335,7 +343,7 @@ namespace CarCare.Core.Application.Services
                 PhoneNumber = user.PhoneNumber,
                 Email = user.Email!,
                 Type = user.Type.ToString(),
-                UserName = user.UserName,
+                FullName = user.FullName,
                 Token = await GenerateTokenAsync(user),
                 RefreshToken = refresktoken.Token,
                 RefreshTokenExpirationDate = refresktoken.ExpireOn
@@ -353,7 +361,7 @@ namespace CarCare.Core.Application.Services
             var viewModel = new UserRoleViewModel()
             {
                 Id = user.Id,
-                Name = user.UserName!,
+                Name = user.FullName!,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
                 Type = user.Type.ToString(),
@@ -418,7 +426,7 @@ namespace CarCare.Core.Application.Services
             {
 
                 Id = user.Id,
-                Name = user.UserName!,
+                Name = user.FullName!,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
                 Type = user.Type.ToString(),
@@ -436,7 +444,7 @@ namespace CarCare.Core.Application.Services
    .Select(u => new TechViewModel
    {
        Id = u.Id,
-       UserName = u.UserName!,
+       FullName = u.FullName!,
        PhoneNumber = u.PhoneNumber!,
        Email = u.Email!,
        NationalId = u.NationalId!,
@@ -457,7 +465,8 @@ namespace CarCare.Core.Application.Services
         {
             var user = new ApplicationUser
             {
-                UserName = createTechnicalDto.Name,
+                UserName = createTechnicalDto.Email,
+                FullName = createTechnicalDto.Name,
                 PhoneNumber = createTechnicalDto.PhoneNumber,
                 Type = createTechnicalDto.Type,
                 Email = createTechnicalDto.Email,
@@ -499,7 +508,7 @@ namespace CarCare.Core.Application.Services
                 Id = user.Id,
                 PhoneNumber = user.PhoneNumber,
                 Type = user.Type.ToString(),
-                UserName = user.UserName,
+                FullName = user.FullName,
                 Email = user.Email,
                 NationalId = user.NationalId,
                 Token = await GenerateTokenAsync(user),
@@ -518,7 +527,7 @@ namespace CarCare.Core.Application.Services
             var viewModel = new TechRoleViewModel()
             {
                 Id = tech.Id,
-                Name = tech.UserName!,
+                Name = tech.FullName!,
                 PhoneNumber = tech.PhoneNumber!,
                 Email = tech.Email!,
                 NationalId = tech.NationalId!,
@@ -580,7 +589,7 @@ namespace CarCare.Core.Application.Services
             {
 
                 Id = tech.Id,
-                Name = tech.UserName!,
+                Name = tech.FullName!,
                 PhoneNumber = tech.PhoneNumber!,
                 Email = tech.Email!,
                 NationalId = tech.NationalId!,
@@ -662,8 +671,7 @@ namespace CarCare.Core.Application.Services
 
 
             user.PhoneNumber = userDto.PhoneNumber;
-            user.UserName = userDto.UserName!;
-
+            user.FullName = userDto.FullName;
 
             var result = await userManager.UpdateAsync(user);
 
@@ -674,7 +682,7 @@ namespace CarCare.Core.Application.Services
             var respone = new UserDto
             {
                 Id = user.Id,
-                UserName = user.UserName!,
+                FullName = user.FullName!,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
                 Type = user.Type.ToString(),
@@ -704,7 +712,7 @@ namespace CarCare.Core.Application.Services
 
 
             user.PhoneNumber = techDto.PhoneNumber;
-            user.UserName = techDto.UserName!;
+            user.FullName = techDto.FullName!;
             user.NationalId = techDto.NationalId;
 
 
@@ -717,7 +725,7 @@ namespace CarCare.Core.Application.Services
             var respone = new UserDto
             {
                 Id = user.Id,
-                UserName = user.UserName!,
+                FullName = user.FullName!,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
                 Type = user.Type.ToString(),
@@ -783,7 +791,7 @@ namespace CarCare.Core.Application.Services
                 var response = new UserDto
                 {
                     Id = user.Id,
-                    UserName = user.UserName!,
+                    FullName = user.FullName!,
                     PhoneNumber = user.PhoneNumber!,
                     Email = user.Email!,
                     Type = user.Type.ToString(),
@@ -799,7 +807,7 @@ namespace CarCare.Core.Application.Services
                 var response = new TechDto
                 {
                     Id = user.Id,
-                    UserName = user.UserName!,
+                    FullName = user.FullName!,
                     Email = user.Email!,
                     NationalId = user.NationalId!,
                     PhoneNumber = user.PhoneNumber!,
@@ -836,6 +844,8 @@ namespace CarCare.Core.Application.Services
                 claims = new List<Claim>()
                 {
                 new Claim(ClaimTypes.PrimarySid,user.Id),
+              new Claim(ClaimTypes.GivenName,user.FullName),
+
                 new Claim(ClaimTypes.Email,user.Email!),
                 new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
                 new Claim("Type",user.Type.ToString()),
@@ -849,6 +859,8 @@ namespace CarCare.Core.Application.Services
                 claims = new List<Claim>()
                 {
                 new Claim(ClaimTypes.PrimarySid,user.Id),
+              new Claim(ClaimTypes.GivenName,user.FullName),
+
                 new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
                 new Claim(ClaimTypes.Email,user.Email!),
                 new Claim("Type",user.Type.ToString()),
@@ -1136,7 +1148,7 @@ namespace CarCare.Core.Application.Services
 
             var mappedUser = new UserDto
             {
-                UserName = user.UserName!,
+                FullName = user.FullName!,
                 Id = user.Id,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
@@ -1167,7 +1179,7 @@ namespace CarCare.Core.Application.Services
 
             var mappedUser = new UserDto
             {
-                UserName = user.UserName!,
+                FullName = user.FullName!,
                 Id = user.Id,
                 PhoneNumber = user.PhoneNumber!,
                 Email = user.Email!,
