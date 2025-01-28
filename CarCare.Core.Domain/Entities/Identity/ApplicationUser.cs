@@ -11,8 +11,6 @@ namespace CarCare.Core.Domain.Entities.Identity
         public required string FullName { get; set; }
 
 
-
-
         [Length(14, 14)]
         public string? NationalId { get; set; }
         public Types Type { get; set; }

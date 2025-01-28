@@ -1,7 +1,6 @@
 ﻿using CarCare.Core.Application.Mapping;
-using CarCare.Core.Application.Services;
-using CarCare.Core.Application.Services.SendServices;
-using CarCare.Core.Application.Services.SMS;
+using CarCare.Core.Application.Services.Auth;
+using CarCare.Core.Application.Services.Auth.SendServices;
 using CarCare.Shared.AppSettings;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Services;

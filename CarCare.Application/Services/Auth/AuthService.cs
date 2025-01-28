@@ -25,7 +25,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CarCare.Core.Application.Services
+namespace CarCare.Core.Application.Services.Auth
 {
 
 	public class AuthService(
@@ -167,12 +167,12 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == user.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (userRegisterDto.PhoneNumber))
+			if (getphone is not null && getphone.PhoneNumber == userRegisterDto.PhoneNumber)
 				throw new BadRequestExeption("Phone is Already Registered");
 
 			var getmail = await userManager.Users.Where(U => U.Email == user.Email).FirstOrDefaultAsync();
 
-			if (getmail is not null && getmail.Email == (userRegisterDto.Email))
+			if (getmail is not null && getmail.Email == userRegisterDto.Email)
 				throw new BadRequestExeption("Email is Already Registered");
 
 
@@ -228,7 +228,7 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == tech.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (techRegisterDto.PhoneNumber))
+			if (getphone is not null && getphone.PhoneNumber == techRegisterDto.PhoneNumber)
 				throw new BadRequestExeption("Phone is Already Registered");
 
 			var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
@@ -672,7 +672,7 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == userDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (userDto.PhoneNumber) && userDto.PhoneNumber != user.PhoneNumber)
+			if (getphone is not null && getphone.PhoneNumber == userDto.PhoneNumber && userDto.PhoneNumber != user.PhoneNumber)
 				throw new UnAuthorizedExeption("Phone is Already Registered");
 
 
@@ -715,7 +715,7 @@ namespace CarCare.Core.Application.Services
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == techDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == (techDto.PhoneNumber) && techDto.PhoneNumber != user.PhoneNumber)
+			if (getphone is not null && getphone.PhoneNumber == techDto.PhoneNumber && techDto.PhoneNumber != user.PhoneNumber)
 				throw new UnAuthorizedExeption("Phone is Already Registered");
 
 
