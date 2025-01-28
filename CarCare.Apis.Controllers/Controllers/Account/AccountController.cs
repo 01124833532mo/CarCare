@@ -197,13 +197,14 @@ namespace CarCare.Apis.Controllers.Controllers.Account
         }
         [Authorize(Roles = Roles.Technical)]
 
-        [HttpPut("UpdateTech")]
-        public async Task<ActionResult> UpdateTechByTech([FromBody] UpdateTechDto updateTech)
-        {
-            var result = await serviceManager.AuthService.UpdateTechByTech(User, updateTech);
-            return Ok(result);
-        }
-        #endregion
-    }
+		[HttpPut("UpdateTech")]
+		public async Task<ActionResult> UpdateTechByTech([FromBody] UpdateTechDto updateTech)
+		{
+			var result = await serviceManager.AuthService.UpdateTechByTech(User, updateTech);
+			return Ok(result);
+		}
+		
+		#endregion
+	}
 
 }
