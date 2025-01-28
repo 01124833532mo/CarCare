@@ -22,11 +22,15 @@ namespace CarCare.Infrastructure.Persistence.Repositories.Vehicles
             else return true;
         }
 
+
         public bool CheckVINNumberExist(string number)
         {
             var result = _dbContext.Vehicles.Where(e => e.VIN_Number.Contains(number)).FirstOrDefault();
             if (result is null) return false;
             else return true;
         }
+
+
+
     }
 }

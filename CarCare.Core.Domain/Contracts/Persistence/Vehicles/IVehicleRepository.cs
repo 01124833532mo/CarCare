@@ -8,5 +8,7 @@ namespace CarCare.Core.Domain.Contracts.Persistence.Vehicles
 
         bool CheckVINNumberExist(string number);
 
+
+
     }
 }

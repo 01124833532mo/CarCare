@@ -14,11 +14,11 @@ namespace CarCare.Core.Application.Services.Vehicles
         public async Task<CreateVehicleToReturn> CreateVehicle(CreateVehicleDto createVehicleDto)
         {
 
-            var checkPlateNumber = await _unitOfWork.VehicleRepository.CheckPlateNumberExist(createVehicleDto.PlateNumber);
+            var checkPlateNumber = _unitOfWork.VehicleRepository.CheckPlateNumberExist(createVehicleDto.PlateNumber);
 
             if (checkPlateNumber is true) throw new BadRequestExeption("The PlateNumber Already Exsists Please Enter Anthor One");
 
-            var checkVinNumber = await _unitOfWork.VehicleRepository.CheckVINNumberExist(createVehicleDto.VIN_Number);
+            var checkVinNumber = _unitOfWork.VehicleRepository.CheckVINNumberExist(createVehicleDto.VIN_Number);
 
             if (checkVinNumber is true) throw new BadRequestExeption("The Vin Number Already Exsists Please Enter Anthor One");
 
@@ -44,6 +44,25 @@ namespace CarCare.Core.Application.Services.Vehicles
 
             resultToReturn.FullName = FullNameUser.FullName;
             return resultToReturn;
+
+        }
+
+        public async Task<string> DeleteVehicle(int id)
+        {
+            var repo = _unitOfWork.GetRepository<Vehicle, int>();
+            var vehicle = await repo.GetAsync(id);
+
+            if (vehicle is null) throw new NotFoundExeption("Not Vehicle With This Id:", nameof(id));
+
+            repo.Delete(vehicle);
+
+            var result = await _unitOfWork.CompleteAsync() > 0;
+
+            if (result is true) return "Deleted Successfully";
+
+            else
+                throw new BadRequestExeption("Operation Faild");
+
 
         }
     }

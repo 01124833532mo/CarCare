@@ -6,6 +6,10 @@ namespace CareCare.Core.Application.Abstraction.Services.Vehicles
     {
         Task<CreateVehicleToReturn> CreateVehicle(CreateVehicleDto createVehicleDto);
 
+        Task<string> DeleteVehicle(int id);
+
+
+
 
     }
 }
