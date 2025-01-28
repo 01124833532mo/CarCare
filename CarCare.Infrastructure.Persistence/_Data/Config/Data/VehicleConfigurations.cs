@@ -14,8 +14,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).UseIdentityColumn(1, 1);
 
-            builder.Property(p => p.CarNumber).IsRequired();
-            builder.HasIndex(p => p.CarNumber).IsUnique();
+            builder.Property(p => p.PlateNumber).IsRequired();
+            builder.HasIndex(p => p.PlateNumber).IsUnique();
 
             builder.Property(p => p.Color)
                     .HasColumnType("nvarchar")
@@ -24,8 +24,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
                     .HasColumnType("nvarchar")
                     .HasMaxLength(50);
 
-            builder.HasIndex(p => p.CarPlate).IsUnique();
-            builder.Property(p => p.CarPlate)
+            builder.HasIndex(p => p.VIN_Number).IsUnique();
+            builder.Property(p => p.VIN_Number)
                     .HasColumnType("nvarchar")
                     .HasMaxLength(50);
 

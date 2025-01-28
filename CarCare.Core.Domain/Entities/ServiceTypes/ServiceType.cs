@@ -9,7 +9,7 @@ namespace CarCare.Core.Domain.Entities.ServiceTypes
 
         public required string Description { get; set; }
 
-        public required decimal Price { get; set; }
+        //public required decimal Price { get; set; }
 
         public string? Image { get; set; }
 

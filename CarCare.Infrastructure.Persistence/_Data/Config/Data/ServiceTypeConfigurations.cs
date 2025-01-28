@@ -21,8 +21,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
                .HasColumnType("nvarchar")
                .HasMaxLength(500);
 
-            builder.Property(p => p.Price)
-                   .HasColumnType("decimal(7,2)");
+            //builder.Property(p => p.Price)
+            //       .HasColumnType("decimal(7,2)");
 
             builder.HasMany(p => p.Technicals)
                     .WithOne(p => p.ServiceType)
