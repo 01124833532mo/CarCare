@@ -46,5 +46,13 @@ namespace CarCare.Core.Domain.Specifications
             OrderByDesending = orderByDescExpresstion;
         }
 
+        private protected void ApplyPagination(int skip, int take)
+        {
+            IsPaginationEnabled = true;
+
+            Skip = skip;
+            Take = take;
+        }
+
     }
 }

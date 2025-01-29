@@ -13,6 +13,9 @@ namespace CarCare.Core.Domain.Contracts.Persistence
 
         Task<TEntity?> GetWithSpecAsync(ISpecification<TEntity, TKey> spec, TKey id);
 
+        Task<int> GetCountAsync(ISpecification<TEntity, TKey> spec);
+
+
 
         Task AddAsync(TEntity entity);
 

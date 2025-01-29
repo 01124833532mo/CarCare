@@ -1,4 +1,6 @@
-﻿using CareCare.Core.Application.Abstraction.Models.Vehicles;
+﻿using CareCare.Core.Application.Abstraction.Common;
+using CareCare.Core.Application.Abstraction.Models.Vehicles;
+using System.Security.Claims;
 
 namespace CareCare.Core.Application.Abstraction.Services.Vehicles
 {
@@ -10,6 +12,9 @@ namespace CareCare.Core.Application.Abstraction.Services.Vehicles
 
 
         Task<VehicleToReturn> GetVehicle(int id);
+
+        Task<Pagination<VehicleToReturn>> GetAllVehicle(SpecParams specParams);
+        Task<Pagination<VehicleToReturn>> GetAllVehicleForUser(ClaimsPrincipal claimsPrincipal, SpecParams specParams);
 
 
     }
