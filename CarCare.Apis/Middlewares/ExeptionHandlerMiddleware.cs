@@ -34,7 +34,7 @@ namespace CarCare.Apis.Middlewares
                 }
 
             }
-            catch (Exception ex)
+             catch (Exception ex)
             {
                 if (_env.IsDevelopment())
                 {

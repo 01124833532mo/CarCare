@@ -71,7 +71,7 @@ namespace CarCare.Core.Application.Services.Vehicles
         {
             var spec = new VehicleWithUserSpecifications(id);
 
-            var Vehicle = await _unitOfWork.GetRepository<Vehicle, int>().GetWithSpecAsync(spec, id);
+            var Vehicle = await _unitOfWork.GetRepository<Vehicle, int>().GetWithSpecAsync(spec);
             if (Vehicle is null)
                 throw new NotFoundExeption(nameof(Vehicle), id);
 
