@@ -34,6 +34,17 @@ namespace CarCare.Apis
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddCors(corsOptions =>
+            {
+                corsOptions.AddPolicy("TalabatPolicy", policyBuilder =>
+                {
+                    policyBuilder.AllowAnyHeader()
+                                 .AllowAnyMethod()
+                                 .AllowAnyOrigin(); // Allow all domains
+                });
+            });
+
             builder.Services.RegesteredPresestantLayer();
             builder.Services.AddApplicationServices(builder.Configuration);
             builder.Services.AddPersistenceServices(builder.Configuration);
@@ -65,6 +76,7 @@ namespace CarCare.Apis
 
             app.UseStaticFiles();
 
+            app.UseCors("TalabatPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
