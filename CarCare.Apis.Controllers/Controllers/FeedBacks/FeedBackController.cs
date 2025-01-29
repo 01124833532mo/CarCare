@@ -22,7 +22,7 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 			return Ok(result);
 		}
 
-		[HttpGet("GetFeedBack")]
+		[HttpGet("GetFeedBack/{id}")]
 		public async Task<ReturnFeedBackDto> GetFeedBack(int id)
 		{
 			var result = await _serviceManager.FeedBackService.GetFeedBackAsync(id);
@@ -30,13 +30,13 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpPut("UpdateFeedBack")]
-		public async Task<ReturnFeedBackDto> UpdateFeedBack(UpdatedFeedBackDto feedBackDto)
+		public async Task<ReturnFeedBackDto> UpdateFeedBack([FromBody] UpdatedFeedBackDto feedBackDto)
 		{
 			var result = await _serviceManager.FeedBackService.UpdateFeedBackAsync(feedBackDto);
 			return result;
 		}
 
-		[HttpDelete("DeleteFeedBack")]
+		[HttpDelete("DeleteFeedBack/{id}")]
 		public async Task<string> DeleteFeedBack(int id)
 		{
 			var result = await _serviceManager.FeedBackService.DeleteFeedBackAsync(id);

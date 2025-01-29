@@ -3,6 +3,7 @@ using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Entities.FeedBacks;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Vehicles;
+using CarCare.Core.Domain.Specifications.SpecsHandlers;
 using CarCare.Shared.ErrorModoule.Exeptions;
 using CareCare.Core.Application.Abstraction.Models.FeedBack;
 using CareCare.Core.Application.Abstraction.Services.FeedBack;
@@ -39,7 +40,8 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 		public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
 		{
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
+			var spec = new FeedBackWithUserSpecifications(id);
+			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetWithSpecAsync(spec, id);
 
 			if (feedBack is null)
 				throw new NotFoundExeption(nameof(feedBack), id);
