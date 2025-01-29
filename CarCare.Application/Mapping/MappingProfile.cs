@@ -18,7 +18,7 @@ namespace CarCare.Core.Application.Mapping
             CreateMap<ApplicationUser, TechDto>().ReverseMap();
 
             CreateMap<CreateVehicleDto, Vehicle>();
-            CreateMap<Vehicle, CreateVehicleToReturn>()
+            CreateMap<Vehicle, VehicleToReturn>()
                 .ForMember(dest => dest.FullName, option => option.MapFrom(src => src.User.FullName));
 
 

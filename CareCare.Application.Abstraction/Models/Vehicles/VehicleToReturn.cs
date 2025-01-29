@@ -1,6 +1,6 @@
 ﻿namespace CareCare.Core.Application.Abstraction.Models.Vehicles
 {
-    public class CreateVehicleToReturn
+    public class VehicleToReturn
     {
         public required string Model { get; set; }
         public required string Color { get; set; }

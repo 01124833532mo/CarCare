@@ -11,7 +11,7 @@ namespace CarCare.Apis.Controllers.Controllers.Vehicles
     {
         [Authorize(Roles = Roles.User + "," + Roles.Technical)]
         [HttpPost("Create-Vehicle")]
-        public async Task<ActionResult<CreateVehicleToReturn>> CreateVehicle([FromBody] CreateVehicleDto createVehicleDto)
+        public async Task<ActionResult<VehicleToReturn>> CreateVehicle([FromBody] CreateVehicleDto createVehicleDto)
         {
             var result = await serviceManager.VehicleService.CreateVehicle(createVehicleDto);
             return Ok(result);

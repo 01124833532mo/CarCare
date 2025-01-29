@@ -2,6 +2,7 @@
 using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Vehicles;
+using CarCare.Core.Domain.Specifications.SpecsHandlers;
 using CarCare.Shared.ErrorModoule.Exeptions;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using CareCare.Core.Application.Abstraction.Services.Vehicles;
@@ -11,7 +12,7 @@ namespace CarCare.Core.Application.Services.Vehicles
 {
     public class VehicleService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IVehicleService
     {
-        public async Task<CreateVehicleToReturn> CreateVehicle(CreateVehicleDto createVehicleDto)
+        public async Task<VehicleToReturn> CreateVehicle(CreateVehicleDto createVehicleDto)
         {
 
             var checkPlateNumber = _unitOfWork.VehicleRepository.CheckPlateNumberExist(createVehicleDto.PlateNumber);
@@ -33,7 +34,7 @@ namespace CarCare.Core.Application.Services.Vehicles
             if (!Created) throw new BadRequestExeption("an error has occured during creating the Vehicle");
 
 
-            var resultToReturn = _mapper.Map<CreateVehicleToReturn>(mappedresult);
+            var resultToReturn = _mapper.Map<VehicleToReturn>(mappedresult);
 
             var FullNameUser = await userManager.FindByIdAsync(resultToReturn.UserId);
 
@@ -52,7 +53,7 @@ namespace CarCare.Core.Application.Services.Vehicles
             var repo = _unitOfWork.GetRepository<Vehicle, int>();
             var vehicle = await repo.GetAsync(id);
 
-            if (vehicle is null) throw new NotFoundExeption("Not Vehicle With This Id:", nameof(id));
+            if (vehicle is null) throw new NotFoundExeption("Not Vehicle With This Id:", id);
 
             repo.Delete(vehicle);
 
@@ -63,6 +64,20 @@ namespace CarCare.Core.Application.Services.Vehicles
             else
                 throw new BadRequestExeption("Operation Faild");
 
+
+        }
+
+        public async Task<VehicleToReturn> GetVehicle(int id)
+        {
+            var spec = new VehicleWithUserSpecifications(id);
+
+            var Vehicle = await _unitOfWork.GetRepository<Vehicle, int>().GetWithSpecAsync(spec, id);
+            if (Vehicle is null)
+                throw new NotFoundExeption(nameof(Vehicle), id);
+
+            var returnedVehicle = _mapper.Map<VehicleToReturn>(Vehicle);
+
+            return returnedVehicle;
 
         }
     }

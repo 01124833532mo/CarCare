@@ -122,5 +122,12 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             return Ok(result);
         }
 
+        [HttpGet("Get-Vehicle/{id}")]
+        public async Task<ActionResult<string>> GetVehicle([FromRoute] int id)
+        {
+            var result = await serviceManager.VehicleService.GetVehicle(id);
+            return Ok(result);
+        }
+
     }
 }
