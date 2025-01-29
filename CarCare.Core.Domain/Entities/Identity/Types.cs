@@ -9,6 +9,7 @@ namespace CarCare.Core.Domain.Entities.Identity
 	public enum Types
 	{
 		Technical,
-		User
+		User,
+		Admin
 	}
 }
