@@ -23,7 +23,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
             builder.HasOne(p => p.User)
                     .WithMany(p => p.FeedBacks)
                     .HasForeignKey(p => p.UserId)
-                    .OnDelete(DeleteBehavior.NoAction);
+                    .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

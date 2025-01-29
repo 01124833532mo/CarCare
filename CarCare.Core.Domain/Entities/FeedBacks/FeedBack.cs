@@ -8,11 +8,11 @@ namespace CarCare.Core.Domain.Entities.FeedBacks
     {
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
-        public required string Comment { get; set; }
+        public string? Comment { get; set; }
 
         public decimal Rating { get; set; }
 
-        public string UserId { get; set; }
-        public virtual ApplicationUser User { get; set; }
+        public required string UserId { get; set; }
+        public virtual required ApplicationUser User { get; set; }
     }
 }
