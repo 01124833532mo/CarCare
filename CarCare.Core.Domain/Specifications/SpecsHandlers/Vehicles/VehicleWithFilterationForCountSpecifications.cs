@@ -8,9 +8,9 @@ namespace CarCare.Core.Domain.Specifications.SpecsHandlers.Vehicles
         public VehicleWithFilterationForCountSpecifications(string? userid, string? search) :
             base(
                    p =>
-                  //(string.IsNullOrEmpty(search) || p.NormalizedName.Contains(search))
-                  //&&
-                  string.IsNullOrEmpty(userid) || p.UserId == userid
+                  (string.IsNullOrEmpty(search) || p.NormatizedVIN_Number.Contains(search))
+                  &&
+                 (string.IsNullOrEmpty(userid) || p.UserId == userid)
                 )
         {
 

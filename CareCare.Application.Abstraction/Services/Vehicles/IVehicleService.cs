@@ -13,7 +13,7 @@ namespace CareCare.Core.Application.Abstraction.Services.Vehicles
 
         Task<VehicleToReturn> GetVehicle(int id);
 
-        Task<Pagination<VehicleToReturn>> GetAllVehicle(SpecParams specParams);
+        Task<Pagination<VehicleToReturn>> GetAllVehicles(SpecParams specParams);
         Task<Pagination<VehicleToReturn>> GetAllVehicleForUser(ClaimsPrincipal claimsPrincipal, SpecParams specParams);
 
 

@@ -135,7 +135,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
         [HttpGet("Get-All-Vehicle")]
         public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllVehicle([FromQuery] SpecParams specParams)
         {
-            var result = await serviceManager.VehicleService.GetAllVehicle(specParams);
+            var result = await serviceManager.VehicleService.GetAllVehicles(specParams);
             return Ok(result);
         }
 

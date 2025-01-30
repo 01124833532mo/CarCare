@@ -14,9 +14,9 @@ namespace CarCare.Core.Application.Services.Vehicles
 {
     public class VehicleService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IVehicleService
     {
-        public async Task<Pagination<VehicleToReturn>> GetAllVehicle(SpecParams specParams)
+        public async Task<Pagination<VehicleToReturn>> GetAllVehicles(SpecParams specParams)
         {
-            return await GetAllVehicles(_unitOfWork, _mapper, specParams, specParams.UserId);
+            return await SetSpecificationsForGetAllVehicles(_unitOfWork, _mapper, specParams, specParams.UserId);
 
 
         }
@@ -26,11 +26,11 @@ namespace CarCare.Core.Application.Services.Vehicles
             var userid = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
             if (userid is null) throw new NotFoundExeption("No User Found For This Id", userid!);
 
-            return await GetAllVehicles(_unitOfWork, _mapper, specParams, userid);
+            return await SetSpecificationsForGetAllVehicles(_unitOfWork, _mapper, specParams, userid);
 
         }
 
-        private static async Task<Pagination<VehicleToReturn>> GetAllVehicles(IUnitOfWork _unitOfWork, IMapper _mapper, SpecParams specParams, string? userid)
+        private static async Task<Pagination<VehicleToReturn>> SetSpecificationsForGetAllVehicles(IUnitOfWork _unitOfWork, IMapper _mapper, SpecParams specParams, string? userid)
         {
             var spec = new VehicleWithUserSpecifications(specParams.Sort, userid, specParams.PageSize, specParams.PageIndex, specParams.Search);
 
@@ -72,6 +72,7 @@ namespace CarCare.Core.Application.Services.Vehicles
             if (checkVinNumber is true) throw new BadRequestExeption("The Vin Number Already Exsists Please Enter Anthor One");
 
             var mappedresult = _mapper.Map<Vehicle>(createVehicleDto);
+            mappedresult.NormatizedVIN_Number = createVehicleDto.VIN_Number;
 
 
             var AddResult = _unitOfWork.GetRepository<Vehicle, int>().AddAsync(mappedresult);
