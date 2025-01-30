@@ -1,11 +1,13 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction;
+using CareCare.Core.Application.Abstraction.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -114,18 +116,26 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             var result = await serviceManager.AuthService.EditeTechnical(id, EditTechDto);
             return Ok(result);
         }
-
+        [AllowAnonymous]
         [HttpDelete("Delete-Vehicle/{id}")]
         public async Task<ActionResult<string>> DeleteVehicle([FromRoute] int id)
         {
             var result = await serviceManager.VehicleService.DeleteVehicle(id);
             return Ok(result);
         }
+        [AllowAnonymous]
 
         [HttpGet("Get-Vehicle/{id}")]
         public async Task<ActionResult<string>> GetVehicle([FromRoute] int id)
         {
             var result = await serviceManager.VehicleService.GetVehicle(id);
+            return Ok(result);
+        }
+
+        [HttpGet("Get-All-Vehicle")]
+        public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllVehicle([FromQuery] SpecParams specParams)
+        {
+            var result = await serviceManager.VehicleService.GetAllVehicles(specParams);
             return Ok(result);
         }
 
