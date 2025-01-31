@@ -5,6 +5,7 @@ using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Vehicles;
 using CarCare.Core.Domain.Specifications.SpecsHandlers;
 using CarCare.Shared.ErrorModoule.Exeptions;
+using CareCare.Core.Application.Abstraction.Common;
 using CareCare.Core.Application.Abstraction.Models.FeedBack;
 using CareCare.Core.Application.Abstraction.Services.FeedBack;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -38,6 +39,17 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 		}
 
+		public async Task<IEnumerable<ReturnFeedBackDto>> GetAllFeedBackAsync(SpecParams specsParams)
+		{
+			var spec = new FeedBackWithUserSpecifications(specsParams.Sort);
+
+			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAllWithSpecAsync(spec);
+
+			var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBack);
+
+			return returnedData;
+
+		}
 		public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
 		{
 			var spec = new FeedBackWithUserSpecifications(id);

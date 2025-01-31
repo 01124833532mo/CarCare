@@ -139,5 +139,13 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             return Ok(result);
         }
 
-    }
+		[HttpGet("GetAllFeedBacks")]
+		public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
+		{
+            var result = await serviceManager.FeedBackService.GetAllFeedBackAsync(specParams);
+			return Ok(result);
+		}
+
+
+	}
 }
