@@ -1,4 +1,5 @@
-﻿using CareCare.Core.Application.Abstraction.Models.FeedBack;
+﻿using CareCare.Core.Application.Abstraction.Common;
+using CareCare.Core.Application.Abstraction.Models.FeedBack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace CareCare.Core.Application.Abstraction.Services.FeedBack
 		Task<ReturnFeedBackDto> CreateFeedBackAsync(CreateFeedBackDto feedBackDto);
 
 		Task<ReturnFeedBackDto> UpdateFeedBackAsync(UpdatedFeedBackDto feedBackDto);
+
+		Task<IEnumerable<ReturnFeedBackDto>> GetAllFeedBackAsync(SpecParams specsParams);
 
 		Task<ReturnFeedBackDto> GetFeedBackAsync(int id);
 

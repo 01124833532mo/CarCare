@@ -673,8 +673,13 @@ namespace CarCare.Core.Application.Services.Auth
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == userDto.PhoneNumber).FirstOrDefaultAsync();
 
 			if (getphone is not null && getphone.PhoneNumber == userDto.PhoneNumber && userDto.PhoneNumber != user.PhoneNumber)
-				throw new UnAuthorizedExeption("Phone is Already Registered");
+				throw new BadRequestExeption("Phone is Already Registered");
 
+			var getEmail = await userManager.Users.Where(u => u.Email == userDto.Email).FirstOrDefaultAsync();
+
+
+			if (getEmail is not null && getEmail.Email == userDto.Email && userDto.Email != user.Email)
+				throw new BadRequestExeption("Email is Already Registered");
 
 			user.PhoneNumber = userDto.PhoneNumber;
 			user.FullName = userDto.FullName!;
@@ -716,8 +721,13 @@ namespace CarCare.Core.Application.Services.Auth
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == techDto.PhoneNumber).FirstOrDefaultAsync();
 
 			if (getphone is not null && getphone.PhoneNumber == techDto.PhoneNumber && techDto.PhoneNumber != user.PhoneNumber)
-				throw new UnAuthorizedExeption("Phone is Already Registered");
+				throw new BadRequestExeption("Phone is Already Registered");
 
+			var getEmail = await userManager.Users.Where(u => u.Email == techDto.Email).FirstOrDefaultAsync();
+
+
+			if (getEmail is not null && getEmail.Email == techDto.Email && techDto.Email != user.Email)
+				throw new BadRequestExeption("Email is Already Registered");
 
 			user.PhoneNumber = techDto.PhoneNumber;
 			user.FullName = techDto.FullName!;
@@ -1027,7 +1037,7 @@ namespace CarCare.Core.Application.Services.Auth
 			if (user is null)
 				throw new BadRequestExeption("Invalid Email");
 
-			var ResetCode = RandomNumberGenerator.GetInt32(100_000, 999_999);
+			var ResetCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
 
 			var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
 
@@ -1063,7 +1073,7 @@ namespace CarCare.Core.Application.Services.Auth
 			if (user is null)
 				throw new BadRequestExeption("Invalid Phone Number");
 
-			var ResetPhoneCode = RandomNumberGenerator.GetInt32(100_000, 999_999);
+			var ResetPhoneCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
 
 			var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
 
