@@ -1,5 +1,6 @@
 ﻿using CareCare.Core.Application.Abstraction.Services.Auth;
 using CareCare.Core.Application.Abstraction.Services.FeedBack;
+using CareCare.Core.Application.Abstraction.Services.ServiceTypes;
 using CareCare.Core.Application.Abstraction.Services.Vehicles;
 
 namespace CareCare.Core.Application.Abstraction
@@ -11,6 +12,7 @@ namespace CareCare.Core.Application.Abstraction
         public IVehicleService VehicleService { get; }
 
         public IFeedBackService FeedBackService { get; }
+        public IServiceTypeService ServiceTypeService { get; }
 
     }
 }
