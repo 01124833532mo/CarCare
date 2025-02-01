@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 {
+	[Authorize(Roles = Roles.User + "," + Roles.Technical)]
 	public class FeedBackController(IServiceManager _serviceManager) : BaseApiController
 	{
-		[Authorize(Roles = Roles.User + "," + Roles.Technical)]
 		[HttpPost("CreateFeedBack")]
 		public async Task<ActionResult<ReturnFeedBackDto>> CreateFeedBack([FromBody] CreateFeedBackDto feedBackDto)
 		{
@@ -23,7 +23,7 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpGet("GetFeedBack/{id}")]
-		public async Task<ReturnFeedBackDto> GetFeedBack(int id)
+		public async Task<ReturnFeedBackDto> GetFeedBack([FromRoute] int id)
 		{
 			var result = await _serviceManager.FeedBackService.GetFeedBackAsync(id);
 			return result;
@@ -37,7 +37,7 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpDelete("DeleteFeedBack/{id}")]
-		public async Task<string> DeleteFeedBack(int id)
+		public async Task<string> DeleteFeedBack([FromRoute] int id)
 		{
 			var result = await _serviceManager.FeedBackService.DeleteFeedBackAsync(id);
 			return result;
