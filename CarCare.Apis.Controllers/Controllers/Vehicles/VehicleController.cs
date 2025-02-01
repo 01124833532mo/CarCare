@@ -17,7 +17,7 @@ namespace CarCare.Apis.Controllers.Controllers.Vehicles
             var result = await serviceManager.VehicleService.CreateVehicle(createVehicleDto);
             return Ok(result);
         }
-        [AllowAnonymous]
+        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
         [HttpGet("Get-All-Vehicle-For-SpecificUser")]
         public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllVehicleForSpecificUser([FromQuery] SpecParams specParams)
         {

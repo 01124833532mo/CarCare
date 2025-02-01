@@ -3,6 +3,7 @@
     public class VehicleToReturn
     {
         public required string Model { get; set; }
+        public required int Id { get; set; }
         public required string Color { get; set; }
         public required int Year { get; set; }
         public required string VIN_Number { get; set; }
