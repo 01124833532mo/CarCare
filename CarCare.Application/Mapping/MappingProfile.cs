@@ -19,7 +19,9 @@ namespace CarCare.Core.Application.Mapping
             CreateMap<IdentityRole, RolesToReturn>().ReverseMap();
             CreateMap<IdentityRole, RoleDto>().ReverseMap();
             CreateMap<ApplicationUser, UserDto>().ReverseMap();
-            CreateMap<ApplicationUser, TechDto>().ReverseMap();
+            CreateMap<ApplicationUser, TechDto>()
+                .ForMember(dest => dest.ServiceName, option => option.MapFrom(src => src.ServiceType!.Name))
+                .ReverseMap();
 
             CreateMap<CreateVehicleDto, Vehicle>();
             CreateMap<Vehicle, VehicleToReturn>()
