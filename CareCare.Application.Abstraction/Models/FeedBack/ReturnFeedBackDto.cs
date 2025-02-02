@@ -14,6 +14,7 @@ namespace CareCare.Core.Application.Abstraction.Models.FeedBack
 
 		public decimal Rating { get; set; }
 
+
 		public required string UserId { get; set; }
 	}
 }

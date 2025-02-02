@@ -1,7 +1,9 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction;
+using CareCare.Core.Application.Abstraction.Common;
 using CareCare.Core.Application.Abstraction.Models.FeedBack;
+using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,7 +20,21 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		[HttpPost("CreateFeedBack")]
 		public async Task<ActionResult<ReturnFeedBackDto>> CreateFeedBack([FromBody] CreateFeedBackDto feedBackDto)
 		{
-			var result = await _serviceManager.FeedBackService.CreateFeedBackAsync(feedBackDto);
+			var result = await _serviceManager.FeedBackService.CreateFeedBackAsync(User, feedBackDto);
+			return Ok(result);
+		}
+
+		[HttpGet("GetAvarageRating")]
+		public async Task<decimal> GetAvgRating()
+		{
+			var result = await _serviceManager.FeedBackService.GetAvgRating();
+			return result;
+		}
+
+		[HttpGet("GetAllFeedBacks")]
+		public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
+		{
+			var result = await _serviceManager.FeedBackService.GetAllFeedBackAsync(specParams);
 			return Ok(result);
 		}
 
@@ -29,17 +45,17 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 			return result;
 		}
 
-		[HttpPut("UpdateFeedBack")]
-		public async Task<ReturnFeedBackDto> UpdateFeedBack([FromBody] UpdatedFeedBackDto feedBackDto)
+		[HttpPut("UpdateFeedBack/{id}")]
+		public async Task<ReturnFeedBackDto> UpdateFeedBack([FromRoute] int id, [FromBody] UpdatedFeedBackDto feedBackDto)
 		{
-			var result = await _serviceManager.FeedBackService.UpdateFeedBackAsync(feedBackDto);
+			var result = await _serviceManager.FeedBackService.UpdateFeedBackAsync(User, id, feedBackDto);
 			return result;
 		}
 
 		[HttpDelete("DeleteFeedBack/{id}")]
 		public async Task<string> DeleteFeedBack([FromRoute] int id)
 		{
-			var result = await _serviceManager.FeedBackService.DeleteFeedBackAsync(id);
+			var result = await _serviceManager.FeedBackService.DeleteFeedBackAsync(User, id);
 			return result;
 		}
 	}

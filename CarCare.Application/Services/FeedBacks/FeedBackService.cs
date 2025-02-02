@@ -21,8 +21,23 @@ namespace CarCare.Core.Application.Services.FeedBacks
 {
 	public class FeedBackService(IUnitOfWork _unitOfWork, IMapper _mapper) : IFeedBackService
 	{
-		public async Task<ReturnFeedBackDto> CreateFeedBackAsync(CreateFeedBackDto feedBackDto)
+		public async Task<ReturnFeedBackDto> CreateFeedBackAsync(ClaimsPrincipal claims, CreateFeedBackDto feedBackDto)
 		{
+
+			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+			if (UserId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
+			var _UsersId = GetUsersID();
+
+			if (_UsersId is not null)
+			{
+				_UsersId.Result.Contains(UserId);
+
+				throw new BadRequestExeption("You Already Add FeedBack Please Update Your FeedBack or Enter a Comment");
+			}
+
 			var mappedFeedBack = _mapper.Map<FeedBack>(feedBackDto);
 
 			var Added = _unitOfWork.GetRepository<FeedBack, int>().AddAsync(mappedFeedBack);
@@ -39,6 +54,17 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 		}
 
+
+		public async Task<decimal> GetAvgRating()
+		{
+			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+
+			var avgRating = feedBacks.Average(x => x.Rating);
+
+			return avgRating;
+		}
+
+
 		public async Task<IEnumerable<ReturnFeedBackDto>> GetAllFeedBackAsync(SpecParams specsParams)
 		{
 			var spec = new FeedBackWithUserSpecifications(specsParams.Sort);
@@ -50,6 +76,8 @@ namespace CarCare.Core.Application.Services.FeedBacks
 			return returnedData;
 
 		}
+
+
 		public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
 		{
 			var spec = new FeedBackWithUserSpecifications(id);
@@ -63,18 +91,24 @@ namespace CarCare.Core.Application.Services.FeedBacks
 			return returnedFeedBack;
 		}
 
-		public async Task<ReturnFeedBackDto> UpdateFeedBackAsync(UpdatedFeedBackDto feedBackDto)
+
+		public async Task<ReturnFeedBackDto> UpdateFeedBackAsync(ClaimsPrincipal claims, int id, UpdatedFeedBackDto feedBackDto)
 		{
+			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(feedBackDto.Id);
+			if (UserId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
+			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
 
+			if (UserId != feedBack?.UserId)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
 			if (feedBack is null)
-				throw new NotFoundExeption(nameof(feedBack), feedBackDto.Id);
+				throw new NotFoundExeption(nameof(feedBack), id);
 
 
-			feedBack.Id = feedBackDto.Id;
+			feedBack.Id = id;
 			feedBack.Comment = feedBackDto.Comment;
 			feedBack.Rating = feedBackDto.Rating;
 
@@ -91,9 +125,18 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 		}
 
-		public async Task<string> DeleteFeedBackAsync(int id)
+
+		public async Task<string> DeleteFeedBackAsync(ClaimsPrincipal claims, int id)
 		{
+			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+
+			if (UserId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
 			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
+
+			if (UserId != feedBack?.UserId)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
 			if (feedBack is null)
 				throw new NotFoundExeption(nameof(feedBack), id);
@@ -109,5 +152,17 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 		}
 
+
+		private async Task<List<string>> GetUsersID()
+		{
+			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+
+			var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBacks);
+
+			var UsersId = feedBacks.Select(f => f.UserId).ToList();
+
+			return UsersId;
+
+		}
 	}
 }
