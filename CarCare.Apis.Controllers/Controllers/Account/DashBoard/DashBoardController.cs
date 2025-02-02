@@ -139,13 +139,18 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
             return Ok(result);
         }
 
-		[HttpGet("GetAllFeedBacks")]
-		public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
-		{
+        [HttpGet("GetAllFeedBacks")]
+        public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
+        {
             var result = await serviceManager.FeedBackService.GetAllFeedBackAsync(specParams);
-			return Ok(result);
-		}
+            return Ok(result);
+        }
+        [HttpDelete("Delete-ServiceType/{id}")]
+        public async Task<ActionResult<string>> DeleteServiceType([FromRoute] int id)
+        {
+            var result = await serviceManager.ServiceTypeService.DeleteServiceType(id);
+            return Ok(result);
+        }
 
-
-	}
+    }
 }

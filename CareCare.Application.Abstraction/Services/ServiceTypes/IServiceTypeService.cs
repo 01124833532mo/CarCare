@@ -7,5 +7,8 @@ namespace CareCare.Core.Application.Abstraction.Services.ServiceTypes
         Task<IEnumerable<ServiceTypeToReturn>> GetAllServicesTypes();
         Task<ServiceTypeToReturn> GetServiceType(int id);
 
+        Task<string> DeleteServiceType(int id);
+
+
     }
 }
