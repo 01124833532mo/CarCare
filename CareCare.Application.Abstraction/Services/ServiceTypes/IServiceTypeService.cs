@@ -9,6 +9,8 @@ namespace CareCare.Core.Application.Abstraction.Services.ServiceTypes
 
         Task<string> DeleteServiceType(int id);
 
+        Task<ServiceTypeToReturn> CreateServiceType(ServiceTypeDto createService);
+        Task<ServiceTypeToReturn> UpdateServiceType(int id, ServiceTypeDto createService);
 
     }
 }

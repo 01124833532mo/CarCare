@@ -17,24 +17,18 @@ namespace CarCare.Infrastructure.AttachementService
             if (file.Length > _allowedMaxSize)
                 return null;
 
-
-
-            //var folderPath = $"{Directory.GetCurrentDirectory}\\wwwroot\\Files\\{folderName}";
-
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", folderName);
+            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", folderName);
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            var fileName = $"{Guid.NewGuid()}{extention}"; // must be unique 
-
-            var filePath = Path.Combine(folderPath, fileName); // file location placed
+            var fileName = $"{Guid.NewGuid()}{extention}"; // Generate unique file name
+            var filePath = Path.Combine(folderPath, fileName); // File location
 
             using var fileStream = new FileStream(filePath, FileMode.Create);
-
-
             await file.CopyToAsync(fileStream);
 
-            return fileName;
+            // Return the relative path instead of just the file name
+            return $"images/{folderName}/{fileName}";
         }
 
 
