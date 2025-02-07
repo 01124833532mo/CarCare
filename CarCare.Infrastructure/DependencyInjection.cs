@@ -1,17 +1,15 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CarCare.Infrastructure.AttachementService;
+using CareCare.Core.Application.Abstraction.Common.Contract.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarCare.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddTransient(typeof(IAttachmentService), typeof(AttachmentService));
             return services;
         }
     }

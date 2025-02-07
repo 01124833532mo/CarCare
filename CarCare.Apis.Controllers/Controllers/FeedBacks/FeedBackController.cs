@@ -6,11 +6,6 @@ using CareCare.Core.Application.Abstraction.Models.FeedBack;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 {
@@ -38,12 +33,12 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 			return Ok(result);
 		}
 
-		[HttpGet("GetFeedBack/{id}")]
-		public async Task<ReturnFeedBackDto> GetFeedBack([FromRoute] int id)
-		{
-			var result = await _serviceManager.FeedBackService.GetFeedBackAsync(id);
-			return result;
-		}
+        [HttpGet("GetFeedBack/{id}")]
+        public async Task<ReturnFeedBackDto> GetFeedBack([FromRoute] int id)
+        {
+            var result = await _serviceManager.FeedBackService.GetFeedBackAsync(id);
+            return result;
+        }
 
 		[HttpPut("UpdateFeedBack/{id}")]
 		public async Task<ReturnFeedBackDto> UpdateFeedBack([FromRoute] int id, [FromBody] UpdatedFeedBackDto feedBackDto)
