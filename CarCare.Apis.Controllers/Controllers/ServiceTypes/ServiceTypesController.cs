@@ -1,12 +1,10 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.ServiceTypes;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarCare.Apis.Controllers.Controllers.ServiceTypes
 {
-    [Authorize]
     public class ServiceTypesController(IServiceManager _serviceManager) : BaseApiController
     {
         [HttpGet("GetAll")]
