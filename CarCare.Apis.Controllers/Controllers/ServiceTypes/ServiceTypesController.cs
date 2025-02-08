@@ -1,4 +1,5 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
+using CarCare.Apis.Controllers.Filters;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.ServiceTypes;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,8 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceTypes
 {
     public class ServiceTypesController(IServiceManager _serviceManager) : BaseApiController
     {
+        [Cached(600)]
+
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<ServiceTypeToReturn>>> GetAllServiceTypes()
         {
