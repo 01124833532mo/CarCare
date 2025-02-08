@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using CarCare.Core.Domain.Entities.Contacts;
 using CarCare.Core.Domain.Entities.FeedBacks;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Vehicles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using CareCare.Core.Application.Abstraction.Models.Contacts;
 using CareCare.Core.Application.Abstraction.Models.FeedBack;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +27,9 @@ namespace CarCare.Core.Application.Mapping
 
 			CreateMap<CreateFeedBackDto, FeedBack>();
 			CreateMap<FeedBack, ReturnFeedBackDto>();
+
+			CreateMap<CreateContactDto, Contact>();
+			CreateMap<Contact, ReturnContactDto>();
 
 		}
 	}

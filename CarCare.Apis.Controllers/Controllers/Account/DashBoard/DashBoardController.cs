@@ -7,6 +7,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Roles;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
+using CareCare.Core.Application.Abstraction.Models.Contacts;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -147,11 +148,31 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
 		}
 
 		[HttpGet("GetAvarageRating")]
-		public async Task<decimal> GetAvgRating()
+		public async Task<ActionResult<decimal>> GetAvgRating()
 		{
 			var result = await serviceManager.FeedBackService.GetAvgRating();
-			return result;
+			return Ok(result);
 		}
 
+		[HttpPost("CreateMessage")]
+		public async Task<ActionResult<ReturnContactDto>> CreateMessage([FromBody] CreateContactDto contactDto)
+		{
+			var result = await serviceManager.ContactService.CreateContactAsync(contactDto);
+			return Ok(result);
+		}
+
+		[HttpPut("UpdateMessage/{id}")]
+		public async Task<ActionResult<ReturnContactDto>> UpdateContact([FromRoute] int id, CreateContactDto newContactDto)
+		{
+			var result = await serviceManager.ContactService.UpdateContactAsync(id, newContactDto);
+			return Ok(result);
+		}
+
+		[HttpDelete("DeleteMessage/{id}")]
+		public async Task<ActionResult<ReturnContactDto>> DeleteContact([FromRoute] int id)
+		{
+			var result = await serviceManager.ContactService.DeleteContactAsync(id);
+			return Ok(result);
+		}
 	}
 }

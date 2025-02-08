@@ -25,10 +25,10 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpGet("GetAvarageRating")]
-		public async Task<decimal> GetAvgRating()
+		public async Task<ActionResult<decimal>> GetAvgRating()
 		{
 			var result = await _serviceManager.FeedBackService.GetAvgRating();
-			return result;
+			return Ok(result);
 		}
 
 		[HttpGet("GetAllFeedBacks")]
@@ -39,24 +39,24 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpGet("GetFeedBack/{id}")]
-		public async Task<ReturnFeedBackDto> GetFeedBack([FromRoute] int id)
+		public async Task<ActionResult<ReturnFeedBackDto>> GetFeedBack([FromRoute] int id)
 		{
 			var result = await _serviceManager.FeedBackService.GetFeedBackAsync(id);
-			return result;
+			return Ok(result);
 		}
 
 		[HttpPut("UpdateFeedBack/{id}")]
-		public async Task<ReturnFeedBackDto> UpdateFeedBack([FromRoute] int id, [FromBody] UpdatedFeedBackDto feedBackDto)
+		public async Task<ActionResult<ReturnFeedBackDto>> UpdateFeedBack([FromRoute] int id, [FromBody] UpdatedFeedBackDto feedBackDto)
 		{
 			var result = await _serviceManager.FeedBackService.UpdateFeedBackAsync(User, id, feedBackDto);
-			return result;
+			return Ok(result);
 		}
 
 		[HttpDelete("DeleteFeedBack/{id}")]
-		public async Task<string> DeleteFeedBack([FromRoute] int id)
+		public async Task<ActionResult<string>> DeleteFeedBack([FromRoute] int id)
 		{
 			var result = await _serviceManager.FeedBackService.DeleteFeedBackAsync(User, id);
-			return result;
+			return Ok(result);
 		}
 	}
 }

@@ -109,13 +109,14 @@ namespace CarCare.Core.Application.Services.FeedBacks
 
 
 			feedBack.Id = id;
-			feedBack.Comment = feedBackDto.Comment;
+			if (feedBackDto.Comment is not null)
+				feedBack.Comment = feedBackDto.Comment;
 			feedBack.Rating = feedBackDto.Rating;
 
 			var Updated = await _unitOfWork.CompleteAsync() > 0;
 
 			if (!Updated)
-				throw new BadRequestExeption("Opertaion isn't successeded");
+				throw new BadRequestExeption("You are not Update Your FeedBack ==> (Rating)");
 
 
 			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(feedBack);
