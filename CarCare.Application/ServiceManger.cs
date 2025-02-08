@@ -30,7 +30,7 @@ namespace CarCare.Core.Application
 
         public IAuthService AuthService => _authService.Value;
 
-        public IVehicleService VehicleService => _vehicleService.Value;
+		public IVehicleService VehicleService => _vehicleService.Value;
 
 
         public IFeedBackService FeedBackService => _feedBackService.Value;

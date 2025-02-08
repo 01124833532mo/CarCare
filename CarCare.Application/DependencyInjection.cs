@@ -38,24 +38,24 @@ namespace CarCare.Core.Application
 
 			});
 
-services.AddScoped(typeof(IContactService), typeof(ContactService));
+			services.AddScoped(typeof(IContactService), typeof(ContactService));
 			services.AddScoped(typeof(Func<IContactService>), (serviceprovider) =>
 			{
 				return () => serviceprovider.GetRequiredService<IContactService>();
 			});
-            services.AddScoped(typeof(IFeedBackService), typeof(FeedBackService));
-            services.AddScoped(typeof(Func<IFeedBackService>), (serviceprovider) =>
-            {
-                return () => serviceprovider.GetRequiredService<IFeedBackService>();
+			services.AddScoped(typeof(IFeedBackService), typeof(FeedBackService));
+			services.AddScoped(typeof(Func<IFeedBackService>), (serviceprovider) =>
+			{
+				return () => serviceprovider.GetRequiredService<IFeedBackService>();
 
-            });
+			});
 
-            services.AddScoped(typeof(IServiceTypeService), typeof(ServiceTypeService));
-            services.AddScoped(typeof(Func<IServiceTypeService>), (serviceprovider) =>
-            {
-                return () => serviceprovider.GetRequiredService<IServiceTypeService>();
+			services.AddScoped(typeof(IServiceTypeService), typeof(ServiceTypeService));
+			services.AddScoped(typeof(Func<IServiceTypeService>), (serviceprovider) =>
+			{
+				return () => serviceprovider.GetRequiredService<IServiceTypeService>();
 
-            });
+			});
 
 
             services.Configure<SMSSettings>(configuration.GetSection("SMSSettings"));
