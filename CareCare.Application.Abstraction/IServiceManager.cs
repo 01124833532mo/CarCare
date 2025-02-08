@@ -12,12 +12,12 @@ namespace CareCare.Core.Application.Abstraction
 
 		public IVehicleService VehicleService { get; }
 
-    
+
 		public IFeedBackService FeedBackService { get; }
-    
+
 		public IContactService ContactService { get; }
-    
-    public IServiceTypeService ServiceTypeService { get; }
+
+		public IServiceTypeService ServiceTypeService { get; } 
 
 	}
 }

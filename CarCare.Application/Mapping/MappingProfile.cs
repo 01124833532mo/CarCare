@@ -14,25 +14,25 @@ using Microsoft.AspNetCore.Identity;
 
 namespace CarCare.Core.Application.Mapping
 {
-    public class MappingProfile : Profile
-    {
-        public MappingProfile()
-        {
-            CreateMap<IdentityRole, RolesToReturn>().ReverseMap();
-            CreateMap<IdentityRole, RoleDto>().ReverseMap();
-            CreateMap<ApplicationUser, UserDto>().ReverseMap();
-            CreateMap<ApplicationUser, TechDto>()
-                .ForMember(dest => dest.ServiceName, option => option.MapFrom(src => src.ServiceType!.Name))
-                .ReverseMap();
+	public class MappingProfile : Profile
+	{
+		public MappingProfile()
+		{
+			CreateMap<IdentityRole, RolesToReturn>().ReverseMap();
+			CreateMap<IdentityRole, RoleDto>().ReverseMap();
+			CreateMap<ApplicationUser, UserDto>().ReverseMap();
+			CreateMap<ApplicationUser, TechDto>()
+				.ForMember(dest => dest.ServiceName, option => option.MapFrom(src => src.ServiceType!.Name))
+				.ReverseMap();
 
-            CreateMap<CreateVehicleDto, Vehicle>();
-            CreateMap<Vehicle, VehicleToReturn>()
-                .ForMember(dest => dest.FullName, option => option.MapFrom(src => src.User.FullName));
+			CreateMap<CreateVehicleDto, Vehicle>();
+			CreateMap<Vehicle, VehicleToReturn>()
+				.ForMember(dest => dest.FullName, option => option.MapFrom(src => src.User.FullName));
 
-            CreateMap<CreateFeedBackDto, FeedBack>();
-            CreateMap<FeedBack, ReturnFeedBackDto>();
-            CreateMap<ServiceType, ServiceTypeToReturn>()
-                .ForMember(dest => dest.PictureUrl, option => option.MapFrom<ServiceTypePictureUrlResolver>());
+			CreateMap<CreateFeedBackDto, FeedBack>();
+			CreateMap<FeedBack, ReturnFeedBackDto>();
+			CreateMap<ServiceType, ServiceTypeToReturn>()
+				.ForMember(dest => dest.PictureUrl, option => option.MapFrom<ServiceTypePictureUrlResolver>());
 
 			CreateMap<CreateContactDto, Contact>();
 			CreateMap<Contact, ReturnContactDto>();
