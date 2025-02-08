@@ -11,6 +11,7 @@ namespace CarCare.Apis.Controllers.Controllers.Vehicles
     public class VehicleController(IServiceManager serviceManager) : BaseApiController
     {
         [Authorize(Roles = Roles.User + "," + Roles.Technical)]
+
         [HttpPost("Create-Vehicle")]
         public async Task<ActionResult<VehicleToReturn>> CreateVehicle([FromBody] CreateVehicleDto createVehicleDto)
         {
