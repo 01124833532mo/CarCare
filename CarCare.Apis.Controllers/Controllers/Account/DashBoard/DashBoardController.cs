@@ -8,6 +8,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Models.Contacts;
+using CareCare.Core.Application.Abstraction.Models.ServiceTypes;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -147,12 +148,32 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
 			return Ok(result);
 		}
 
-		[HttpGet("GetAvarageRating")]
-		public async Task<ActionResult<decimal>> GetAvgRating()
-		{
-			var result = await serviceManager.FeedBackService.GetAvgRating();
-			return Ok(result);
-		}
+	[HttpDelete("Delete-ServiceType/{id}")]
+        public async Task<ActionResult<string>> DeleteServiceType([FromRoute] int id)
+        {
+            var result = await serviceManager.ServiceTypeService.DeleteServiceType(id);
+            return Ok(result);
+        }
+        [HttpPost("Create-Service-Type")]
+        public async Task<ActionResult<ServiceTypeToReturn>> CreateServiceType([FromForm] ServiceTypeDto createService)
+        {
+            var result = await serviceManager.ServiceTypeService.CreateServiceType(createService);
+            return Ok(result);
+        }
+
+        [HttpGet("GetAvarageRating")]
+        public async Task<decimal> GetAvgRating()
+        {
+            var result = await serviceManager.FeedBackService.GetAvgRating();
+            return result;
+        }
+
+        [HttpPut("Update-Service-Type/{id}")]
+        public async Task<ActionResult<ServiceTypeToReturn>> UpdateServiceType([FromRoute] int id, [FromForm] ServiceTypeDto createService)
+        {
+            var result = await serviceManager.ServiceTypeService.UpdateServiceType(id, createService);
+            return Ok(result);
+        }
 
 		[HttpPost("CreateMessage")]
 		public async Task<ActionResult<ReturnContactDto>> CreateMessage([FromBody] CreateContactDto contactDto)
@@ -175,4 +196,5 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
 			return Ok(result);
 		}
 	}
+
 }

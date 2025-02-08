@@ -11,13 +11,14 @@ namespace CarCare.Apis.Controllers.Controllers.Vehicles
     public class VehicleController(IServiceManager serviceManager) : BaseApiController
     {
         [Authorize(Roles = Roles.User + "," + Roles.Technical)]
+
         [HttpPost("Create-Vehicle")]
         public async Task<ActionResult<VehicleToReturn>> CreateVehicle([FromBody] CreateVehicleDto createVehicleDto)
         {
             var result = await serviceManager.VehicleService.CreateVehicle(createVehicleDto);
             return Ok(result);
         }
-        [AllowAnonymous]
+        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
         [HttpGet("Get-All-Vehicle-For-SpecificUser")]
         public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllVehicleForSpecificUser([FromQuery] SpecParams specParams)
         {

@@ -213,13 +213,17 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PictureUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

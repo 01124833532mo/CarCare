@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="_Common\" />
-    <Folder Include="_Data\Seeds\" />
   </ItemGroup>
 
   <ItemGroup>

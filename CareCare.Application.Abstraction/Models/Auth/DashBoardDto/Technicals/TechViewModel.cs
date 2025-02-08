@@ -9,6 +9,8 @@
 
         public required string Email { get; set; }
         public required string NationalId { get; set; }
+        public string? ServiceName { get; set; }
+
 
         public IEnumerable<string> Roles { get; set; }
 
