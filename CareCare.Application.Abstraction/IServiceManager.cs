@@ -1,6 +1,8 @@
-﻿using CareCare.Core.Application.Abstraction.Services.Auth;
+﻿using CarCare.Core.Domain.Contracts.Persistence.ServiceRequests;
+using CareCare.Core.Application.Abstraction.Services.Auth;
 using CareCare.Core.Application.Abstraction.Services.Contacts;
 using CareCare.Core.Application.Abstraction.Services.FeedBack;
+using CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserRequestService;
 using CareCare.Core.Application.Abstraction.Services.ServiceTypes;
 using CareCare.Core.Application.Abstraction.Services.Vehicles;
 
@@ -17,7 +19,8 @@ namespace CareCare.Core.Application.Abstraction
 
 		public IContactService ContactService { get; }
 
-		public IServiceTypeService ServiceTypeService { get; } 
+		public IServiceTypeService ServiceTypeService { get; }
+		public IRequestService RequestService { get; }
 
 	}
 }

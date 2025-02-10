@@ -3,6 +3,7 @@ using CarCare.Core.Application.Services.Auth;
 using CarCare.Core.Application.Services.Auth.SendServices;
 using CarCare.Core.Application.Services.Contacts;
 using CarCare.Core.Application.Services.FeedBacks;
+using CarCare.Core.Application.Services.ServiceRequests;
 using CarCare.Core.Application.Services.ServiceTypes;
 using CarCare.Core.Application.Services.Vehicles;
 using CarCare.Shared.AppSettings;
@@ -11,6 +12,7 @@ using CareCare.Core.Application.Abstraction.Services;
 using CareCare.Core.Application.Abstraction.Services.Auth;
 using CareCare.Core.Application.Abstraction.Services.Contacts;
 using CareCare.Core.Application.Abstraction.Services.FeedBack;
+using CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserRequestService;
 using CareCare.Core.Application.Abstraction.Services.ServiceTypes;
 using CareCare.Core.Application.Abstraction.Services.Vehicles;
 using Microsoft.Extensions.Configuration;
@@ -54,6 +56,14 @@ namespace CarCare.Core.Application
 			services.AddScoped(typeof(Func<IServiceTypeService>), (serviceprovider) =>
 			{
 				return () => serviceprovider.GetRequiredService<IServiceTypeService>();
+
+			});
+
+
+			services.AddScoped(typeof(IRequestService), typeof(RequestService));
+			services.AddScoped(typeof(Func<IRequestService>), (serviceprovider) =>
+			{
+				return () => serviceprovider.GetRequiredService<IRequestService>();
 
 			});
 

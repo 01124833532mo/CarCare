@@ -8,6 +8,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technicals;
 using CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Users;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Models.Contacts;
+using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
 using CareCare.Core.Application.Abstraction.Models.ServiceTypes;
 using CareCare.Core.Application.Abstraction.Models.Vehicles;
 using Microsoft.AspNetCore.Authorization;
@@ -195,6 +196,20 @@ namespace CarCare.Apis.Controllers.Controllers.Account.DashBoard
 		public async Task<ActionResult<ReturnContactDto>> DeleteContact([FromRoute] int id)
 		{
 			var result = await serviceManager.ContactService.DeleteContactAsync(id);
+			return Ok(result);
+		}
+
+		[HttpGet("GetUserRequests")]
+		public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetRequests([FromHeader] string userId)
+		{
+			var result = await serviceManager.RequestService.GetAllRequeststoUserForAdmin(userId);
+			return Ok(result);
+		}
+
+		[HttpGet("GetRequest/{id}")]
+		public async Task<ActionResult<ReturnRequestDto>> GetRequest([FromRoute] int id)
+		{
+			var result = await serviceManager.RequestService.ReturnRequest(id);
 			return Ok(result);
 		}
 	}
