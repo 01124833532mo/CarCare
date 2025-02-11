@@ -56,6 +56,20 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 			return Ok(result);
 		}
 
+		[HttpPut("TechincalBeActive")]
+		public async Task<ActionResult<string>> TechincalBeActive()
+		{
+			var result = await serviceManager.RequestService.TechincalBeActive(User);
+			return Ok(result);
+		}
+
+		[HttpPut("TechincalBeInActive")]
+		public async Task<ActionResult<string>> TechincalBeInActive()
+		{
+			var result = await serviceManager.RequestService.TechincalBeInActive(User);
+			return Ok(result);
+		}
+
 		#endregion
 
 

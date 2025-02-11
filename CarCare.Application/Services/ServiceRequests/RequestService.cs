@@ -257,6 +257,11 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
 			techincal.IsActive = true;
 
+			var succeed = await userManager.UpdateAsync(techincal);
+
+			if (!succeed.Succeeded)
+				throw new BadRequestExeption("Error While Save Details");
+
 			return $"Techincal {techincal.FullName} is Actived!!";
 		}
 
@@ -273,6 +278,11 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 				throw new NotFoundExeption("No User For This Id", nameof(techId));
 
 			techincal.IsActive = false;
+
+			var succeed = await userManager.UpdateAsync(techincal);
+
+			if (!succeed.Succeeded)
+				throw new BadRequestExeption("Error While Save Details");
 
 			return $"Techincal {techincal.FullName} is Inactived!!";
 		}
