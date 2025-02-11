@@ -49,6 +49,16 @@ namespace CarCare.Core.Application.Mapping
 				.ForMember(dest => dest.TypeOfWinch, option => option.MapFrom(src => (TypeOfWinch)Enum.Parse(typeof(TypeOfWinch), src.TypeOfWinch ?? null!)))
 				.ReverseMap()
 				;
+
+			CreateMap<UpdateRequestDto, ServiceRequest>()
+				.ForMember(dest => dest.TireSize, option => option.MapFrom(src => (TireSize)Enum.Parse(typeof(TireSize), src.TireSize ?? null!)))
+				.ForMember(dest => dest.BettaryType, option => option.MapFrom(src => (BettaryType)Enum.Parse(typeof(BettaryType), src.BettaryType ?? null!)))
+				.ForMember(dest => dest.TypeOfFuel, option => option.MapFrom(src => (TypeOfFuel)Enum.Parse(typeof(TypeOfFuel), src.TypeOfFuel ?? null!)))
+				.ForMember(dest => dest.TypeOfOil, option => option.MapFrom(src => (TypeOfOil)Enum.Parse(typeof(TypeOfOil), src.TypeOfOil ?? null!)))
+				.ForMember(dest => dest.TypeOfWinch, option => option.MapFrom(src => (TypeOfWinch)Enum.Parse(typeof(TypeOfWinch), src.TypeOfWinch ?? null!)))
+				.ReverseMap()
+				;
+
 			CreateMap<ServiceRequest, ReturnRequestDto>()
 				.ForMember(dest => dest.TireSize, option => option.MapFrom(src => src.TireSize == 0 ? null : src.TireSize.ToString()))
 				.ForMember(dest => dest.BettaryType, option => option.MapFrom(src => src.BettaryType == 0 ? null : src.BettaryType.ToString()))

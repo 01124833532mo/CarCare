@@ -1,4 +1,5 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
+using CarCare.Core.Domain.Entities.Orders;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
@@ -20,7 +21,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 		[HttpPost("CreateRequest")]
 		public async Task<ActionResult<ReturnRequestDto>> CreateRequest(CreateRequestDto requestDto)
 		{
-			var result = await serviceManager.RequestService.CreateRequest(requestDto, null);
+			var result = await serviceManager.RequestService.CreateRequest(requestDto);
 			return Ok(result);
 		}
 
@@ -46,6 +47,16 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 
 		#endregion
 
+		#region Techincal Received Request
+
+		[HttpGet("ReceivedRequest")]
+		public async Task<ActionResult<string>> ReceivedRequest([FromHeader] int requestId, [FromHeader] Status status)
+		{
+			var result = await serviceManager.RequestService.ReceivedRequest(requestId, status);
+			return Ok(result);
+		}
+
+		#endregion
 
 
 	}

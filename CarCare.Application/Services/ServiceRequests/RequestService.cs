@@ -22,7 +22,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
 		#region User Request
 
-		public async Task<ReturnRequestDto> CreateRequest(CreateRequestDto requestDto, List<string>? _notactivetechnicalId)
+		public async Task<ReturnRequestDto> CreateRequest(CreateRequestDto requestDto)
 		{
 			var repo = _unitOfWork.serviceRequestRepository;
 
@@ -30,10 +30,6 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
 			if (activeTechnicals is null)
 				throw new BadRequestExeption("There is no Available Techincals");
-
-			if (_notactivetechnicalId is not null && !activeTechnicals.Where(t => t.Id == requestDto.TechId && !_notactivetechnicalId.Contains(t.Id)).Any())
-				throw new BadRequestExeption("not Available Techincal");
-
 
 			if (!activeTechnicals.Where(t => t.Id == requestDto.TechId).Any())
 				throw new BadRequestExeption("not Available Techincal");
@@ -53,8 +49,42 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 			var returnedData = _mapper.Map<ReturnRequestDto>(request);
 
 			return returnedData;
+
 		}
 
+
+		//public async Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId)
+		//{
+		//	var repo = _unitOfWork.serviceRequestRepository;
+
+		//	var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId);
+
+		//	if (activeTechnicals is null)
+		//		throw new BadRequestExeption("There is no Available Techincals");
+
+		//	if (!activeTechnicals.Where(t => t.Id == requestDto.TechId).Any())
+		//		throw new BadRequestExeption("not Available Techincal");
+
+		//	var returnedRequest = await ReturnRequest(requestId);
+
+		//	var newTechincal = activeTechnicals.FirstOrDefault();
+
+		//	if (newTechincal is null)
+		//		throw new BadRequestExeption("not Available Techincal");
+
+		//	returnedRequest.TechId = newTechincal.Id;
+
+		//	var request = _mapper.Map<ServiceRequest>(returnedRequest);
+
+		//	_unitOfWork.GetRepository<ServiceRequest, int>().Update(request);
+
+		//	var updated = await _unitOfWork.CompleteAsync() > 0;
+
+		//	if (!updated)
+		//		throw new BadRequestExeption("Error While Updating Request!!");
+
+		//	return returnedRequest;
+		//}
 
 		public async Task<ReturnRequestDto> ReturnRequest(int requestId)
 		{
@@ -121,65 +151,88 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
 		#region Techincal Received Request
 
-		public async Task<string> ReceivedRequest(ClaimsPrincipal claimsPrincipal, int requestId, Status status)
+		public async Task<string> ReceivedRequest(int requestId, Status status)
 		{
-			var technicalId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)!.Value;
+			var repo = _unitOfWork.serviceRequestRepository;
 
-			if (technicalId is null)
-				throw new UnAuthorizedExeption("You are not allowed!!");
-
-			var technical = await userManager.FindByIdAsync(technicalId);
-
-			if (technical is null)
-				throw new NotFoundExeption("No User For This Id", nameof(technicalId));
-
-			var request = await _unitOfWork.GetRepository<ServiceRequest, int>().GetAsync(requestId);
+			var request = await repo.GetAsync(requestId);
 
 			if (request is null)
 				throw new NotFoundExeption(nameof(request), requestId);
 
-			List<string> notActiveTechincals = new();
+			var technicalId = request.TechId;
+
+			var technical = await userManager.FindByIdAsync(technicalId);
+
+			if (technical is null)
+				throw new NotFoundExeption("No Technical For This Id", nameof(technicalId));
+
+
+			if (technicalId != request.TechId)
+				throw new UnAuthorizedExeption("You are not allowed!!");
+
 
 			request.Status = status;
+			repo.Update(request);
 
 			switch (status)
 			{
+				case Status.Pending:
+
+					await Task.Delay(TimeSpan.FromSeconds(5));
+
+					if (request.Status == Status.Pending || request.Status == Status.Canceled)
+						goto case Status.Canceled;
+
+					else if (request.Status == Status.InProgress)
+						goto case Status.InProgress;
+
+					else
+						goto case Status.Completed;
+
 				case Status.InProgress:
 
 					technical.IsActive = false;
 
-					break;
-
-				case Status.Pending:
-
-					await Task.Delay(TimeSpan.FromMinutes(3));
-
-					notActiveTechincals.Append(technicalId);
-
-					var Createdrequest = _mapper.Map<CreateRequestDto>(request);
-
-					await CreateRequest(Createdrequest, notActiveTechincals);
 
 					break;
+
 
 				case Status.Completed:
 
 					technical.IsActive = true;
 
+
 					break;
 
 				case Status.Canceled:
 
-					technical.IsActive = true;
+					technical.IsActive = false;
 
-					notActiveTechincals.Append(technicalId);
+					await userManager.UpdateAsync(technical);
 
-					Createdrequest = _mapper.Map<CreateRequestDto>(request);
+					var activeTechnicals = (await GetActiveTechincals(request.ServiceTypeId)).ToList();
 
-					await CreateRequest(Createdrequest, notActiveTechincals);
+					if (!activeTechnicals.Any())
+						throw new BadRequestExeption("There is no Available Techincals");
+
+					var updatedRequest = _mapper.Map<UpdateRequestDto>(request);
+
+					foreach (var tech in activeTechnicals)
+					{
+						updatedRequest.TechId = tech.Id;
+
+						_mapper.Map(updatedRequest, request);
+
+						repo.Update(request);
+
+						await ReceivedRequest(updatedRequest.Id, Status.Pending);
+					}
 
 					break;
+
 			}
+
 			var complete = await _unitOfWork.CompleteAsync() > 0;
 
 			if (!complete)
