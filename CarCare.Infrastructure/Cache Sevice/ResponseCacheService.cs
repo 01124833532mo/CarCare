@@ -57,7 +57,7 @@ namespace CarCare.Infrastructure.Cache_Sevice
             else
             {
                 // Fallback to in-memory cache
-                if (_memoryCache.TryGetValue(key, out string cachedResponse))
+                if (_memoryCache.TryGetValue(key, out string? cachedResponse))
                 {
                     return cachedResponse;
                 }

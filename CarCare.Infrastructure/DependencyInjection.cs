@@ -36,7 +36,6 @@ namespace CarCare.Infrastructure
 
             return services;
 
-            return services;
         }
     }
 }
