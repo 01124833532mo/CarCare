@@ -35,7 +35,7 @@ namespace CarCare.Infrastructure.Persistence.Generic_Repository
 
 
 
-        public async Task<TEntity?> GetWithSpecAsync(ISpecification<TEntity, TKey> spec, TKey id)
+        public async Task<TEntity?> GetWithSpecAsync(ISpecification<TEntity, TKey> spec)
         {
             return await ApplySpecifications(spec).FirstOrDefaultAsync();
         }

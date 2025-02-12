@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace CarCare.Core.Domain.Entities.Orders
 {
-	public enum Status
-	{
-		Pending = 1,
-		InProgress,
-		Completed,
-		Canceled,
-	}
+    public enum Status
+    {
+        Pending = 1,
+        InProgress,
+        Completed,
+        Canceled,
+        [EnumMember(Value = "Payment Received")]
+        PaymentReceived,
+        [EnumMember(Value = "Payment Failed")]
+        PaymentFailed,
+    }
 }

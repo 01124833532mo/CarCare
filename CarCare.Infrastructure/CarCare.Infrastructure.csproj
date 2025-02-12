@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Folder Include="Basket Repository\" />
-    <Folder Include="Payment Service\" />
   </ItemGroup>
 
   <ItemGroup>

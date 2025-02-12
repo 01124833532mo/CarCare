@@ -4,6 +4,7 @@ using CarCare.Infrastructure.Persistence._Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Data.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    partial class CarCarIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250211190841_Add_ClientSecret")]
+    partial class Add_ClientSecret
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,7 +63,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Contact", (string)null);
+                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("CarCare.Core.Domain.Entities.FeedBacks.FeedBack", b =>
@@ -103,7 +106,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("FeedBacks", (string)null);
+                    b.ToTable("FeedBacks");
                 });
 
             modelBuilder.Entity("CarCare.Core.Domain.Entities.Identity.ApplicationUser", b =>
@@ -295,7 +298,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ServiceRequests", (string)null);
+                    b.ToTable("ServiceRequests");
                 });
 
             modelBuilder.Entity("CarCare.Core.Domain.Entities.ServiceTypes.ServiceType", b =>
@@ -324,7 +327,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ServiceTypes", (string)null);
+                    b.ToTable("ServiceTypes");
                 });
 
             modelBuilder.Entity("CarCare.Core.Domain.Entities.Vehicles.Vehicle", b =>
@@ -389,7 +392,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
                     b.HasIndex("VIN_Number")
                         .IsUnique();
 
-                    b.ToTable("Vehicles", (string)null);
+                    b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -554,7 +557,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.OwnsMany("CarCare.Core.Domain.Entities.Identity.ApplicationUser.RefreshTokens#CarCare.Core.Domain.Entities.Identity.RefreshToken", "RefreshTokens", b1 =>
+                    b.OwnsMany("CarCare.Core.Domain.Entities.Identity.RefreshToken", "RefreshTokens", b1 =>
                         {
                             b1.Property<string>("ApplicationUserId")
                                 .HasColumnType("nvarchar(450)");
@@ -580,7 +583,7 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
 
                             b1.HasKey("ApplicationUserId", "Id");
 
-                            b1.ToTable("RefreshToken", (string)null);
+                            b1.ToTable("RefreshToken");
 
                             b1.WithOwner()
                                 .HasForeignKey("ApplicationUserId");
