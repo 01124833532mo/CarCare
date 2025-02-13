@@ -72,7 +72,7 @@ namespace CarCare.Core.Application.Services.FeedBacks
         public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
         {
             var spec = new FeedBackWithUserSpecifications(id);
-            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetWithSpecAsync(spec, id);
+            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetWithSpecAsync(spec);
 
             if (feedBack is null)
                 throw new NotFoundExeption(nameof(feedBack), id);
@@ -99,16 +99,16 @@ namespace CarCare.Core.Application.Services.FeedBacks
                 throw new NotFoundExeption(nameof(feedBack), id);
 
 
-			feedBack.Id = id;
-			if (feedBackDto.Comment is not null)
-				feedBack.Comment = feedBackDto.Comment;
-			feedBack.Rating = feedBackDto.Rating;
+            feedBack.Id = id;
+            if (feedBackDto.Comment is not null)
+                feedBack.Comment = feedBackDto.Comment;
+            feedBack.Rating = feedBackDto.Rating;
 
 
             var Updated = await _unitOfWork.CompleteAsync() > 0;
 
-			if (!Updated)
-				throw new BadRequestExeption("You are not Update Your FeedBack ==> (Rating)");
+            if (!Updated)
+                throw new BadRequestExeption("You are not Update Your FeedBack ==> (Rating)");
 
 
 

@@ -1,5 +1,7 @@
 ﻿using CarCare.Infrastructure.AttachementService;
 using CarCare.Infrastructure.Cache_Sevice;
+using CarCare.Infrastructure.Payment_Service;
+using CarCare.Shared.Models;
 using CareCare.Core.Application.Abstraction.Common.Contract.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,10 +35,12 @@ namespace CarCare.Infrastructure
 
             // Register ResponseCacheService
             services.AddSingleton<IResponseCacheService, ResponseCacheService>();
+            services.AddScoped(typeof(IPaymentService), typeof(PaymentService));
+
+            services.Configure<StripSettings>(configuration.GetSection("StripeSettings"));
 
             return services;
 
-            return services;
         }
     }
 }

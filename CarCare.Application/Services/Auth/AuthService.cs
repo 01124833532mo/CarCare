@@ -109,18 +109,18 @@ namespace CarCare.Core.Application.Services.Auth
         {
             var user = await userManager.Users.Where(u => u.PhoneNumber == loginDto.PhoneNumber).FirstOrDefaultAsync();
             if (user == null)
-                throw new BadRequestExeption("Invalid Login");
+                throw new UnAuthorizedExeption("Invalid Login");
 
             var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
 
             if (!user.EmailConfirmed)
-                throw new BadRequestExeption("Email is not Confirmed");
+                throw new UnAuthorizedExeption("Email is not Confirmed");
 
             if (result.IsLockedOut)
-                throw new BadRequestExeption("Email is Locked Out");
+                throw new UnAuthorizedExeption("Email is Locked Out");
 
             if (!result.Succeeded)
-                throw new BadRequestExeption("Invalid Login");
+                throw new UnAuthorizedExeption("Invalid Login");
 
             var serviceid = user.ServiceId ?? 0; // Provide a default value (e.g., 0)
             var servicetype = await unitOfWork.GetRepository<ServiceType, int>().GetAsync(serviceid);
