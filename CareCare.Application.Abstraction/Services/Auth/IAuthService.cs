@@ -32,6 +32,8 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 		Task<BaseUserDto> LoginAsync(LoginDto loginDto);
 		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);
 		Task<TechDto> RegisterTechAsync(TechRegisterDto userRegisterDto);
+		Task<TechDto> GetTechLocationAsync(ClaimsPrincipal claimsPrincipaldouble, double techLatitude, double techLongitude);
+
 
 		#endregion
 

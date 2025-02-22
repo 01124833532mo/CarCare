@@ -5,6 +5,7 @@ using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 		[HttpPost("CreateRequest")]
 		public async Task<ActionResult<ReturnRequestDto>> CreateRequest(CreateRequestDto requestDto)
 		{
-			var result = await serviceManager.RequestService.CreateRequest(requestDto);
+			var result = await serviceManager.RequestService.CreateRequestAutomatic(requestDto);
 			return Ok(result);
 		}
 
@@ -38,8 +39,16 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 			var result = await serviceManager.RequestService.GetAllRequeststoUserForUser(User);
 			return Ok(result);
 		}
+
+		[HttpGet("GetNearestTechincals")]
+		public async Task<ActionResult<IEnumerable<ReturnTechRequestDto>>> GetNearestTechincals(int serviceId, double UserLatitude, double UserLongitude)
+		{
+			var result = await serviceManager.RequestService.GetNearestTechnicals(serviceId, UserLatitude, UserLongitude);
+			return Ok(result);
+		}
+
 		[HttpGet("GetAvailableTechincals")]
-		public async Task<ActionResult<ReturnTechRequestDto>> GetAvailableTechincals([FromHeader] int serviceId)
+		public async Task<ActionResult<IEnumerable<ReturnTechRequestDto>>> GetAvailableTechincals([FromHeader] int serviceId)
 		{
 			var result = await serviceManager.RequestService.GetActiveTechincals(serviceId);
 			return Ok(result);
@@ -50,9 +59,30 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 		#region Techincal Received Request
 
 		[HttpGet("ReceivedRequest")]
-		public async Task<ActionResult<string>> ReceivedRequest([FromHeader] int requestId, [FromHeader] Status status)
+		public async Task<ActionResult<string>> ReceivedRequest([FromQuery] int requestId, [FromQuery] Status status)
 		{
-			var result = await serviceManager.RequestService.ReceivedRequest(requestId, status);
+			var result = await serviceManager.RequestService.ReceivedRequestAutomatic(User, requestId, status);
+			return Ok(result);
+		}
+
+		[HttpPut("AcceptRequest")]
+		public async Task<ActionResult<string>> AcceptRequest([FromQuery] int requestId)
+		{
+			var result = await serviceManager.RequestService.AcceptRequest(User, requestId);
+			return Ok(result);
+		}
+
+		[HttpPut("RejectRequest")]
+		public async Task<ActionResult<string>> RejectRequest([FromQuery] int requestId)
+		{
+			var result = await serviceManager.RequestService.RejectRequest(User, requestId);
+			return Ok(result);
+		}
+
+		[HttpGet("GetAllRequestsToTechnical")]
+		public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetAllRequestsToTechnical()
+		{
+			var result = await serviceManager.RequestService.GetAllRequestsToTechnical(User);
 			return Ok(result);
 		}
 

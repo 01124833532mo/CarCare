@@ -10,18 +10,17 @@
 
         public string? BettaryType { get; set; }
 
-        public int? LitersOfFuel { get; set; }
         public string? TypeOfFuel { get; set; }
 
-        public int? LitersOfOil { get; set; }
         public string? TypeOfOil { get; set; }
 
-        public int? TireCount { get; set; }
         public string? TireSize { get; set; }
 
         public string? TypeOfWinch { get; set; }
 
-        public decimal ServicePrice { get; set; }
+		public int? ServiceQuantity { get; set; }
+
+		public decimal ServicePrice { get; set; }
         public required string UserId { get; set; }
 
         public string CreatedBy { get; set; } = null!;

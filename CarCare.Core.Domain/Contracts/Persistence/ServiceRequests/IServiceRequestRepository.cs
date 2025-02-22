@@ -11,6 +11,6 @@ namespace CarCare.Core.Domain.Contracts.Persistence.ServiceRequests
 	public interface IServiceRequestRepository : IGenericRepository<ServiceRequest, int>
 	{
 		Task<IEnumerable<ApplicationUser>> GetAvailableTechniciansAsync(int serviceTypeId);
-
+		Task<IEnumerable<ApplicationUser>> GetNearestTechincal(int serviceTypeId, double userLatitude, double userLongitude);
 	}
 }

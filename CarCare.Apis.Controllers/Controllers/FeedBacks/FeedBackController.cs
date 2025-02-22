@@ -27,7 +27,7 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 		}
 
 		[HttpGet("GetAllFeedBacks")]
-		public async Task<ActionResult<Pagination<VehicleToReturn>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
+		public async Task<ActionResult<Pagination<ReturnFeedBackDto>>> GetAllFeedBacks([FromQuery] SpecParams specParams)
 		{
 			var result = await _serviceManager.FeedBackService.GetAllFeedBackAsync(specParams);
 			return Ok(result);
