@@ -8,15 +8,21 @@ namespace CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserReq
 	public interface IRequestService
 	{
 
-		Task<ReturnRequestDto> CreateRequest(CreateRequestDto requestDto);
+		Task<ReturnRequestDto> CreateRequestAutomatic(CreateRequestDto requestDto);
 		//Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId);
 		Task<ReturnRequestDto> ReturnRequest(int requestId);
 		Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal);
 		Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForAdmin(string UserId);
-		Task<ReturnRequestDto> GetNearestTechnical(double UserLatitude, double UserLongitude);
+		Task<IEnumerable<ReturnTechRequestDto>> GetNearestTechnicals(int serviceTypeId, double UserLatitude, double UserLongitude);
 		Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId);
 
-		Task<string> ReceivedRequest( int requestId, Status status);
+
+		Task<string> ReceivedRequestAutomatic(ClaimsPrincipal claimsPrincipal, int requestId, Status status);
+
+		Task<string> AcceptRequest(ClaimsPrincipal claimsPrincipal, int requestId);
+		Task<string> RejectRequest(ClaimsPrincipal claimsPrincipal, int requestId);
+
+		Task<IEnumerable<ReturnRequestDto>> GetAllRequestsToTechnical(ClaimsPrincipal claimsPrincipal);
 
 		Task<string> TechincalBeActive(ClaimsPrincipal claimsPrincipal);
 

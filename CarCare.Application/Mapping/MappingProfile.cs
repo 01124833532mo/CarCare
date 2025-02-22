@@ -34,7 +34,10 @@ namespace CarCare.Core.Application.Mapping
 				.ForMember(dest => dest.FullName, option => option.MapFrom(src => src.User.FullName));
 
 			CreateMap<CreateFeedBackDto, FeedBack>();
-			CreateMap<FeedBack, ReturnFeedBackDto>();
+			CreateMap<FeedBack, ReturnFeedBackDto>()
+				.ForMember(dest => dest.UserName, option => option.MapFrom(src => src.User.FullName));
+
+
 			CreateMap<ServiceType, ServiceTypeToReturn>()
 				.ForMember(dest => dest.PictureUrl, option => option.MapFrom<ServiceTypePictureUrlResolver>());
 
