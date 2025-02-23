@@ -12,10 +12,16 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
     {
         #region User Request
 
-        [HttpPost("CreateRequest")]
-        public async Task<ActionResult<ReturnRequestDto>> CreateRequest(CreateRequestDto requestDto)
+        [HttpPost("CreateRequestAutomatic")]
+        public async Task<ActionResult<ReturnRequestDto>> CreateRequestAutomatic(CreateRequestDto requestDto)
         {
             var result = await serviceManager.RequestService.CreateRequestAutomatic(requestDto);
+            return Ok(result);
+        }
+        [HttpPost("CreateRequestManually")]
+        public async Task<ActionResult<ReturnRequestDto>> CreateRequestManually(CreateRequestDto requestDto)
+        {
+            var result = await serviceManager.RequestService.CreateRequestManually(requestDto);
             return Ok(result);
         }
 

@@ -34,6 +34,9 @@ namespace CarCare.Core.Application.Services.ServiceRequests
             if (activeTechnicals is null)
                 throw new BadRequestExeption("There is no Available Techincals");
 
+            if (requestDto.ServiceQuantity is null)
+                requestDto.ServiceQuantity = 1;
+
             var request = _mapper.Map<ServiceRequest>(requestDto);
 
             request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
@@ -59,6 +62,42 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             return returnedData;
 
+        }
+        public async Task<ReturnRequestDto> CreateRequestManually(CreateRequestDto requestDto)
+        {
+            var repo = _unitOfWork.serviceRequestRepository;
+
+            var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
+
+            if (activeTechnicals is null)
+                throw new BadRequestExeption("There is no Available Techincals");
+
+            if (!activeTechnicals.Where(t => t.Technician.Id == requestDto.TechId).Any())
+                throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
+            if (requestDto.ServiceQuantity is null)
+                requestDto.ServiceQuantity = 1;
+
+            var request = _mapper.Map<ServiceRequest>(requestDto);
+
+            request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
+
+
+            await _unitOfWork.serviceRequestRepository.AddAsync(request);
+
+            var complete = await _unitOfWork.CompleteAsync() > 0;
+
+            if (!complete)
+                throw new BadRequestExeption("There is an Error in Request");
+
+            var Orderid = request.Id;
+
+            var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
+
+            var returnedData = _mapper.Map<ReturnRequestDto>(request);
+            returnedData.PaymentIntentId = result.PaymentIntentId;
+            returnedData.ClientSecret = result.ClientSecret;
+
+            return returnedData;
         }
 
 
@@ -328,6 +367,8 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             return $"Techincal {techincal.FullName} is Inactived!!";
         }
+
+
 
         #endregion
 

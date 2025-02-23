@@ -8,6 +8,7 @@ namespace CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserReq
     {
 
         Task<ReturnRequestDto> CreateRequestAutomatic(CreateRequestDto requestDto);
+        Task<ReturnRequestDto> CreateRequestManually(CreateRequestDto requestDto);
         //Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId);
         Task<ReturnRequestDto> ReturnRequest(int requestId);
         Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal);
