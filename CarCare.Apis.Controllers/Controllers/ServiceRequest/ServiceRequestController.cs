@@ -24,6 +24,12 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.CreateRequestManually(requestDto);
             return Ok(result);
         }
+        [HttpPut("Update-Technical-in-Request")]
+        public async Task<ActionResult<ReturnRequestDto>> UpdateTechnicalInRequest([FromQuery] int RequestId, [FromQuery] int ServiceId, [FromQuery] string TechnicalId)
+        {
+            var result = await serviceManager.RequestService.UpdateTechnicalinRequest(RequestId, TechnicalId, ServiceId);
+            return Ok(result);
+        }
 
         [HttpGet("GetRequest/{id}")]
         public async Task<ActionResult<ReturnRequestDto>> GetRequest([FromRoute] int id)

@@ -7,6 +7,7 @@ using CareCare.Core.Application.Abstraction.Common.Contract.Infrastructure;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
 using CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserRequestService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace CarCare.Core.Application.Services.ServiceRequests
@@ -99,6 +100,45 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             return returnedData;
         }
+
+        public async Task<ReturnRequestDto> UpdateTechnicalinRequest(int requestid, string techid, int sercieid)
+        {
+            var repo = _unitOfWork.GetRepository<ServiceRequest, int>();
+
+            var technicians = await userManager.Users
+                .Where(t => t.IsActive == true && t.Type == Types.Technical && t.ServiceType!.Id == sercieid)
+                .ToListAsync();
+
+            if (string.IsNullOrEmpty(techid))
+                throw new BadRequestExeption("Technical id is null or empty");
+
+            if (technicians is null)
+                throw new BadRequestExeption("There is no Available Techincals");
+
+
+
+            var request = await repo.GetAsync(requestid);
+            if (request is null)
+                throw new NotFoundExeption("Request not found", nameof(requestid));
+
+            request!.TechId = techid;
+
+            repo.Update(request);
+
+            var complete = await _unitOfWork.CompleteAsync() > 0;
+
+            if (!complete)
+                throw new BadRequestExeption("There is an Error in Update Request");
+
+            var returnedRequest = _mapper.Map<ReturnRequestDto>(request);
+
+            return returnedRequest;
+
+
+
+
+        }
+
 
 
         //public async Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId)
@@ -367,6 +407,8 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             return $"Techincal {techincal.FullName} is Inactived!!";
         }
+
+
 
 
 
