@@ -112,9 +112,12 @@ namespace CarCare.Core.Application.Services.ServiceRequests
             if (string.IsNullOrEmpty(techid))
                 throw new BadRequestExeption("Technical id is null or empty");
 
-            if (technicians is null)
-                throw new BadRequestExeption("There is no Available Techincals");
 
+            if (technicians.Count == 0)
+                throw new BadRequestExeption("There is no Available Techincals Or Servic Id Incorrect");
+
+            var checkexsistingtechnical = await userManager.Users.FirstOrDefaultAsync(e => e.Id == techid);
+            if (checkexsistingtechnical is null) throw new NotFoundExeption("No Technical Found For This Id", nameof(techid));
 
 
             var request = await repo.GetAsync(requestid);
