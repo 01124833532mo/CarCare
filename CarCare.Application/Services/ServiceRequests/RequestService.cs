@@ -32,7 +32,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             var activeTechnicals = await repo.GetNearestTechincal(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
 
-            if (activeTechnicals is null)
+            if (activeTechnicals.Count() == 0)
                 throw new BadRequestExeption("There is no Available Techincals");
 
             if (requestDto.ServiceQuantity is null)
@@ -70,7 +70,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
 
-            if (activeTechnicals is null)
+            if (activeTechnicals.Count() == 0)
                 throw new BadRequestExeption("There is no Available Techincals");
 
             if (!activeTechnicals.Where(t => t.Technician.Id == requestDto.TechId).Any())

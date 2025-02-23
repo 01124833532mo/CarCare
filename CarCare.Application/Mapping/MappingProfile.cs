@@ -68,6 +68,8 @@ namespace CarCare.Core.Application.Mapping
                 .ForMember(dest => dest.TypeOfFuel, option => option.MapFrom(src => src.TypeOfFuel == 0 ? null : src.TypeOfFuel.ToString()))
                 .ForMember(dest => dest.TypeOfOil, option => option.MapFrom(src => src.TypeOfOil == 0 ? null : src.TypeOfOil.ToString()))
                 .ForMember(dest => dest.TypeOfWinch, option => option.MapFrom(src => src.TypeOfWinch == 0 ? null : src.TypeOfWinch.ToString()))
+                .ForMember(dest => dest.Status, option => option.MapFrom(src => src.Status.ToString()))
+
                 .ReverseMap()
                 ;
 

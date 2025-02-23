@@ -18,11 +18,12 @@
 
         public string? TypeOfWinch { get; set; }
 
-		public int? ServiceQuantity { get; set; }
+        public int? ServiceQuantity { get; set; }
 
-		public decimal ServicePrice { get; set; }
+        public decimal ServicePrice { get; set; }
         public required string UserId { get; set; }
 
+        public required string Status { get; set; }
         public string CreatedBy { get; set; } = null!;
 
         public DateTime CreatedOn { get; set; }
