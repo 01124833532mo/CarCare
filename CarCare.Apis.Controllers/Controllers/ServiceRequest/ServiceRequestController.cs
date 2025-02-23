@@ -31,6 +31,13 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             return Ok(result);
         }
 
+        [HttpDelete("DeleteRequestForUser/{RequestId}")]
+        public async Task<ActionResult<string>> DeleteRequestForUser([FromRoute] int RequestId)
+        {
+            var result = await serviceManager.RequestService.DeleteRequest(RequestId);
+            return Ok(result);
+        }
+
         [HttpGet("GetRequest/{id}")]
         public async Task<ActionResult<ReturnRequestDto>> GetRequest([FromRoute] int id)
         {

@@ -142,6 +142,23 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
         }
 
+        public async Task<string> DeleteRequest(int requestid)
+        {
+            var repo = _unitOfWork.GetRepository<ServiceRequest, int>();
+            var request = await repo.GetAsync(requestid);
+
+            if (request is null) throw new NotFoundExeption("Not request With This Id:", nameof(requestid));
+
+            repo.Delete(request);
+
+            var result = await _unitOfWork.CompleteAsync() > 0;
+
+            if (result is true) return "Deleted Successfully";
+
+            else
+                throw new BadRequestExeption("Operation Faild");
+        }
+
 
 
         //public async Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId)
@@ -410,6 +427,8 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             return $"Techincal {techincal.FullName} is Inactived!!";
         }
+
+
 
 
 
