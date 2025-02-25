@@ -85,6 +85,8 @@ namespace CarCare.Core.Application.Mapping
            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Technician.Type))
            .ForMember(dest => dest.NationalId, opt => opt.MapFrom(src => src.Technician.NationalId))
            .ForMember(dest => dest.Distance, opt => opt.MapFrom(src => src.Distance));
+
+            CreateMap<UpdateTechnicalLocationDto, TechDto>();
         }
 
     }
