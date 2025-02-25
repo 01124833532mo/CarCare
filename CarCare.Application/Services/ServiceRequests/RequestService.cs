@@ -149,14 +149,23 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             if (request is null) throw new NotFoundExeption("Not request With This Id:", nameof(requestid));
 
-            repo.Delete(request);
 
-            var result = await _unitOfWork.CompleteAsync() > 0;
+            if (request.Status == Status.Pending || request.Status == Status.Canceled)
+            {
+                repo.Delete(request);
 
-            if (result is true) return "Deleted Successfully";
+                var result = await _unitOfWork.CompleteAsync() > 0;
 
+                if (result is true) return "Deleted Successfully";
+
+                else
+                    throw new BadRequestExeption("Operation Faild");
+            }
             else
-                throw new BadRequestExeption("Operation Faild");
+            {
+                throw new BadRequestExeption("This Request Not Pending ,Is Already Proccessing");
+            }
+
         }
 
 
