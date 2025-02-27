@@ -3,7 +3,6 @@ using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Orders;
 using CarCare.Infrastructure.Persistence._Data;
 using CarCare.Infrastructure.Persistence.Generic_Repository;
-using CarCare.Shared.ErrorModoule.Exeptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarCare.Infrastructure.Persistence.Repositories.ServiceRequests
@@ -33,7 +32,7 @@ namespace CarCare.Infrastructure.Persistence.Repositories.ServiceRequests
                 })
                 .OrderByDescending(t => t.Technician.TechRate)
                 .ThenBy(t => t.Distance)
-                .Select(t => (t.Technician, t.Distance));
+                .Select(t => (t.Technician, t.Distance)).Where(d => d.Distance != 0);
 
             return techniciansWithDistance.ToList();
         }
@@ -42,7 +41,8 @@ namespace CarCare.Infrastructure.Persistence.Repositories.ServiceRequests
         {
             if (techLatitude == null || techLongitude == null)
             {
-                throw new BadRequestExeption("Technician Do not Have Location ");
+                //throw new BadRequestExeption("Technician Do not Have Location ");
+                return 0;
             }
 
             var R = 6371;
@@ -72,31 +72,37 @@ namespace CarCare.Infrastructure.Persistence.Repositories.ServiceRequests
                 .Select(t => new
                 {
                     Technical = t, // Match the interface tuple element name
-                    Distance = CalculateDistance(userLatitude, userLongitude, t.TechLatitude!.Value, t.TechLongitude!.Value)
+                    Distance = CalculateDistance(userLatitude, userLongitude, t.TechLatitude, t.TechLongitude)
                 })
                 .OrderBy(t => t.Distance)
-                .Select(t => (t.Technical, t.Distance)) // Match the interface tuple element name
+                .Select(t => (t.Technical, t.Distance))
+                .Where(d => d.Distance != 0)// Match the interface tuple element name
                 .ToList();
 
             return sortedTechs;
         }
 
 
-        private static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-        {
-            const double R = 6371;
+        //private static double CalculateDistance(double lat1, double lon1, double? lat2, double? lon2)
+        //{
+        //    if (lat2 == null || lon2 == null)
+        //    {
+        //        //throw new BadRequestExeption("Technician Do not Have Location ");
+        //        return 0;
+        //    }
+        //    const double R = 6371; // Earth's radius in kilometers
 
-            double dLat = (lat2 - lat1) * Math.PI / 180.0;
-            double dLon = (lon2 - lon1) * Math.PI / 180.0;
+        //    double dLat = (lat2.Value - lat1) * Math.PI / 180.0;
+        //    double dLon = (lon2.Value - lon1) * Math.PI / 180.0;
 
-            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                       Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2 * Math.PI / 180.0) *
-                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        //    double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+        //               Math.Cos(lat1 * Math.PI / 180.0) * Math.Cos(lat2.Value * Math.PI / 180.0) *
+        //               Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
 
-            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        //    double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
 
-            return R * c;
-        }
+        //    return R * c;
+        //}
 
     }
 }
