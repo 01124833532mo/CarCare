@@ -4,6 +4,7 @@ using CarCare.Infrastructure.Persistence._Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Data.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    partial class CarCarIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250301111501_Make IsAutomatic property")]
+    partial class MakeIsAutomaticproperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,14 +241,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("Distance")
-                        .HasColumnType("float");
-
                     b.Property<bool>("IsAutomatic")
                         .HasColumnType("bit");
-
-                    b.Property<string>("JopId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
@@ -289,12 +286,6 @@ namespace CarCare.Infrastructure.Persistence._Data.Migrations
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<double>("UserLatitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("UserLongitude")
-                        .HasColumnType("float");
 
                     b.HasKey("Id");
 

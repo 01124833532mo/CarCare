@@ -19,6 +19,7 @@ namespace CarCare.Core.Domain.Entities.Orders
 
 		public Status Status { get; set; } = Status.Pending;
 
+		public bool IsAutomatic { get; set; } = false;
 
 		public TireSize? TireSize { get; set; }
 
@@ -35,10 +36,16 @@ namespace CarCare.Core.Domain.Entities.Orders
 
 		public int ServiceQuantity { get; set; } = 1;
 
-		public decimal ServicePrice { get; set; } 
+		public double UserLatitude { get; set; }
+		public double UserLongitude { get; set; }
+		public double Distance { get; set; }
+
+		public decimal ServicePrice { get; set; }
 		public int BasePrice { get; set; } = 5;
 		public string? PaymentIntentId { get; set; }
 		public string? ClientSecret { get; set; }
+		public string? JopId { get; set; }
+
 
 	}
 }
