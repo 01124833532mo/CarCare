@@ -304,7 +304,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 			var techs = await _unitOfWork.serviceRequestRepository.GetNearestTechincal(serviceTypeId, UserLatitude, UserLongitude);
 			return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(techs);
 		}
-
+		 
 
 		//public async Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId)
 		//{
