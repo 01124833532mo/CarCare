@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+	  <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+	  <PackageReference Include="System.Collections" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Errors\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CareCare.Application.Abstraction\CareCare.Core.Application.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>
