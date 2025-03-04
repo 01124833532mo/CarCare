@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace CarCare.Core.Domain.Entities.Orders.ServicesDetails
 {
-	public enum TypeOfFuel
-	{
-		P80 = 1,
-		P92,
-		Gaz
-	}
+    public enum TypeOfFuel
+    {
+        [EnumMember(Value = "P 80")]
+
+        P80 = 1,
+        [EnumMember(Value = "P 92")]
+
+        P92,
+        Gaz
+    }
 }

@@ -4,6 +4,7 @@ using CarCare.Infrastructure.Persistence._Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CarCare.Infrastructure.Persistence._Data.Migrations
 {
     [DbContext(typeof(CarCarIdentityDbContext))]
-    partial class CarCarIdentityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250303231443_Add_BussnissStatus_And_PaymentStatus")]
+    partial class Add_BussnissStatus_And_PaymentStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

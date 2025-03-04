@@ -98,9 +98,9 @@ namespace CarCare.Infrastructure.Payment_Service
             if (order is null) throw new NotFoundExeption(nameof(order), $"PaymentIntentId :{paymentIntentId}");
 
             if (isPaid)
-                order.Status = Status.PaymentReceived;
+                order.PaymentStatus = PaymentStatus.PaymentReceived;
             else
-                order.Status = Status.PaymentFailed;
+                order.PaymentStatus = PaymentStatus.PaymentFailed;
 
 
             orderRepo.Update(order);

@@ -2,15 +2,13 @@
 
 namespace CarCare.Core.Domain.Entities.Orders
 {
-    public enum Status
+    public enum BusnissStatus
     {
         Pending = 1,
+        [EnumMember(Value = "In Progress")]
+
         InProgress,
         Completed,
         Canceled,
-        [EnumMember(Value = "Payment Received")]
-        PaymentReceived,
-        [EnumMember(Value = "Payment Failed")]
-        PaymentFailed,
     }
 }
