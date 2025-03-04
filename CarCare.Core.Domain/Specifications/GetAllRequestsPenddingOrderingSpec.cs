@@ -15,7 +15,7 @@ namespace CarCare.Core.Domain.Specifications
                     break;
 
                 case "Oldest":
-                    AddOrderBy(p => p.CreatedOn);
+                    AddOrderBy(p => p.LastModifiedOn);
                     break;
 
             }
