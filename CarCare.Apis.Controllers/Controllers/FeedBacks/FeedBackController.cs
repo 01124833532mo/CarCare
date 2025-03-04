@@ -40,6 +40,13 @@ namespace CarCare.Apis.Controllers.Controllers.FeedBacks
 			return Ok(result);
 		}
 
+		[HttpGet("GetFeedBackThatUserAdd")]
+		public async Task<ActionResult<ReturnFeedBackDto>> GetFeedBackThatUserAdd()
+		{
+			var result = await _serviceManager.FeedBackService.GetFeedBackThatUserAdd(User);
+			return Ok(result);
+		}
+
 		[HttpPut("UpdateFeedBack/{id}")]
 		public async Task<ActionResult<ReturnFeedBackDto>> UpdateFeedBack([FromRoute] int id, [FromBody] UpdatedFeedBackDto feedBackDto)
 		{

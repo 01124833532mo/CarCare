@@ -82,6 +82,28 @@ namespace CarCare.Core.Application.Services.FeedBacks
 		}
 
 
+		public async Task<ReturnFeedBackDto> GetFeedBackThatUserAdd(ClaimsPrincipal claimsPrincipal)
+		{
+			var userId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
+
+			if (userId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+
+			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+
+			if (feedBacks is null)
+				throw new NotFoundExeption(nameof(feedBacks), userId);
+
+			var userFeedBack = feedBacks.Where(u => u.UserId == userId).FirstOrDefault();
+
+			if (userFeedBack is null)
+				throw new BadRequestExeption($"There is no FeedBacks to this user");
+
+			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(userFeedBack);
+
+			return returnedFeedBack;
+		}
+
 		public async Task<ReturnFeedBackDto> UpdateFeedBackAsync(ClaimsPrincipal claims, int id, UpdatedFeedBackDto feedBackDto)
 		{
 			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
