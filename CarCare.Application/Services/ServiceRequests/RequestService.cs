@@ -2,6 +2,7 @@
 using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Orders;
+using CarCare.Core.Domain.Specifications;
 using CarCare.Shared.ErrorModoule.Exeptions;
 using CareCare.Core.Application.Abstraction.Common.Contract.Infrastructure;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
@@ -446,25 +447,19 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
         }
 
-        public async Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal)
+        public async Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal, string? sort)
         {
+            var spec = new GetAllRequestsPenddingOrderingSpec(sort);
             var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
-
             if (techId is null)
                 throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
-
-            var requests = await _unitOfWork.serviceRequestRepository.GetAllAsync();
-
+            var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(spec);
             if (!requests.Any())
                 throw new NotFoundExeption(nameof(requests), techId);
-
-            var userRequests = requests.Where(r => r.TechId == techId && (r.BusnissStatus != BusnissStatus.Completed && r.BusnissStatus != BusnissStatus.Canceled));
-
+            var userRequests = requests.Where(r => r.TechId == techId && (r.BusnissStatus == BusnissStatus.Pending));
             if (!userRequests.Any())
-                throw new NotFoundExeption(nameof(userRequests), techId);
-
+                throw new NotFoundExeption("Not Exsist Pendding Requestes With This Technical", nameof(techId));
             var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
-
             return returnedData;
 
         }

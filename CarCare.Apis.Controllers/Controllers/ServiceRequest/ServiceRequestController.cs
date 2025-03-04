@@ -106,9 +106,9 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
         }
 
         [HttpGet("GetAllPendingRequestsToTechnical")]
-        public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetAllPendingRequestsToTechnical()
+        public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetAllPendingRequestsToTechnical([FromQuery] string? sort)
         {
-            var result = await serviceManager.RequestService.GetAllPendingRequestsToTechnical(User);
+            var result = await serviceManager.RequestService.GetAllPendingRequestsToTechnical(User, sort);
             return Ok(result);
         }
 

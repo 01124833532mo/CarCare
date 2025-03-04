@@ -25,7 +25,7 @@ namespace CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserReq
         Task<string> CompleteRequest(int requestId);
 
         Task<IEnumerable<ReturnRequestDto>> GetAllRequestsToTechnical(ClaimsPrincipal claimsPrincipal);
-        Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal);
+        Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal, string? sort);
         Task<string> TechincalBeActive(ClaimsPrincipal claimsPrincipal);
 
         Task<string> TechincalBeInActive(ClaimsPrincipal claimsPrincipal);
