@@ -8,5 +8,6 @@
         public double TechLatitude { get; set; }
 
         public double TechLongitude { get; set; }
+        public decimal TechRate { get; set; }
     }
 }

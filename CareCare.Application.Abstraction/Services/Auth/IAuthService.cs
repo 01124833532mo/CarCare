@@ -104,5 +104,8 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
         Task<UserDto> UpdateTechByTech(ClaimsPrincipal claims, UpdateTechDto techDto);
         Task<TechDto> UpdateOrSetTechnicalLocation(UpdateTechnicalLocationDto request);
 
+
+        Task<string> RateTechnical(ClaimsPrincipal claims, decimal rate, string technicalid);
+
     }
 }

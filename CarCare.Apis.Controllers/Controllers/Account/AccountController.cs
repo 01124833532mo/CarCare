@@ -217,7 +217,16 @@ namespace CarCare.Apis.Controllers.Controllers.Account
             return Ok(result);
         }
 
+
         #endregion
+
+        [Authorize(Roles = Roles.User)]
+        [HttpPost("RateTechnical")]
+        public async Task<ActionResult<string>> RateTechnical([FromQuery] decimal rate, [FromQuery] string technicalid)
+        {
+            var result = await serviceManager.AuthService.RateTechnical(User, rate, technicalid);
+            return Ok(result);
+        }
     }
 
 }
