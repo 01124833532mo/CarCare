@@ -1,5 +1,6 @@
 ﻿using CarCare.Apis.Controllers.Controllers.Base;
 using CarCare.Core.Domain.Entities.Orders;
+using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
 using Microsoft.AspNetCore.Authorization;
@@ -12,24 +13,29 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
     {
         #region User Request
 
+        [Authorize(Roles = Roles.User)]
         [HttpPost("CreateRequestAutomatic")]
         public async Task<ActionResult<ReturnRequestDto>> CreateRequestAutomatic(CreateRequestDto requestDto)
         {
             var result = await serviceManager.RequestService.CreateRequestAutomatic(requestDto);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
         [HttpPost("CreateRequestManually")]
         public async Task<ActionResult<ReturnRequestDto>> CreateRequestManually(CreateRequestDto requestDto)
         {
             var result = await serviceManager.RequestService.CreateRequestManually(requestDto);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
+
         [HttpPut("Update-Technical-in-Request")]
         public async Task<ActionResult<ReturnRequestDto>> UpdateTechnicalInRequest([FromQuery] int RequestId, [FromQuery] int ServiceId, [FromQuery] string TechnicalId)
         {
             var result = await serviceManager.RequestService.UpdateTechnicalinRequest(RequestId, TechnicalId, ServiceId);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
 
         [HttpDelete("DeleteRequestForUser/{RequestId}")]
         public async Task<ActionResult<string>> DeleteRequestForUser([FromRoute] int RequestId)
@@ -44,6 +50,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.ReturnRequest(id);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
 
         [HttpGet("GetAllRequests")]
         public async Task<ActionResult<ReturnRequestDto>> GetRequests()
@@ -51,6 +58,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.GetAllRequeststoUserForUser(User);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
 
         [HttpGet("GetNearestTechincals")]
         public async Task<ActionResult<IEnumerable<ReturnTechRequestDto>>> GetNearestTechincals([FromQuery] int serviceId, [FromQuery] double UserLatitude, [FromQuery] double UserLongitude)
@@ -58,6 +66,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.GetNearestTechnicals(serviceId, UserLatitude, UserLongitude);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.User)]
 
         [HttpGet("GetAvailableTechincals")]
         public async Task<ActionResult<IEnumerable<ReturnTechRequestDto>>> GetAvailableTechincals([FromQuery] int serviceid, [FromQuery] double userlongitude, [FromQuery] double userlatidtude)
@@ -76,6 +85,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.ReceivedRequest(requestId, status);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpPut("AcceptRequest/{requestId}")]
         public async Task<ActionResult<string>> AcceptRequest([FromRoute] int requestId)
@@ -83,6 +93,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.AcceptRequest(requestId);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpPut("RejectRequest/{requestId}")]
         public async Task<ActionResult<string>> RejectRequest([FromRoute] int requestId)
@@ -90,6 +101,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.RejectRequest(requestId);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpPut("CompleteRequest/{requestId}")]
         public async Task<ActionResult<string>> CompleteRequest([FromRoute] int requestId)
@@ -97,6 +109,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.CompleteRequest(requestId);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpGet("GetAllRequestsToTechnical")]
         public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetAllRequestsToTechnical()
@@ -104,6 +117,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.GetAllRequestsToTechnical(User);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpGet("GetAllPendingRequestsToTechnical")]
         public async Task<ActionResult<IEnumerable<ReturnRequestDto>>> GetAllPendingRequestsToTechnical([FromQuery] string? sort)
@@ -112,6 +126,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             return Ok(result);
         }
 
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpPut("TechincalBeActive")]
         public async Task<ActionResult<string>> TechincalBeActive()
@@ -119,6 +134,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.TechincalBeActive(User);
             return Ok(result);
         }
+        [Authorize(Roles = Roles.Technical)]
 
         [HttpPut("TechincalBeInActive")]
         public async Task<ActionResult<string>> TechincalBeInActive()
