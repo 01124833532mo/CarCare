@@ -196,13 +196,7 @@ namespace CarCare.Core.Application.Services.Auth
             var roleResult = await userManager.AddToRoleAsync(user, Types.User.ToString());
             if (!roleResult.Succeeded)
                 throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
-            var refresktoken = GenerateRefreshToken();
-
-            user.RefreshTokens.Add(new RefreshToken()
-            {
-                Token = refresktoken.Token,
-                ExpireOn = refresktoken.ExpireOn
-            });
+            
 
             var respone = new UserDto
             {
@@ -212,8 +206,7 @@ namespace CarCare.Core.Application.Services.Auth
                 Email = user.Email,
                 Type = user.Type.ToString(),
                 Token = await GenerateTokenAsync(user),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
+            
 
             };
             return respone;
@@ -270,13 +263,7 @@ namespace CarCare.Core.Application.Services.Auth
 
 
 
-            var refresktoken = GenerateRefreshToken();
-
-            tech.RefreshTokens.Add(new RefreshToken()
-            {
-                Token = refresktoken.Token,
-                ExpireOn = refresktoken.ExpireOn
-            });
+           
 
             var response = new TechDto
             {
@@ -288,8 +275,7 @@ namespace CarCare.Core.Application.Services.Auth
                 Type = techRegisterDto.Type.ToString(),
                 ServiceName = servicetype.Name,
                 Token = await GenerateTokenAsync(tech),
-                RefreshToken = refresktoken.Token,
-                RefreshTokenExpirationDate = refresktoken.ExpireOn
+              
             };
             return response;
         }

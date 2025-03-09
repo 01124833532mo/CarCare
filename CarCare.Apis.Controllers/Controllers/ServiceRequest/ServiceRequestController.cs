@@ -35,7 +35,7 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
             var result = await serviceManager.RequestService.UpdateTechnicalinRequest(RequestId, TechnicalId, ServiceId);
             return Ok(result);
         }
-        [Authorize(Roles = Roles.User)]
+        [AllowAnonymous]
 
         [HttpDelete("DeleteRequestForUser/{RequestId}")]
         public async Task<ActionResult<string>> DeleteRequestForUser([FromRoute] int RequestId)
