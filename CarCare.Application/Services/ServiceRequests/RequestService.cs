@@ -92,9 +92,19 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             var request = _mapper.Map<ServiceRequest>(requestDto);
 
-            request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
+            #region Calculate Price
+            var technical = await userManager.FindByIdAsync(requestDto.TechId ?? string.Empty);
 
-            request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
+            if (technical is null)
+                throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
+
+            var distanc = repo.CalculateDistance(requestDto.UserLatitude, requestDto.UserLongitude, technical.TechLatitude, technical.TechLongitude);
+
+
+            request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice) + (decimal)(distanc * 10);
+
+            request.Distance = distanc;
+            #endregion
 
             await _unitOfWork.serviceRequestRepository.AddAsync(request);
 
@@ -173,10 +183,13 @@ namespace CarCare.Core.Application.Services.ServiceRequests
             if (request is null)
                 throw new NotFoundExeption("Request not found", nameof(requestid));
 
+            request.ServicePrice -= (decimal)(request.Distance * 10);
+
             request!.TechId = techid;
 
-            request.Distance = repo.CalculateDistance(request.UserLatitude, request.UserLongitude, checkexsistingtechnical.TechLatitude, checkexsistingtechnical.TechLongitude);
-
+            var distance = repo.CalculateDistance(request.UserLatitude, request.UserLongitude, checkexsistingtechnical.TechLatitude, checkexsistingtechnical.TechLongitude);
+            request.Distance = distance;
+            request.ServicePrice = request.ServicePrice + (decimal)(distance * 10);
             repo.Update(request);
 
             var complete = await _unitOfWork.CompleteAsync() > 0;
@@ -184,10 +197,19 @@ namespace CarCare.Core.Application.Services.ServiceRequests
             if (!complete)
                 throw new BadRequestExeption("There is an Error in Update Request");
 
-            var returnedRequest = _mapper.Map<ReturnRequestDto>(request);
+            var Orderid = request.Id;
+
+            var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
+
+            var returnedData = _mapper.Map<ReturnRequestDto>(request);
+            returnedData.PaymentIntentId = result.PaymentIntentId;
+            returnedData.ClientSecret = result.ClientSecret;
 
 
-            return returnedRequest;
+
+
+
+            return returnedData;
 
         }
 
