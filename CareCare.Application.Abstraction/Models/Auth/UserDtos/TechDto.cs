@@ -7,8 +7,10 @@
 
         public double TechLatitude { get; set; }
 
-		public double Profit { get; set; }
-		public double TechLongitude { get; set; }
+        public double Profit { get; set; }
+        public double TechLongitude { get; set; }
         public decimal TechRate { get; set; }
+
+        public int? CompletedRequestes { get; set; }
     }
 }

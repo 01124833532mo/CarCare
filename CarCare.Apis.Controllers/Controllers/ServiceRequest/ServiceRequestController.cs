@@ -20,14 +20,17 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 			var result = await serviceManager.RequestService.CreateRequestAutomatic(requestDto);
 			return Ok(result);
 		}
-		[HttpPost("CreateRequestManually")]
+        [Authorize(Roles = Roles.User)]
+
+        [HttpPost("CreateRequestManually")]
 		public async Task<ActionResult<ReturnRequestDto>> CreateRequestManually(CreateRequestDto requestDto)
 		{
 			var result = await serviceManager.RequestService.CreateRequestManually(requestDto);
 			return Ok(result);
 		}
+        [Authorize(Roles = Roles.User)]
 
-		[HttpPut("Update-Technical-in-Request")]
+        [HttpPut("Update-Technical-in-Request")]
 		public async Task<ActionResult<ReturnRequestDto>> UpdateTechnicalInRequest([FromQuery] int RequestId, [FromQuery] int ServiceId, [FromQuery] string TechnicalId)
 		{
 			var result = await serviceManager.RequestService.UpdateTechnicalinRequest(RequestId, TechnicalId, ServiceId);
@@ -64,8 +67,9 @@ namespace CarCare.Apis.Controllers.Controllers.ServiceRequest
 			var result = await serviceManager.RequestService.GetNearestTechnicals(serviceId, UserLatitude, UserLongitude);
 			return Ok(result);
 		}
+        [Authorize(Roles = Roles.User)]
 
-		[HttpGet("GetAvailableTechincals")]
+        [HttpGet("GetAvailableTechincals")]
 		public async Task<ActionResult<IEnumerable<ReturnTechRequestDto>>> GetAvailableTechincals([FromQuery] int serviceid, [FromQuery] double userlongitude, [FromQuery] double userlatidtude)
 		{
 			var result = await serviceManager.RequestService.GetActiveTechincals(serviceid, userlongitude, userlatidtude);
