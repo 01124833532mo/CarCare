@@ -74,7 +74,7 @@ namespace CarCare.Apis
 			// Remove the default UserValidator to skip username uniqueness check
 
 
-			app.UseHangfireDashboard();
+			app.UseHangfireDashboard("/Dashboard");
 			app.MapHangfireDashboard();
 
 			app.UseHttpsRedirection();

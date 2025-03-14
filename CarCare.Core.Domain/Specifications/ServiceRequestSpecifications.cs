@@ -16,6 +16,12 @@ namespace CarCare.Core.Domain.Specifications
 		{
 			AddIncludes();
 		}
+
+		public ServiceRequestSpecifications(BusnissStatus? status)
+			: base(s => s.BusnissStatus == (status ?? BusnissStatus.Completed))
+		{
+
+		}
 		private protected override void AddIncludes()
 		{
 			base.AddIncludes();
