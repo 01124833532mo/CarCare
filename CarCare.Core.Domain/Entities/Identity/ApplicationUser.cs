@@ -19,7 +19,10 @@ namespace CarCare.Core.Domain.Entities.Identity
         public double? TechLongitude { get; set; }
 
 
-        [Length(14, 14)]
+		public double TechProfit { get; set; }
+
+
+		[Length(14, 14)]
         public string? NationalId { get; set; }
         public Types Type { get; set; }
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();

@@ -10,7 +10,8 @@
         public required string NationalId { get; set; }
         public string? ServiceName { get; set; }
 
-        public IEnumerable<object> Roles { get; set; }
+		public double Profit { get; set; }
+		public IEnumerable<object> Roles { get; set; }
         //public IEnumerable<string> RolesToReturn { get; set; }
     }
 }
