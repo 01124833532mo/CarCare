@@ -544,7 +544,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
             double time = (DateTime.UtcNow - request.LastModifiedOn).TotalMinutes;
 
-            if ((time >= 1) || request.BusnissStatus == BusnissStatus.InProgress)
+            if ((time >= 5) || request.BusnissStatus == BusnissStatus.InProgress)
             {
                 if (request.BusnissStatus == BusnissStatus.Pending || request.BusnissStatus == BusnissStatus.Canceled)
                     await RejectRequest(requestId);
