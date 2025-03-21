@@ -3,6 +3,7 @@ using CarCare.Apis.Middlewares;
 using CarCare.Core.Application;
 using CarCare.Infrastructure;
 using CarCare.Infrastructure.Persistence;
+using CareCare.Core.Application.Abstraction;
 using Hangfire;
 
 namespace CarCare.Apis
@@ -36,6 +37,7 @@ namespace CarCare.Apis
 
             builder.Services.RegesteredPresestantLayer();
             builder.Services.AddApplicationServices(builder.Configuration);
+            builder.Services.RegisterApplicationOfAbstraction();
             builder.Services.AddPersistenceServices(builder.Configuration);
             builder.Services.AddIdentityServices(builder.Configuration);
             builder.Services.AddInfrastructureServices(builder.Configuration);
