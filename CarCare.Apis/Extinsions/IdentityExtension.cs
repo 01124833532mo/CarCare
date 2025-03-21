@@ -10,7 +10,7 @@ using System.Text;
 
 namespace CarCare.Apis.Extinsions
 {
-	public static class IdentityExtension
+    public static class IdentityExtension
     {
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
