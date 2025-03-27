@@ -392,7 +392,6 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
                     technical.IsActive = false;
 
-                    await userManager.UpdateAsync(technical);
 
                     if (request.IsAutomatic)
                     {
