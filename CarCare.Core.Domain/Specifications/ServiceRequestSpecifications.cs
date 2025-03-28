@@ -18,7 +18,7 @@ namespace CarCare.Core.Domain.Specifications
 		}
 
 		public ServiceRequestSpecifications(BusnissStatus? status)
-			: base(s => s.BusnissStatus == (status ?? BusnissStatus.Completed))
+			: base(s => status == null || s.BusnissStatus == status)
 		{
 
 		}

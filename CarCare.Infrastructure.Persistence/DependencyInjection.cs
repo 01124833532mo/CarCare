@@ -27,10 +27,14 @@ namespace CarCare.Infrastructure.Persistence
 				.AddInterceptors(provider.GetRequiredService<AuditInterceptor>(),
 								 provider.GetRequiredService<SettedUserIdInterceptor>());
 			});
+			services.AddScoped(typeof(ICarCareIdentityDbInitializer), typeof(CarCareIdentityDbInitializer));
+
+
+
+
 			services.AddScoped(typeof(AuditInterceptor));
 			services.AddScoped(typeof(SettedUserIdInterceptor));
 
-			services.AddScoped(typeof(ICarCareIdentityDbInitializer), typeof(CarCareIdentityDbInitializer));
 
 
 			services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));

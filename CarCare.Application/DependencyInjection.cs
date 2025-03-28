@@ -27,11 +27,14 @@ namespace CarCare.Core.Application
 
 
 			services.AddScoped(typeof(IServiceManager), typeof(ServiceManger));
+			
 			services.AddScoped(typeof(IAuthService), typeof(AuthService));
+			
 			services.AddScoped(typeof(Func<IAuthService>), (serviceprovider) =>
 			{
 				return () => serviceprovider.GetRequiredService<IAuthService>();
 			});
+			
 			services.AddScoped(typeof(IVehicleService), typeof(VehicleService));
 
 			services.AddScoped(typeof(Func<IVehicleService>), (serviceprovider) =>
