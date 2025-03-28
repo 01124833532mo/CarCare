@@ -9,8 +9,8 @@
         public required string Email { get; set; }
         public required string Type { get; set; }
         public required string Token { get; set; }
-        public string RefreshToken { get; set; } = null!;
+        public string? RefreshToken { get; set; } = null!;
 
-        public DateTime RefreshTokenExpirationDate { get; set; }
+        public DateTime? RefreshTokenExpirationDate { get; set; }
     }
 }
