@@ -43,7 +43,8 @@ namespace CarCare.Core.Application.Mapping
                 .ForMember(dest => dest.PictureUrl, option => option.MapFrom<ServiceTypePictureUrlResolver>());
 
             CreateMap<CreateContactDto, Contact>();
-            CreateMap<Contact, ReturnContactDto>();
+            CreateMap<Contact, ReturnContactDto>().ForMember(dest => dest.FullName, option => option.MapFrom(src => src.User.FullName));
+            ;
 
             CreateMap<CreateRequestDto, ServiceRequest>()
       .ForMember(dest => dest.TireSize, option => option.MapFrom(src =>
