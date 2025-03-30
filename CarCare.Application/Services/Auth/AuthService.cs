@@ -798,6 +798,8 @@ namespace CarCare.Core.Application.Services.Auth
                 Type = tech.Type.ToString(),
                 NationalId = tech.NationalId!,
                 Profit = tech.TechProfit,
+                ServiceName = tech.ServiceType!.Name,
+
                 Token = await GenerateTokenAsync(tech),
             };
             return respone;
