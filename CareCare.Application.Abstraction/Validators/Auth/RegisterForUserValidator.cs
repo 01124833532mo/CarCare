@@ -1,6 +1,7 @@
 ﻿using CarCare.Shared.Models._Common;
 using CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos;
 using FluentValidation;
+using System.Text.RegularExpressions;
 
 namespace CareCare.Core.Application.Abstraction.Validators.Security
 {
@@ -11,7 +12,10 @@ namespace CareCare.Core.Application.Abstraction.Validators.Security
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .WithMessage("\"Email Must Not Empty , Plz Add a {PropertyName}\"")
-                .EmailAddress().WithMessage("Must Be Email Address");
+                .EmailAddress().WithMessage("Must Be Email Address")
+                .Matches(RegexPatterns.Email,
+         RegexOptions.IgnoreCase).WithMessage("Invalid Email Address,Only Gmail/Google or Egyptian university emails (@____.edu.eg) are allowed");
+
 
             RuleFor(x => x.FullName).NotEmpty().WithMessage("FullName Must Not Empty , Plz Add a {PropertyName}");
 
