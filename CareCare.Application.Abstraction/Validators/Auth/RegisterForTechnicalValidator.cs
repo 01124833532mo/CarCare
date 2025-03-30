@@ -29,16 +29,48 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
               .Must(type => (int)type == 0)
                  .WithMessage("Type must be  (Technical).");
 
+            //RuleFor(x => x.NationalId)
+            //      .NotEmpty()
+            //      .WithMessage("\"NationalId Must Not Empty , Plz Add a {PropertyName}\"")
+            //      .Length(14, 14)
+            //      .WithMessage("National ID must be exactly 14 digits long.")
+            //      .Matches(RegexPatterns.NationalId)
+            //      .WithMessage("National ID must contain only numbers (0-9).");
+
+
             RuleFor(x => x.NationalId)
-                  .NotEmpty()
-                  .WithMessage("\"NationalId Must Not Empty , Plz Add a {PropertyName}\"")
-                  .Length(14, 14)
-                  .WithMessage("National ID must be exactly 14 digits long.")
-                  .Matches(RegexPatterns.NationalId)
-                  .WithMessage("National ID must contain only numbers (0-9).");
+           .NotEmpty()
+           .WithMessage("\"NationalId Must Not Empty , Plz Add a {PropertyName}\"")
+          .Length(14)
+          .WithMessage("Egyptian national ID must be exactly 14 digits")
+          .Matches(RegexPatterns.NationalId)
+          .WithMessage("National ID must start with 2 (for 1900s) or 3 (for 2000s) followed by 13 digits")
+          .Must(BeAValidNationalIdDate)
+          .WithMessage("Invalid birth date in national ID");
+
 
             RuleFor(x => x.ServiceId).NotEmpty().WithMessage("Service Id Must Be Assigend , Plz Enter {PropertyName}");
 
+        }
+        private bool BeAValidNationalIdDate(string nationalId)
+        {
+            if (string.IsNullOrWhiteSpace(nationalId) || nationalId.Length != 14)
+                return false;
+
+            try
+            {
+                int century = nationalId[0] == '2' ? 1900 : 2000;
+                int year = century + int.Parse(nationalId.Substring(1, 2));
+                int month = int.Parse(nationalId.Substring(3, 2));
+                int day = int.Parse(nationalId.Substring(5, 2));
+
+                var birthDate = new DateTime(year, month, day);
+                return birthDate <= DateTime.Now.Date && birthDate >= new DateTime(century, 1, 1);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
