@@ -61,28 +61,12 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 
         #region Role
 
-        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
-        [HttpGet("GetCurrentUser")]
-        public async Task<ActionResult<UserDto>> GetCurrentUser()
-        {
-            var result = await serviceManager.AuthService.GetCurrentUser(User);
-            return Ok(result);
-        }
 
-
-        [Authorize(Roles = Roles.User + "," + Roles.Technical)]
-        [HttpGet("GetCurrentTechnical")]
-        public async Task<ActionResult<TechDto>> GetCurrentTech()
+        [Authorize]
+        [HttpGet("GetCurrentUserByRole")]
+        public async Task<ActionResult<BaseUserDto>> GetCurrentUserByRole()
         {
-            var result = await serviceManager.AuthService.GetCurrentTechnical(User);
-            return Ok(result);
-        }
-
-        [Authorize(Roles = Roles.Admin)]
-        [HttpGet("GetCurrentAdmin")]
-        public async Task<ActionResult<TechDto>> GetCurrentAdmin()
-        {
-            var result = await serviceManager.AuthService.GetCurrentAdmin(User);
+            var result = await serviceManager.AuthService.GetCurrentUserByRole(User);
             return Ok(result);
         }
 

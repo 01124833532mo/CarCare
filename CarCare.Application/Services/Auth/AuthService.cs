@@ -489,17 +489,20 @@ namespace CarCare.Core.Application.Services.Auth
         public async Task<IEnumerable<TechViewModel>> GetAllTechnicals()
         {
             var techs = await userManager.Users.Where(u => u.Type == Types.Technical).Include(u => u.ServiceType)
-   .Select(u => new TechViewModel
-   {
-       Id = u.Id,
-       FullName = u.FullName!,
-       PhoneNumber = u.PhoneNumber!,
-       Email = u.Email!,
-       NationalId = u.NationalId!,
-       Type = u.Type.ToString(),
-       ServiceName = u.ServiceType!.Name
-   })
-   .ToListAsync();
+                                                .OrderByDescending(t => t.TechRate)
+                                                .Select(u => new TechViewModel
+                                                {
+                                                    Id = u.Id,
+                                                    FullName = u.FullName!,
+                                                    PhoneNumber = u.PhoneNumber!,
+                                                    Email = u.Email!,
+                                                    NationalId = u.NationalId!,
+                                                    Type = u.Type.ToString(),
+                                                    ServiceName = u.ServiceType!.Name,
+                                                    TechRate = u.TechRate,
+
+                                                })
+                                                 .ToListAsync();
 
             foreach (var tech in techs)
             {
@@ -651,60 +654,7 @@ namespace CarCare.Core.Application.Services.Auth
             return usertoreturn;
         }
 
-        public async Task<UserDto> GetCurrentUser(ClaimsPrincipal claims)
-        {
-            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
-            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
 
-            var user = await userManager.Users.Where(u => u.Type == Types.User && u.PhoneNumber == phone).FirstOrDefaultAsync();
-            if (user is null) throw new NotFoundExeption("No User For This Phone Or This Technical Not User ", nameof(phone));
-
-            var mappeduser = mapper.Map<UserDto>(user);
-            mappeduser.Token = await GenerateTokenAsync(user);
-            await CheckRefreshToken(userManager, user, mappeduser);
-
-
-            return mappeduser;
-
-        }
-
-        public async Task<TechDto> GetCurrentTechnical(ClaimsPrincipal claims)
-        {
-            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
-            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
-
-            var Tech = await userManager.Users.Where(u => u.Type == Types.Technical && u.PhoneNumber == phone).Include(u => u.ServiceType).FirstOrDefaultAsync();
-            if (Tech is null) throw new NotFoundExeption("No Technical For This Phone Or This User Not Technical ", nameof(phone));
-
-            var servicespec = new ServiceRequestForSpecificTechnical(Tech.Id);
-            var serviceRequests = await unitOfWork.GetRepository<ServiceRequest, int>().GetAllWithSpecAsync(servicespec);
-            var compeletedrequestes = serviceRequests.Where(s => s.BusnissStatus == BusnissStatus.Completed).Count();
-            var mappedTech = mapper.Map<TechDto>(Tech);
-            mappedTech.Token = await GenerateTokenAsync(Tech);
-            mappedTech.CompletedRequestes = compeletedrequestes;
-            await CheckRefreshToken(userManager, Tech, mappedTech);
-
-
-            return mappedTech;
-        }
-
-        public async Task<UserDto> GetCurrentAdmin(ClaimsPrincipal claims)
-        {
-            var phone = claims.FindFirstValue(ClaimTypes.MobilePhone);
-            if (phone is null) throw new NotFoundExeption("Do Not Exsists This Phone", nameof(phone));
-
-            var Admin = await userManager.Users.Where(u => u.PhoneNumber == phone).FirstOrDefaultAsync();
-            if (Admin is null) throw new NotFoundExeption("No Technical For This Phone Or This User Not Technical ", nameof(phone));
-
-            var mappedTech = mapper.Map<UserDto>(Admin);
-            mappedTech.Type = Roles.Admin;
-
-            mappedTech.Token = await GenerateTokenAsync(Admin);
-            await CheckRefreshToken(userManager, Admin, mappedTech);
-
-
-            return mappedTech;
-        }
 
         public async Task<UserDto> UpdateUserByUser(ClaimsPrincipal claims, UpdateUserDto userDto)
         {
@@ -1393,6 +1343,50 @@ namespace CarCare.Core.Application.Services.Auth
             return "Rating submitted successfully.";
         }
 
+
+
+        public async Task<BaseUserDto> GetCurrentUserByRole(ClaimsPrincipal claims)
+        {
+            var userid = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            if (userid is null) throw new NotFoundExeption("Do Not Exsists This User", nameof(userid));
+            var user = userManager.Users.FirstOrDefault(u => u.Id == userid);
+            if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userid));
+            var userroles = await userManager.GetRolesAsync(user);
+            var accesstoken = await GenerateTokenAsync(user);
+
+            if (userroles.Contains(Types.User.ToString()) && user.Type.ToString() == Roles.User)
+            {
+                var mappeduser = mapper.Map<UserDto>(user);
+                mappeduser.Token = accesstoken;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else if (userroles.Contains(Types.Technical.ToString()) && user.Type.ToString() == Roles.Technical)
+            {
+                var servicespec = new ServiceRequestForSpecificTechnical(user.Id);
+                var serviceRequests = await unitOfWork.GetRepository<ServiceRequest, int>().GetAllWithSpecAsync(servicespec);
+                var compeletedrequestes = serviceRequests.Where(s => s.BusnissStatus == BusnissStatus.Completed).Count();
+                var mappeduser = mapper.Map<TechDto>(user);
+                mappeduser.Token = accesstoken;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else if (userroles.Contains(Types.Admin.ToString()))
+            {
+                var mappeduser = mapper.Map<UserDto>(user);
+                mappeduser.Token = accesstoken;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else
+            {
+                throw new NotFoundExeption("No User For This Id", nameof(userid));
+            }
+
+
+
+
+        }
     }
 
 }

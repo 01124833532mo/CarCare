@@ -61,9 +61,16 @@ namespace CarCare.Core.Application.Services.Contacts
 
             _mapper.Map(contactDto, contact);
 
+            try
+            {
 
-            repo.Update(contact);
+                repo.Update(contact);
 
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
+            }
             var success = await _unitOfWork.CompleteAsync() > 0;
 
             if (!success)
@@ -80,8 +87,15 @@ namespace CarCare.Core.Application.Services.Contacts
 
             if (contact is null)
                 throw new NotFoundExeption(nameof(Contact), id);
+            try
+            {
 
-            repo.Delete(contact);
+                repo.Delete(contact);
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
+            }
 
             var isDeleted = await _unitOfWork.CompleteAsync() > 0;
 
