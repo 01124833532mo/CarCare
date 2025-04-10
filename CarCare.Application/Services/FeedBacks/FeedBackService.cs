@@ -10,174 +10,191 @@ using System.Security.Claims;
 
 namespace CarCare.Core.Application.Services.FeedBacks
 {
-	public class FeedBackService(IUnitOfWork _unitOfWork, IMapper _mapper) : IFeedBackService
-	{
-		public async Task<ReturnFeedBackDto> CreateFeedBackAsync(ClaimsPrincipal claims, CreateFeedBackDto feedBackDto)
-		{
+    public class FeedBackService(IUnitOfWork _unitOfWork, IMapper _mapper) : IFeedBackService
+    {
+        public async Task<ReturnFeedBackDto> CreateFeedBackAsync(ClaimsPrincipal claims, CreateFeedBackDto feedBackDto)
+        {
 
-			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			if (UserId is null)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+            if (UserId is null)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var _usersId = GetUsersIDThatAddFeedBack();
+            var _usersId = GetUsersIDThatAddFeedBack();
 
-			if (_usersId is not null)
-			{
-				if (_usersId.Result.Contains(UserId))
-					throw new BadRequestExeption("You Already Add FeedBack Please Update Your FeedBack");
-			}
+            if (_usersId is not null)
+            {
+                if (_usersId.Result.Contains(UserId))
+                    throw new BadRequestExeption("You Already Add FeedBack Please Update Your FeedBack");
+            }
 
-			var mappedFeedBack = _mapper.Map<FeedBack>(feedBackDto);
+            var mappedFeedBack = _mapper.Map<FeedBack>(feedBackDto);
 
-			var Added = _unitOfWork.GetRepository<FeedBack, int>().AddAsync(mappedFeedBack);
-			if (Added is null)
-				throw new BadRequestExeption("FeedBack Not Created!");
+            try
+            {
+                await _unitOfWork.GetRepository<FeedBack, int>().AddAsync(mappedFeedBack);
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
 
-			var created = await _unitOfWork.CompleteAsync() > 0;
-			if (!created)
-				throw new BadRequestExeption("FeedBack Not Created!");
+            }
 
-			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(mappedFeedBack);
 
-			return returnedFeedBack;
+            var created = await _unitOfWork.CompleteAsync() > 0;
+            if (!created)
+                throw new BadRequestExeption("FeedBack Not Created!");
 
-		}
+            var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(mappedFeedBack);
 
+            return returnedFeedBack;
 
-		public async Task<decimal> GetAvgRating()
-		{
-			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+        }
 
-			var avgRating = feedBacks.Average(x => x.Rating);
 
-			return avgRating;
-		}
+        public async Task<decimal> GetAvgRating()
+        {
+            var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
 
+            var avgRating = feedBacks.Average(x => x.Rating);
 
-		public async Task<IEnumerable<ReturnFeedBackDto>> GetAllFeedBackAsync(SpecParams specsParams)
-		{
-			var spec = new FeedBackWithUserSpecifications(specsParams.Sort);
+            return avgRating;
+        }
 
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAllWithSpecAsync(spec);
 
-			var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBack);
+        public async Task<IEnumerable<ReturnFeedBackDto>> GetAllFeedBackAsync(SpecParams specsParams)
+        {
+            var spec = new FeedBackWithUserSpecifications(specsParams.Sort);
 
-			return returnedData;
+            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAllWithSpecAsync(spec);
 
-		}
+            var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBack);
 
+            return returnedData;
 
-		public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
-		{
-			var spec = new FeedBackWithUserSpecifications(id);
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetWithSpecAsync(spec);
+        }
 
-			if (feedBack is null)
-				throw new NotFoundExeption(nameof(feedBack), id);
 
-			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(feedBack);
+        public async Task<ReturnFeedBackDto> GetFeedBackAsync(int id)
+        {
+            var spec = new FeedBackWithUserSpecifications(id);
+            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetWithSpecAsync(spec);
 
-			return returnedFeedBack;
-		}
+            if (feedBack is null)
+                throw new NotFoundExeption(nameof(feedBack), id);
 
+            var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(feedBack);
 
-		public async Task<ReturnFeedBackDto> GetFeedBackThatUserAdd(ClaimsPrincipal claimsPrincipal)
-		{
-			var userId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
+            return returnedFeedBack;
+        }
 
-			if (userId is null)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+        public async Task<ReturnFeedBackDto> GetFeedBackThatUserAdd(ClaimsPrincipal claimsPrincipal)
+        {
+            var userId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
 
-			if (feedBacks is null)
-				throw new NotFoundExeption(nameof(feedBacks), userId);
+            if (userId is null)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var userFeedBack = feedBacks.Where(u => u.UserId == userId).FirstOrDefault();
+            var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
 
-			if (userFeedBack is null)
-				throw new BadRequestExeption($"There is no FeedBacks to this user");
+            if (feedBacks is null)
+                throw new NotFoundExeption(nameof(feedBacks), userId);
 
-			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(userFeedBack);
+            var userFeedBack = feedBacks.Where(u => u.UserId == userId).FirstOrDefault();
 
-			return returnedFeedBack;
-		}
+            if (userFeedBack is null)
+                throw new BadRequestExeption($"There is no FeedBacks to this user");
 
-		public async Task<ReturnFeedBackDto> UpdateFeedBackAsync(ClaimsPrincipal claims, int id, UpdatedFeedBackDto feedBackDto)
-		{
-			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(userFeedBack);
 
-			if (UserId is null)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+            return returnedFeedBack;
+        }
 
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
+        public async Task<ReturnFeedBackDto> UpdateFeedBackAsync(ClaimsPrincipal claims, int id, UpdatedFeedBackDto feedBackDto)
+        {
+            var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			if (UserId != feedBack?.UserId)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+            if (UserId is null)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			if (feedBack is null)
-				throw new NotFoundExeption(nameof(feedBack), id);
+            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
 
+            if (UserId != feedBack?.UserId)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			feedBack.Id = id;
-			if (feedBackDto.Comment is not null)
-				feedBack.Comment = feedBackDto.Comment;
-			feedBack.Rating = feedBackDto.Rating;
+            if (feedBack is null)
+                throw new NotFoundExeption(nameof(feedBack), id);
 
 
-			var Updated = await _unitOfWork.CompleteAsync() > 0;
+            feedBack.Id = id;
+            if (feedBackDto.Comment is not null)
+                feedBack.Comment = feedBackDto.Comment;
+            feedBack.Rating = feedBackDto.Rating;
 
-			if (!Updated)
-				throw new BadRequestExeption("You are not Update Your FeedBack ==> (Rating)");
 
+            var Updated = await _unitOfWork.CompleteAsync() > 0;
 
+            if (!Updated)
+                throw new BadRequestExeption("You are not Update Your FeedBack ==> (Rating)");
 
-			var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(feedBack);
 
 
-			return returnedFeedBack;
+            var returnedFeedBack = _mapper.Map<ReturnFeedBackDto>(feedBack);
 
-		}
 
+            return returnedFeedBack;
 
-		public async Task<string> DeleteFeedBackAsync(ClaimsPrincipal claims, int id)
-		{
-			var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+        }
 
-			if (UserId is null)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
+        public async Task<string> DeleteFeedBackAsync(ClaimsPrincipal claims, int id)
+        {
+            var UserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			if (UserId != feedBack?.UserId)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+            if (UserId is null)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			if (feedBack is null)
-				throw new NotFoundExeption(nameof(feedBack), id);
+            var feedBack = await _unitOfWork.GetRepository<FeedBack, int>().GetAsync(id);
 
-			_unitOfWork.GetRepository<FeedBack, int>().Delete(feedBack);
+            if (UserId != feedBack?.UserId)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var deleted = await _unitOfWork.CompleteAsync() > 0;
+            if (feedBack is null)
+                throw new NotFoundExeption(nameof(feedBack), id);
+            try
+            {
 
-			if (deleted)
-				return "FeedBack Deleted Successfully";
-			else
-				throw new BadRequestExeption("Deleting Failed");
+                _unitOfWork.GetRepository<FeedBack, int>().Delete(feedBack);
 
-		}
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
+            }
 
 
-		private async Task<List<string>> GetUsersIDThatAddFeedBack()
-		{
-			var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
 
-			var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBacks);
+            var deleted = await _unitOfWork.CompleteAsync() > 0;
 
-			var UsersId = feedBacks.Select(f => f.UserId).ToList();
+            if (deleted)
+                return "FeedBack Deleted Successfully";
+            else
+                throw new BadRequestExeption("Deleting Failed");
 
-			return UsersId;
+        }
 
-		}
-	}
+
+        private async Task<List<string>> GetUsersIDThatAddFeedBack()
+        {
+            var feedBacks = await _unitOfWork.GetRepository<FeedBack, int>().GetAllAsync();
+
+            var returnedData = _mapper.Map<IEnumerable<ReturnFeedBackDto>>(feedBacks);
+
+            var UsersId = feedBacks.Select(f => f.UserId).ToList();
+
+            return UsersId;
+
+        }
+    }
 }

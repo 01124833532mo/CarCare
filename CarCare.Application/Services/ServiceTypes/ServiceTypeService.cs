@@ -42,8 +42,15 @@ namespace CarCare.Core.Application.Services.ServiceTypes
 
             if (vehicle is null) throw new NotFoundExeption("Not Vehicle With This Id:", id);
 
-            repo.Delete(vehicle);
+            try
+            {
+                repo.Delete(vehicle);
 
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
+            }
             var result = await _unitOfWork.CompleteAsync() > 0;
 
             if (result is true) return "Deleted Successfully";
@@ -79,7 +86,14 @@ namespace CarCare.Core.Application.Services.ServiceTypes
             }
 
             // Add the ServiceType to the repository
-            await _unitOfWork.GetRepository<ServiceType, int>().AddAsync(servicetype);
+            try
+            {
+                await _unitOfWork.GetRepository<ServiceType, int>().AddAsync(servicetype);
+            }
+            catch (Exception ex)
+            {
+                throw new BadRequestExeption(ex.Message);
+            }
 
             // Save changes to the database
             var result = await _unitOfWork.CompleteAsync() > 0;
@@ -110,7 +124,16 @@ namespace CarCare.Core.Application.Services.ServiceTypes
                 servicetype.PictureUrl = await attachmentService.UploadAsynce(updateDto.PictureUrl, "ServiceTypes");
             }
 
-            _unitOfWork.GetRepository<ServiceType, int>().Update(servicetype);
+            try
+            {
+                _unitOfWork.GetRepository<ServiceType, int>().Update(servicetype);
+
+            }
+            catch (Exception ex)
+            {
+
+                throw new BadRequestExeption(ex.Message);
+            }
             var result = await _unitOfWork.CompleteAsync() > 0;
             var returnedservice = new ServiceTypeToReturn()
             {

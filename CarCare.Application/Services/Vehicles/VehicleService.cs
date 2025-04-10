@@ -75,9 +75,16 @@ namespace CarCare.Core.Application.Services.Vehicles
             mappedresult.NormatizedVIN_Number = createVehicleDto.VIN_Number;
 
 
-            var AddResult = _unitOfWork.GetRepository<Vehicle, int>().AddAsync(mappedresult);
-            if (AddResult is null) throw new BadRequestExeption("Operation Not Succeded");
+            try
+            {
+                await _unitOfWork.GetRepository<Vehicle, int>().AddAsync(mappedresult);
 
+            }
+            catch (Exception ex)
+            {
+
+                throw new BadRequestExeption(ex.Message);
+            }
             var Created = await _unitOfWork.CompleteAsync() > 0;
 
             if (!Created) throw new BadRequestExeption("an error has occured during creating the Vehicle");
@@ -104,7 +111,15 @@ namespace CarCare.Core.Application.Services.Vehicles
 
             if (vehicle is null) throw new NotFoundExeption("Not Vehicle With This Id:", id);
 
-            repo.Delete(vehicle);
+            try
+            {
+                repo.Delete(vehicle);
+            }
+            catch (Exception ex)
+            {
+
+                throw new BadRequestExeption(ex.Message);
+            }
 
             var result = await _unitOfWork.CompleteAsync() > 0;
 
