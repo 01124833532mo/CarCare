@@ -489,17 +489,20 @@ namespace CarCare.Core.Application.Services.Auth
         public async Task<IEnumerable<TechViewModel>> GetAllTechnicals()
         {
             var techs = await userManager.Users.Where(u => u.Type == Types.Technical).Include(u => u.ServiceType)
-   .Select(u => new TechViewModel
-   {
-       Id = u.Id,
-       FullName = u.FullName!,
-       PhoneNumber = u.PhoneNumber!,
-       Email = u.Email!,
-       NationalId = u.NationalId!,
-       Type = u.Type.ToString(),
-       ServiceName = u.ServiceType!.Name
-   })
-   .ToListAsync();
+                                                .OrderByDescending(t => t.TechRate)
+                                                .Select(u => new TechViewModel
+                                                {
+                                                    Id = u.Id,
+                                                    FullName = u.FullName!,
+                                                    PhoneNumber = u.PhoneNumber!,
+                                                    Email = u.Email!,
+                                                    NationalId = u.NationalId!,
+                                                    Type = u.Type.ToString(),
+                                                    ServiceName = u.ServiceType!.Name,
+                                                    TechRate = u.TechRate,
+
+                                                })
+                                                 .ToListAsync();
 
             foreach (var tech in techs)
             {

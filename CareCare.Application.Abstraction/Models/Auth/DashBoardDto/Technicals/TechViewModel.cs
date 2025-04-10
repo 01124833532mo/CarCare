@@ -11,6 +11,9 @@
         public required string NationalId { get; set; }
         public string? ServiceName { get; set; }
 
+        public decimal? TechRate { get; set; }
+
+
 
         public IEnumerable<string> Roles { get; set; }
 
