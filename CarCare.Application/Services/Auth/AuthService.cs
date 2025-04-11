@@ -1368,6 +1368,7 @@ namespace CarCare.Core.Application.Services.Auth
                 var compeletedrequestes = serviceRequests.Where(s => s.BusnissStatus == BusnissStatus.Completed).Count();
                 var mappeduser = mapper.Map<TechDto>(user);
                 mappeduser.Token = accesstoken;
+                mappeduser.CompletedRequestes = compeletedrequestes;
                 await CheckRefreshToken(userManager, user, mappeduser);
                 return mappeduser;
             }
