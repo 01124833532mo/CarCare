@@ -9,11 +9,10 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth._Common
 {
     public class LoginDto
     {
-        [Required]
-        [Phone]
+
         public required string PhoneNumber { get; set; }
 
-        [Required]
+
         public required string Password { get; set; }
 
     }
