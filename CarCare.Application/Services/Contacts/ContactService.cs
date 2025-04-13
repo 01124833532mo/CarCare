@@ -6,103 +6,107 @@ using CarCare.Shared.ErrorModoule.Exeptions;
 using CareCare.Core.Application.Abstraction.Models.Contacts;
 using CareCare.Core.Application.Abstraction.Services.Contacts;
 using Microsoft.AspNetCore.Identity;
+using System.Linq;
 
 namespace CarCare.Core.Application.Services.Contacts
 {
-    public class ContactService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IContactService
-    {
-        public async Task<ReturnContactDto> CreateContactAsync(CreateContactDto contactDto)
-        {
-            var repo = _unitOfWork.GetRepository<Contact, int>();
+	public class ContactService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IContactService
+	{
+		public async Task<ReturnContactDto> CreateContactAsync(CreateContactDto contactDto)
+		{
+			var repo = _unitOfWork.GetRepository<Contact, int>();
 
-            var contact = _mapper.Map<Contact>(contactDto);
+			var contact = _mapper.Map<Contact>(contactDto);
 
-            try
-            {
-                await repo.AddAsync(contact);
-            }
-            catch (Exception ex)
-            {
-                throw new BadRequestExeption(ex.Message);
+			try
+			{
+				await repo.AddAsync(contact);
+			}
+			catch (Exception ex)
+			{
+				throw new BadRequestExeption(ex.Message);
 
-            }
-
-
-            var created = await _unitOfWork.CompleteAsync() > 0;
-
-            if (!created)
-                throw new BadRequestExeption("Contact not Created!");
-
-            var user = await userManager.FindByIdAsync(contact.UserId);
-            if (user is null)
-                throw new NotFoundExeption(nameof(ApplicationUser), contact.UserId);
-
-            var returnedContact = _mapper.Map<ReturnContactDto>(contact);
-
-            return returnedContact;
-        }
+			}
 
 
-        public async Task<IEnumerable<ReturnContactDto>> GetAllContactsAsync()
-        {
-            var contact = await _unitOfWork.GetRepository<Contact, int>().GetAllAsync();
-            return _mapper.Map<IEnumerable<ReturnContactDto>>(contact);
-        }
+			var created = await _unitOfWork.CompleteAsync() > 0;
+
+			if (!created)
+				throw new BadRequestExeption("Contact not Created!");
+
+			var user = await userManager.FindByIdAsync(contact.UserId);
+			if (user is null)
+				throw new NotFoundExeption(nameof(ApplicationUser), contact.UserId);
+
+			var returnedContact = _mapper.Map<ReturnContactDto>(contact);
+
+			return returnedContact;
+		}
 
 
-        public async Task<ReturnContactDto> UpdateContactAsync(int id, CreateContactDto contactDto)
-        {
-            var repo = _unitOfWork.GetRepository<Contact, int>();
+		public async Task<IEnumerable<ReturnContactDto>> GetAllContactsAsync()
+		{
+			var contact = await _unitOfWork.GetRepository<Contact, int>().GetAllAsync();
 
-            var contact = await repo.GetAsync(id);
+			var orderedContact = contact.OrderByDescending(contact => contact.CreatedOn);
 
-            if (contact is null)
-                throw new NotFoundExeption(nameof(Contact), id);
+			return _mapper.Map<IEnumerable<ReturnContactDto>>(orderedContact);
+		}
 
-            _mapper.Map(contactDto, contact);
 
-            try
-            {
+		public async Task<ReturnContactDto> UpdateContactAsync(int id, CreateContactDto contactDto)
+		{
+			var repo = _unitOfWork.GetRepository<Contact, int>();
 
-                repo.Update(contact);
+			var contact = await repo.GetAsync(id);
 
-            }
-            catch (Exception ex)
-            {
-                throw new BadRequestExeption(ex.Message);
-            }
-            var success = await _unitOfWork.CompleteAsync() > 0;
+			if (contact is null)
+				throw new NotFoundExeption(nameof(Contact), id);
 
-            if (!success)
-                throw new BadRequestExeption("Update is not Completed");
+			_mapper.Map(contactDto, contact);
 
-            return _mapper.Map<ReturnContactDto>(contact);
-        }
+			try
+			{
 
-        public async Task<string> DeleteContactAsync(int id)
-        {
-            var repo = _unitOfWork.GetRepository<Contact, int>();
+				repo.Update(contact);
 
-            var contact = await repo.GetAsync(id);
+			}
+			catch (Exception ex)
+			{
+				throw new BadRequestExeption(ex.Message);
+			}
+			var success = await _unitOfWork.CompleteAsync() > 0;
 
-            if (contact is null)
-                throw new NotFoundExeption(nameof(Contact), id);
-            try
-            {
+			if (!success)
+				throw new BadRequestExeption("Update is not Completed");
 
-                repo.Delete(contact);
-            }
-            catch (Exception ex)
-            {
-                throw new BadRequestExeption(ex.Message);
-            }
+			return _mapper.Map<ReturnContactDto>(contact);
+		}
 
-            var isDeleted = await _unitOfWork.CompleteAsync() > 0;
+		public async Task<string> DeleteContactAsync(int id)
+		{
+			var repo = _unitOfWork.GetRepository<Contact, int>();
 
-            if (!isDeleted)
-                throw new BadRequestExeption("Delete is not Completed");
+			var contact = await repo.GetAsync(id);
 
-            return "Delete is Completed Successfully";
-        }
-    }
+			if (contact is null)
+				throw new NotFoundExeption(nameof(Contact), id);
+			try
+			{
+
+				repo.Delete(contact);
+			}
+			catch (Exception ex)
+			{
+				throw new BadRequestExeption(ex.Message);
+			}
+
+			var isDeleted = await _unitOfWork.CompleteAsync() > 0;
+
+			if (!isDeleted)
+				throw new BadRequestExeption("Delete is not Completed");
+
+			return "Delete is Completed Successfully";
+		}
+	}
 }

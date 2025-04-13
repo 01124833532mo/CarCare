@@ -17,8 +17,8 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
 		{
 			base.Configure(builder);
 
-			builder.HasKey(c => c.Id);
-			builder.Property(c => c.Id).UseIdentityColumn();
+			//builder.HasKey(c => c.Id);
+			//builder.Property(c => c.Id).UseIdentityColumn();
 
 			builder.Property(c => c.Message)
 				   .HasColumnType("nvarchar")

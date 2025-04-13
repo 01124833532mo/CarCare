@@ -7,6 +7,5 @@
         public const string Email = @"^[a-zA-Z0-9._%+-]+@(gmail\.com|googlemail\.com|google\.com|[a-zA-Z0-9-]+\.edu\.eg)$";
         public const string Password = @"^(?=.*\d)[\w!@#$%^&*()\-+={}[\]:;""'<>,.?/\\|`~]{8,}$";
         public const string NationalId = @"^[23]\d{13}$";
-
-    }
+	}
 }
