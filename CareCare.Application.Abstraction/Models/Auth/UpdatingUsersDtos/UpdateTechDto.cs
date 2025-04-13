@@ -9,12 +9,11 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos
 {
 	public class UpdateTechDto : BaseUpdateDto
 	{
-		[Length(14, 14)]
+
 		public string? NationalId { get; set; }
 
 
-		[EmailAddress]
-		[DataType(DataType.EmailAddress)]
+
 		public required string Email { get; set; }
 	}
 }
