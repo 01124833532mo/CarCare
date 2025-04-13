@@ -666,51 +666,51 @@ namespace CarCare.Core.Application.Services.Auth
 			if (appUserId is null)
 				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var tech = await userManager.FindByIdAsync(appUserId);
+			var appUser = await userManager.FindByIdAsync(appUserId);
 
-			if (tech is null)
+			if (appUser is null)
 				throw new NotFoundExeption("No User For This Id", nameof(appUserId));
 
 			var getphone = await userManager.Users.Where(u => u.PhoneNumber == appUserDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == appUserDto.PhoneNumber && appUserDto.PhoneNumber != tech.PhoneNumber)
+			if (getphone is not null && getphone.PhoneNumber == appUserDto.PhoneNumber && appUserDto.PhoneNumber != appUser.PhoneNumber)
 				throw new BadRequestExeption("Phone is Already Registered");
 
 			var getEmail = await userManager.Users.Where(u => u.Email == appUserDto.Email).FirstOrDefaultAsync();
 
 
-			if (getEmail is not null && getEmail.Email == appUserDto.Email && appUserDto.Email != tech.Email)
+			if (getEmail is not null && getEmail.Email == appUserDto.Email && appUserDto.Email != appUser.Email)
 				throw new BadRequestExeption("Email is Already Registered");
 
 
 
-			tech.PhoneNumber = appUserDto.PhoneNumber;
-			tech.FullName = appUserDto.FullName!;
-			tech.Email = appUserDto.Email;
+			appUser.PhoneNumber = appUserDto.PhoneNumber;
+			appUser.FullName = appUserDto.FullName!;
+			appUser.Email = appUserDto.Email;
 
 
-			var result = await userManager.UpdateAsync(tech);
+			var result = await userManager.UpdateAsync(appUser);
 
 
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			if (role.Any(r => r == Roles.Technical))
+			if (role.Contains(Types.Technical.ToString()) && appUser.Type.ToString() == Roles.Technical)
 			{
-				tech.NationalId = appUserDto.NationalId;
+				appUser.NationalId = appUserDto.NationalId;
 
 				var respone = new TechDto
 				{
-					Id = tech.Id,
-					FullName = tech.FullName!,
-					PhoneNumber = tech.PhoneNumber!,
-					Email = tech.Email!,
-					Type = tech.Type.ToString(),
-					NationalId = tech.NationalId!,
-					Profit = tech.TechProfit,
-					ServiceName = tech.ServiceType!.Name,
+					Id = appUser.Id,
+					FullName = appUser.FullName!,
+					PhoneNumber = appUser.PhoneNumber!,
+					Email = appUser.Email!,
+					Type = appUser.Type.ToString(),
+					NationalId = appUser.NationalId!,
+					Profit = appUser.TechProfit,
+					ServiceName = appUser.ServiceType!.Name,
 
-					Token = await GenerateTokenAsync(tech),
+					Token = await GenerateTokenAsync(appUser),
 				};
 				return respone;
 			}
@@ -718,12 +718,12 @@ namespace CarCare.Core.Application.Services.Auth
 			{
 				var respone = new UserDto
 				{
-					Id = tech.Id,
-					FullName = tech.FullName!,
-					PhoneNumber = tech.PhoneNumber!,
-					Email = tech.Email!,
-					Type = tech.Type.ToString(),
-					Token = await GenerateTokenAsync(tech),
+					Id = appUser.Id,
+					FullName = appUser.FullName!,
+					PhoneNumber = appUser.PhoneNumber!,
+					Email = appUser.Email!,
+					Type = appUser.Type.ToString(),
+					Token = await GenerateTokenAsync(appUser),
 				};
 				return respone;
 
