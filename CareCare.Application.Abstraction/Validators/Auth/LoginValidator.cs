@@ -18,10 +18,6 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 				.WithMessage("PhoneNumber Must Not Empty , Plz Add a {PropertyName}")
 				.Matches(RegexPatterns.PhoneNumber).WithMessage("Invalid Egyptian phone number.");
 
-			RuleFor(x => x.Password)
-							.NotEmpty()
-							.WithMessage("\"Password Must Not Empty ,Plz Add a {PropertyName}\"")
-							.Matches(RegexPatterns.Password).WithMessage("Password must be at least 8 characters long and contain at least one digit.");
 		}
 	}
 }

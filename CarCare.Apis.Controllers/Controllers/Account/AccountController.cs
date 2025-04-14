@@ -105,10 +105,10 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 		#region Confirmation
 
 
-		[HttpPost("ForgetPasswordEmail")]
-		public async Task<ActionResult> ForgetPasswordEmail(ForgetPasswordByEmailDto forgetPasswordDto)
+		[HttpPost("SendCodeByEmail")]
+		public async Task<ActionResult<SuccessDto>> SendCodeByEmail(SendCodeByEmailDto forgetPasswordDto)
 		{
-			var result = await serviceManager.AuthService.ForgetPasswordByEmailasync(forgetPasswordDto);
+			var result = await serviceManager.AuthService.SendCodeByEmailasync(forgetPasswordDto);
 			return Ok(result);
 		}
 
@@ -120,7 +120,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 		}
 
 		[HttpPost("VerfiyCodeEmail")]
-		public async Task<ActionResult> VerfiyCodeEmail(ResetCodeConfirmationByEmailDto resetCode)
+		public async Task<ActionResult<SuccessDto>> VerfiyCodeEmail(ResetCodeConfirmationByEmailDto resetCode)
 		{
 			var result = await serviceManager.AuthService.VerifyCodeByEmailAsync(resetCode);
 			return Ok(result);
@@ -134,7 +134,7 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 		}
 
 		[HttpPut("ResetPasswordEmail")]
-		public async Task<ActionResult> ResetPasswordEmail(ResetPasswordByEmailDto resetPassword)
+		public async Task<ActionResult<UserDto>> ResetPasswordEmail(ResetPasswordByEmailDto resetPassword)
 		{
 			var result = await serviceManager.AuthService.ResetPasswordByEmailAsync(resetPassword);
 			return Ok(result);
@@ -147,23 +147,9 @@ namespace CarCare.Apis.Controllers.Controllers.Account
 			return Ok(result);
 		}
 
-		[HttpPost("ConfirmationCodeEmail")]
-		public async Task<ActionResult> ConfirmationCodeEmail(ForgetPasswordByEmailDto confirmationCode)
-		{
-			var result = await serviceManager.AuthService.ConfirmationCodeSendByEmailAsync(confirmationCode);
-			return Ok(result);
-		}
-
-
-		[HttpPost("ConfirmationCodePhone")]
-		public async Task<ActionResult> ConfirmationCodePhone(ForgetPasswordByPhoneDto confirmationCode)
-		{
-			var result = await serviceManager.AuthService.ConfirmationCodeSendByPhoneAsync(confirmationCode);
-			return Ok(result);
-		}
 
 		[HttpPost("ConfirmEmail")]
-		public async Task<ActionResult> ConfirmEmail(ConfirmationEmailCodeDto codeDto)
+		public async Task<ActionResult<SuccessDto>> ConfirmEmail(ConfirmationEmailCodeDto codeDto)
 		{
 			var result = await serviceManager.AuthService.ConfirmEmailAsync(codeDto);
 			return Ok(result);

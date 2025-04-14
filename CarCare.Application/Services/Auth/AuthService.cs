@@ -193,8 +193,8 @@ namespace CarCare.Core.Application.Services.Auth
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			var email = new ForgetPasswordByEmailDto() { Email = user.Email };
-			await ConfirmationCodeSendByEmailAsync(email);
+			var email = new SendCodeByEmailDto() { Email = user.Email };
+			await SendCodeByEmailasync(email);
 
 
 			var roleResult = await userManager.AddToRoleAsync(user, Types.User.ToString());
@@ -255,8 +255,8 @@ namespace CarCare.Core.Application.Services.Auth
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			var email = new ForgetPasswordByEmailDto() { Email = tech.Email };
-			await ConfirmationCodeSendByEmailAsync(email);
+			var email = new SendCodeByEmailDto() { Email = tech.Email };
+			await SendCodeByEmailasync(email);
 
 
 
@@ -1005,7 +1005,7 @@ namespace CarCare.Core.Application.Services.Auth
 
 		#region Confirmation
 
-		public async Task<SuccessDto> ForgetPasswordByEmailasync(ForgetPasswordByEmailDto emailDto)
+		public async Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto)
 		{
 			var user = await userManager.Users.Where(u => u.Email == emailDto.Email).FirstOrDefaultAsync();
 
@@ -1178,21 +1178,6 @@ namespace CarCare.Core.Application.Services.Auth
 			};
 
 			return mappedUser;
-		}
-
-
-		public async Task<SuccessDto> ConfirmationCodeSendByEmailAsync(ForgetPasswordByEmailDto emailDto)
-		{
-			var result = await ForgetPasswordByEmailasync(emailDto);
-
-			return result;
-		}
-
-		public async Task<SuccessDto> ConfirmationCodeSendByPhoneAsync(ForgetPasswordByPhoneDto phoneDto)
-		{
-			var result = await ForgetPasswordByPhoneAsync(phoneDto);
-
-			return result;
 		}
 
 
