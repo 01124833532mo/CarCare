@@ -682,11 +682,14 @@ namespace CarCare.Core.Application.Services.Auth
 			if (getEmail is not null && getEmail.Email == appUserDto.Email && appUserDto.Email != appUser.Email)
 				throw new BadRequestExeption("Email is Already Registered");
 
-
+			bool tech = role.Contains(Types.Technical.ToString()) && appUser.Type.ToString() == Roles.Technical;
 
 			appUser.PhoneNumber = appUserDto.PhoneNumber;
 			appUser.FullName = appUserDto.FullName!;
 			appUser.Email = appUserDto.Email;
+
+			if (tech)
+				appUser.NationalId = appUserDto.NationalId;
 
 
 			var result = await userManager.UpdateAsync(appUser);
@@ -695,9 +698,8 @@ namespace CarCare.Core.Application.Services.Auth
 			if (!result.Succeeded)
 				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			if (role.Contains(Types.Technical.ToString()) && appUser.Type.ToString() == Roles.Technical)
+			if (tech)
 			{
-				appUser.NationalId = appUserDto.NationalId;
 
 				var respone = new TechDto
 				{
