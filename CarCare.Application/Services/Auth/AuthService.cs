@@ -659,7 +659,7 @@ namespace CarCare.Core.Application.Services.Auth
 
 		public async Task<BaseUserDto> UpdateAppUserBySelf(ClaimsPrincipal claims, UpdateTechDto appUserDto)
 		{
-			var appUserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+			var appUserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value; 
 
 			var role = claims.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
