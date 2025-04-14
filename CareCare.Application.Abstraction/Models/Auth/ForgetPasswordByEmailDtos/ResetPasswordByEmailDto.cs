@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPasswordByEmailDtos
 {
-	public class ResetPasswordByEmailDto : ForgetPasswordByEmailDto
+	public class ResetPasswordByEmailDto : SendCodeByEmailDto
 	{
 		[Required]
 		public required string NewPassword { get; set; }
