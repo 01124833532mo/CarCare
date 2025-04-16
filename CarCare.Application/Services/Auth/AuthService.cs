@@ -165,19 +165,17 @@ namespace CarCare.Core.Application.Services.Auth
 
 
         public async Task<BaseUserDto> RegisterAsync(RegisterDto registerDto)
-        { // Check for duplicate phone number
+        {
             var existingPhone = await userManager.Users
                 .FirstOrDefaultAsync(u => u.PhoneNumber == registerDto.PhoneNumber);
             if (existingPhone != null)
                 throw new BadRequestExeption("Phone is Already Registered");
 
-            // Check for duplicate email
             var existingEmail = await userManager.Users
                 .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
             if (existingEmail != null)
                 throw new BadRequestExeption("Email is Already Registered");
 
-            // For technicians, check national ID and service type
             if (registerDto.Type == Types.Technical)
             {
                 var existingNationalId = await userManager.Users
@@ -191,27 +189,22 @@ namespace CarCare.Core.Application.Services.Auth
                     throw new NotFoundExeption("No Found Service With This Id", nameof(registerDto.ServiceId));
             }
 
-            // Create the appropriate user type
             var user = registerDto.Type == Types.Technical
                 ? CreateTechnicalUser(registerDto)
                 : CreateRegularUser(registerDto);
 
-            // Create the user
             var result = await userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-            // Send confirmation email
             var email = new SendCodeByEmailDto() { Email = user.Email! };
             await SendCodeByEmailasync(email);
 
-            // Add to appropriate role
             var role = registerDto.Type == Types.Technical ? Roles.Technical : Roles.User;
             var roleResult = await userManager.AddToRoleAsync(user, role);
             if (!roleResult.Succeeded)
                 throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
-            // Return the appropriate response
             return await CreateUserResponse(user, registerDto.Type);
         }
 
