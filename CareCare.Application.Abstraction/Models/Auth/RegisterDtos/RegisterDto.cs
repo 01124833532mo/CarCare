@@ -2,10 +2,8 @@
 
 namespace CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos
 {
-    public class BaseRegisterDto
+    public class RegisterDto
     {
-
-
         public required string Email { get; set; }
 
 
@@ -16,5 +14,11 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.RegisterDtos
 
         public required string Password { get; set; }
         public required Types Type { get; set; }
+
+
+        public string? NationalId { get; set; }
+
+        public int? ServiceId { get; set; }
+
     }
 }
