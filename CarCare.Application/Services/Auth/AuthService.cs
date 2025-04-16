@@ -21,7 +21,6 @@ using CareCare.Core.Application.Abstraction.Models.Auth.UpdatingUsersDtos;
 using CareCare.Core.Application.Abstraction.Models.Auth.UserDtos;
 using CareCare.Core.Application.Abstraction.Services;
 using CareCare.Core.Application.Abstraction.Services.Auth;
-using CareCare.Core.Application.Abstraction.Validators.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -34,1318 +33,1325 @@ using System.Text;
 namespace CarCare.Core.Application.Services.Auth
 {
 
-	public class AuthService(
-		IOptions<JwtSettings> jwtSettings, UserManager<ApplicationUser> userManager,
-		SignInManager<ApplicationUser> signInManager
-		, RoleManager<IdentityRole> roleManager
-		, ISMSServices smsServices
-		, IMapper mapper
-		, IEmailServices emailServices,
-		IUnitOfWork unitOfWork) : IAuthService
-	{
-
-		private readonly JwtSettings _jwtSettings = jwtSettings.Value;
-
-		#region Role
-		public async Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto)
-		{
-			var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
-
-			if (!roleExsits)
-			{
-				var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
-				var role = await roleManager.FindByNameAsync(roleDto.Name);
-				var mappedroleresult = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
-				return mappedroleresult;
-			}
-			else
-			{
-				throw new BadRequestExeption("This Role already Exists");
-			}
-
-
-		}
-
-
-		public async Task<IEnumerable<RolesToReturn>> GetRolesAsync()
-		{
-
-			var roles = await roleManager.Roles.ToListAsync();
-			var result = mapper.Map<IEnumerable<RolesToReturn>>(roles);
-			return result;
-
-		}
-
-
-		public async Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto)
-		{
-			var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
-			if (!roleExsists)
-			{
-				var role = await roleManager.FindByIdAsync(id);
-				role!.Name = roleDto.Name;
-				await roleManager.UpdateAsync(role);
-				var result = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
-				return result;
-			}
-			else
-			{
-				throw new BadRequestExeption("this Role Already is Exsists");
-			}
-		}
-
-		public async Task DeleteRole(string id)
-		{
-			var role = await roleManager.FindByIdAsync(id);
-			if (role is null)
-			{
-				throw new NotFoundExeption(nameof(role), id);
-			}
-			await roleManager.DeleteAsync(role!);
-		}
-
-		#endregion
-
-
-		#region Sign (in - up)
-
-		public async Task<BaseUserDto> LoginAsync(LoginDto loginDto)
-		{
-			var user = await userManager.Users.Where(u => u.PhoneNumber == loginDto.PhoneNumber).FirstOrDefaultAsync();
-			if (user == null)
-				throw new UnAuthorizedExeption("Invalid Login");
-
-			var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
-
-			if (!user.EmailConfirmed)
-				throw new UnAuthorizedExeption("Email is not Confirmed");
-
-			if (result.IsLockedOut)
-				throw new UnAuthorizedExeption("Email is Locked Out");
-
-			if (!result.Succeeded)
-				throw new UnAuthorizedExeption("Invalid Login");
-
-			var serviceid = user.ServiceId ?? 0; // Provide a default value (e.g., 0)
-			var servicetype = await unitOfWork.GetRepository<ServiceType, int>().GetAsync(serviceid);
-			if (user.Type == Types.User)
-			{
-				var response = new UserDto
-				{
-					Id = user.Id,
-					FullName = user.FullName,
-					PhoneNumber = user.PhoneNumber!,
-					Email = user.Email!,
-					Type = user.Type.ToString(),
-					Token = await GenerateTokenAsync(user)
-				};
-				await CheckRefreshToken(userManager, user, response);
+    public class AuthService(
+        IOptions<JwtSettings> jwtSettings, UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager
+        , RoleManager<IdentityRole> roleManager
+        , ISMSServices smsServices
+        , IMapper mapper
+        , IEmailServices emailServices,
+        IUnitOfWork unitOfWork) : IAuthService
+    {
+
+        private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+
+        #region Role
+        public async Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto)
+        {
+            var roleExsits = await roleManager.RoleExistsAsync(roleDto.Name);
+
+            if (!roleExsits)
+            {
+                var result = await roleManager.CreateAsync(new IdentityRole(roleDto.Name.Trim()));
+                var role = await roleManager.FindByNameAsync(roleDto.Name);
+                var mappedroleresult = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+                return mappedroleresult;
+            }
+            else
+            {
+                throw new BadRequestExeption("This Role already Exists");
+            }
+
+
+        }
+
+
+        public async Task<IEnumerable<RolesToReturn>> GetRolesAsync()
+        {
+
+            var roles = await roleManager.Roles.ToListAsync();
+            var result = mapper.Map<IEnumerable<RolesToReturn>>(roles);
+            return result;
+
+        }
+
+
+        public async Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto)
+        {
+            var roleExsists = await roleManager.RoleExistsAsync(roleDto.Name);
+            if (!roleExsists)
+            {
+                var role = await roleManager.FindByIdAsync(id);
+                role!.Name = roleDto.Name;
+                await roleManager.UpdateAsync(role);
+                var result = new RolesToReturn() { Id = role!.Id, Name = role.Name! };
+                return result;
+            }
+            else
+            {
+                throw new BadRequestExeption("this Role Already is Exsists");
+            }
+        }
+
+        public async Task DeleteRole(string id)
+        {
+            var role = await roleManager.FindByIdAsync(id);
+            if (role is null)
+            {
+                throw new NotFoundExeption(nameof(role), id);
+            }
+            await roleManager.DeleteAsync(role!);
+        }
+
+        #endregion
+
+
+        #region Sign (in - up)
+
+        public async Task<BaseUserDto> LoginAsync(LoginDto loginDto)
+        {
+            var user = await userManager.Users.Where(u => u.PhoneNumber == loginDto.PhoneNumber).FirstOrDefaultAsync();
+            if (user == null)
+                throw new UnAuthorizedExeption("Invalid Login");
+
+            var result = await signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
+
+            if (!user.EmailConfirmed)
+                throw new UnAuthorizedExeption("Email is not Confirmed");
+
+            if (result.IsLockedOut)
+                throw new UnAuthorizedExeption("Email is Locked Out");
+
+            if (!result.Succeeded)
+                throw new UnAuthorizedExeption("Invalid Login");
+
+            var serviceid = user.ServiceId ?? 0; // Provide a default value (e.g., 0)
+            var servicetype = await unitOfWork.GetRepository<ServiceType, int>().GetAsync(serviceid);
+            if (user.Type == Types.User)
+            {
+                var response = new UserDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber!,
+                    Email = user.Email!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user)
+                };
+                await CheckRefreshToken(userManager, user, response);
 
-				return response;
-			}
-			else
-			{
+                return response;
+            }
+            else
+            {
 
 
-				var response = new TechDto
-				{
-					Id = user.Id,
-					FullName = user.FullName!,
-					PhoneNumber = user.PhoneNumber!,
-					Email = user.Email!,
-					NationalId = user.NationalId!,
-					Type = user.Type.ToString(),
-					ServiceName = servicetype?.Name,
-					Token = await GenerateTokenAsync(user)
-				};
-				await CheckRefreshToken(userManager, user, response);
+                var response = new TechDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName!,
+                    PhoneNumber = user.PhoneNumber!,
+                    Email = user.Email!,
+                    NationalId = user.NationalId!,
+                    Type = user.Type.ToString(),
+                    ServiceName = servicetype?.Name,
+                    Token = await GenerateTokenAsync(user)
+                };
+                await CheckRefreshToken(userManager, user, response);
 
-				return response;
-			}
-		}
+                return response;
+            }
+        }
 
 
-		public async Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto)
-		{
-			var user = new ApplicationUser
-			{
-				PhoneNumber = userRegisterDto.PhoneNumber,
-				FullName = userRegisterDto.FullName,
-				Type = userRegisterDto.Type,
-				Email = userRegisterDto.Email,
-				UserName = userRegisterDto.Email
-			};
+        public async Task<BaseUserDto> RegisterAsync(RegisterDto registerDto)
+        { // Check for duplicate phone number
+            var existingPhone = await userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == registerDto.PhoneNumber);
+            if (existingPhone != null)
+                throw new BadRequestExeption("Phone is Already Registered");
 
-			var getphone = await userManager.Users.Where(u => u.PhoneNumber == user.PhoneNumber).FirstOrDefaultAsync();
+            // Check for duplicate email
+            var existingEmail = await userManager.Users
+                .FirstOrDefaultAsync(u => u.Email == registerDto.Email);
+            if (existingEmail != null)
+                throw new BadRequestExeption("Email is Already Registered");
 
-			if (getphone is not null && getphone.PhoneNumber == userRegisterDto.PhoneNumber)
-				throw new BadRequestExeption("Phone is Already Registered");
+            // For technicians, check national ID and service type
+            if (registerDto.Type == Types.Technical)
+            {
+                var existingNationalId = await userManager.Users
+                    .FirstOrDefaultAsync(u => u.NationalId == registerDto.NationalId);
+                if (existingNationalId != null)
+                    throw new BadRequestExeption("NationalId is Already Registered");
 
-			var getmail = await userManager.Users.Where(U => U.Email == user.Email).FirstOrDefaultAsync();
+                var serviceType = await unitOfWork.GetRepository<ServiceType, int>()
+                    .GetAsync(registerDto.ServiceId ?? 0);
+                if (serviceType == null)
+                    throw new NotFoundExeption("No Found Service With This Id", nameof(registerDto.ServiceId));
+            }
 
-			if (getmail is not null && getmail.Email == userRegisterDto.Email)
-				throw new BadRequestExeption("Email is Already Registered");
+            // Create the appropriate user type
+            var user = registerDto.Type == Types.Technical
+                ? CreateTechnicalUser(registerDto)
+                : CreateRegularUser(registerDto);
 
+            // Create the user
+            var result = await userManager.CreateAsync(user, registerDto.Password);
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			var result = await userManager.CreateAsync(user, userRegisterDto.Password);
+            // Send confirmation email
+            var email = new SendCodeByEmailDto() { Email = user.Email! };
+            await SendCodeByEmailasync(email);
 
+            // Add to appropriate role
+            var role = registerDto.Type == Types.Technical ? Roles.Technical : Roles.User;
+            var roleResult = await userManager.AddToRoleAsync(user, role);
+            if (!roleResult.Succeeded)
+                throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+            // Return the appropriate response
+            return await CreateUserResponse(user, registerDto.Type);
+        }
 
-			var email = new SendCodeByEmailDto() { Email = user.Email };
-			await SendCodeByEmailasync(email);
 
 
-			var roleResult = await userManager.AddToRoleAsync(user, Types.User.ToString());
-			if (!roleResult.Succeeded)
-				throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
 
-			var respone = new UserDto
-			{
-				Id = user.Id,
-				FullName = user.FullName,
-				PhoneNumber = user.PhoneNumber,
-				Email = user.Email,
-				Type = user.Type.ToString(),
-				Token = await GenerateTokenAsync(user),
 
 
-			};
-			return respone;
-		}
+        public async Task<TechDto> GetTechLocationAsync(ClaimsPrincipal claimsPrincipal, TechLocationDto techLocationDto)
+        {
+            var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)!.Value;
 
+            if (techId is null)
+                throw new NotFoundExeption(nameof(techId), techId!);
 
-		public async Task<TechDto> RegisterTechAsync(TechRegisterDto techRegisterDto)
-		{
+            var tech = await userManager.FindByIdAsync(techId);
 
-			var tech = new ApplicationUser
-			{
-				FullName = techRegisterDto.FullName,
-				PhoneNumber = techRegisterDto.PhoneNumber,
-				Email = techRegisterDto.Email,
-				UserName = techRegisterDto.Email,
-				NationalId = techRegisterDto.NationalId,
-				Type = techRegisterDto.Type,
-				ServiceId = techRegisterDto.ServiceId,
-			};
+            if (tech is null)
+                throw new NotFoundExeption(nameof(techId), techId);
 
-			var nationalid = await userManager.Users.Where(u => u.NationalId == techRegisterDto.NationalId).FirstOrDefaultAsync();
-			if (nationalid is not null)
-				throw new BadRequestExeption("NationalId is Already Registered");
+            tech.TechLatitude = techLocationDto.TechLatitude;
+            tech.TechLongitude = techLocationDto.TechLongitude;
 
+            var result = await userManager.UpdateAsync(tech);
 
-			var servicetype = await unitOfWork.GetRepository<ServiceType, int>().GetAsync(techRegisterDto.ServiceId);
-			if (servicetype is null)
-				throw new NotFoundExeption("No Found Service With This Id", nameof(techRegisterDto.ServiceId));
 
-			var getphone = await userManager.Users.Where(u => u.PhoneNumber == tech.PhoneNumber).FirstOrDefaultAsync();
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			if (getphone is not null && getphone.PhoneNumber == techRegisterDto.PhoneNumber)
-				throw new BadRequestExeption("Phone is Already Registered");
 
-			var getmail = await userManager.Users.Where(U => U.Email == tech.Email).FirstOrDefaultAsync();
+            var respone = mapper.Map<TechDto>(tech);
 
-			if (getmail is not null && getmail.Email == techRegisterDto.Email)
-				throw new BadRequestExeption("Email is Already Registered");
+            return respone;
 
-			var result = await userManager.CreateAsync(tech, techRegisterDto.Password);
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+        }
 
-			var email = new SendCodeByEmailDto() { Email = tech.Email };
-			await SendCodeByEmailasync(email);
 
 
+        #endregion
 
-			var roleResult = await userManager.AddToRoleAsync(tech, Types.Technical.ToString());
-			if (!roleResult.Succeeded)
-				throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
+        #region DashBoard
 
+        public async Task<IEnumerable<UserViewModel>> GetAllUsers()
+        {
 
+            var users = await userManager.Users.Where(u => u.Type == Types.User)
+    .Select(u => new UserViewModel
+    {
+        Id = u.Id,
+        FullName = u.FullName!,
+        PhoneNumber = u.PhoneNumber!,
+        Email = u.Email!,
+        Type = u.Type.ToString()
+    })
+    .ToListAsync();
 
+            foreach (var user in users)
+            {
+                // Await the GetRolesAsync call properly here
+                user.Roles = await userManager.GetRolesAsync(await userManager.FindByIdAsync(user.Id));
+            }
 
+            return users;
 
-			var response = new TechDto
-			{
-				Id = tech.Id,
-				Email = techRegisterDto.Email,
-				FullName = techRegisterDto.FullName,
-				PhoneNumber = techRegisterDto.PhoneNumber,
-				NationalId = techRegisterDto.NationalId,
-				Type = techRegisterDto.Type.ToString(),
-				ServiceName = servicetype.Name,
-				Token = await GenerateTokenAsync(tech),
+        }
 
-			};
-			return response;
-		}
+        public async Task<UserDto> CreateUser(CreateUserDro createUserDro)
+        {
+            var user = new ApplicationUser
+            {
+                FullName = createUserDro.Name,
+                PhoneNumber = createUserDro.PhoneNumber,
+                Type = createUserDro.Type,
+                Email = createUserDro.Email
+            };
 
-		public async Task<TechDto> GetTechLocationAsync(ClaimsPrincipal claimsPrincipal, TechLocationDto techLocationDto)
-		{
-			var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)!.Value;
+            var getphone = await userManager.Users
+                .Where(u => u.PhoneNumber == user.PhoneNumber)
+                .FirstOrDefaultAsync();
 
-			if (techId is null)
-				throw new NotFoundExeption(nameof(techId), techId!);
+            if (getphone is not null && getphone.PhoneNumber == createUserDro.PhoneNumber)
+                throw new BadRequestExeption("Phone is Already Registered");
 
-			var tech = await userManager.FindByIdAsync(techId);
+            var email = await userManager.FindByEmailAsync(user.Email);
+            if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
 
-			if (tech is null)
-				throw new NotFoundExeption(nameof(techId), techId);
 
-			tech.TechLatitude = techLocationDto.TechLatitude;
-			tech.TechLongitude = techLocationDto.TechLongitude;
+            var result = await userManager.CreateAsync(user, createUserDro.Password);
 
-			var result = await userManager.UpdateAsync(tech);
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
+            // Assign the "User" role to the newly created user
+            var roleResult = await userManager.AddToRoleAsync(user, Types.User.ToString());
+            if (!roleResult.Succeeded)
+                throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
-			var respone = mapper.Map<TechDto>(tech);
+            var refresktoken = GenerateRefreshToken();
 
-			return respone;
+            user.RefreshTokens.Add(new RefreshToken()
+            {
+                Token = refresktoken.Token,
+                ExpireOn = refresktoken.ExpireOn
+            });
 
+            await userManager.UpdateAsync(user);
 
-		}
+            var response = new UserDto
+            {
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber,
+                Email = user.Email!,
+                Type = user.Type.ToString(),
+                FullName = user.FullName,
+                Token = await GenerateTokenAsync(user),
+                RefreshToken = refresktoken.Token,
+                RefreshTokenExpirationDate = refresktoken.ExpireOn
 
+            };
 
+            return response;
+        }
 
-		#endregion
+        public async Task<UserRoleViewModel> GetUser(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
+            if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
+            var allRoles = await roleManager.Roles.ToListAsync();
+            var viewModel = new UserRoleViewModel()
+            {
+                Id = user.Id,
+                Name = user.FullName!,
+                PhoneNumber = user.PhoneNumber!,
+                Email = user.Email!,
+                Type = user.Type.ToString(),
+                Roles = allRoles.Select(
+                    r => new RoleDto()
+                    {
+                        Id = r.Id,
+                        Name = r.Name!,
+                        IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
+                    }).Where(u => u.IsSelected == true).ToList()
+            };
 
+            return viewModel;
+        }
 
-		#region DashBoard
+        public async Task<string> DeleteUser(string id)
+        {
+            var user = await userManager.FindByIdAsync(id);
 
-		public async Task<IEnumerable<UserViewModel>> GetAllUsers()
-		{
+            if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
 
-			var users = await userManager.Users.Where(u => u.Type == Types.User)
-	.Select(u => new UserViewModel
-	{
-		Id = u.Id,
-		FullName = u.FullName!,
-		PhoneNumber = u.PhoneNumber!,
-		Email = u.Email!,
-		Type = u.Type.ToString()
-	})
-	.ToListAsync();
+            var result = await userManager.DeleteAsync(user);
 
-			foreach (var user in users)
-			{
-				// Await the GetRolesAsync call properly here
-				user.Roles = await userManager.GetRolesAsync(await userManager.FindByIdAsync(user.Id));
-			}
+            if (result.Succeeded)
+                return "Delete Successed";
+            else
+            {
+                return "Operation Faild";
+            }
 
-			return users;
 
-		}
+        }
 
-		public async Task<UserDto> CreateUser(CreateUserDro createUserDro)
-		{
-			var user = new ApplicationUser
-			{
-				FullName = createUserDro.Name,
-				PhoneNumber = createUserDro.PhoneNumber,
-				Type = createUserDro.Type,
-				Email = createUserDro.Email
-			};
+        public async Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel)
+        {
 
-			var getphone = await userManager.Users
-				.Where(u => u.PhoneNumber == user.PhoneNumber)
-				.FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == createUserDro.PhoneNumber)
-				throw new BadRequestExeption("Phone is Already Registered");
+            var user = await userManager.FindByIdAsync(id);
+            if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
 
-			var email = await userManager.FindByEmailAsync(user.Email);
-			if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
+            var userRoles = await userManager.GetRolesAsync(user);
+            if (userRoles is null) throw new NotFoundExeption("Do Not Roles For This User", nameof(id));
 
 
-			var result = await userManager.CreateAsync(user, createUserDro.Password);
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+            foreach (var role in viewModel.Roles)
+            {
+                if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
+                {
+                    await userManager.RemoveFromRoleAsync(user, role.Name);
+                }
 
+                if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
+                {
+                    await userManager.AddToRoleAsync(user, role.Name);
+                }
+            }
 
+            var ExistedRoles = await userManager.GetRolesAsync(user);
 
-			// Assign the "User" role to the newly created user
-			var roleResult = await userManager.AddToRoleAsync(user, Types.User.ToString());
-			if (!roleResult.Succeeded)
-				throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
+            var usertoreturn = new UserRoleViewModel()
+            {
 
-			var refresktoken = GenerateRefreshToken();
+                Id = user.Id,
+                Name = user.FullName!,
+                PhoneNumber = user.PhoneNumber!,
+                Email = user.Email!,
+                Type = user.Type.ToString(),
+                Roles = ExistedRoles
 
-			user.RefreshTokens.Add(new RefreshToken()
-			{
-				Token = refresktoken.Token,
-				ExpireOn = refresktoken.ExpireOn
-			});
+            };
 
-			await userManager.UpdateAsync(user);
+            return usertoreturn;
 
-			var response = new UserDto
-			{
-				Id = user.Id,
-				PhoneNumber = user.PhoneNumber,
-				Email = user.Email!,
-				Type = user.Type.ToString(),
-				FullName = user.FullName,
-				Token = await GenerateTokenAsync(user),
-				RefreshToken = refresktoken.Token,
-				RefreshTokenExpirationDate = refresktoken.ExpireOn
+        }
 
-			};
+        public async Task<IEnumerable<TechViewModel>> GetAllTechnicals()
+        {
+            var techs = await userManager.Users.Where(u => u.Type == Types.Technical).Include(u => u.ServiceType)
+                                                .OrderByDescending(t => t.TechRate)
+                                                .Select(u => new TechViewModel
+                                                {
+                                                    Id = u.Id,
+                                                    FullName = u.FullName!,
+                                                    PhoneNumber = u.PhoneNumber!,
+                                                    Email = u.Email!,
+                                                    NationalId = u.NationalId!,
+                                                    Type = u.Type.ToString(),
+                                                    ServiceName = u.ServiceType!.Name,
+                                                    TechRate = u.TechRate,
+
+                                                })
+                                                 .ToListAsync();
+
+            foreach (var tech in techs)
+            {
+                // Await the GetRolesAsync call properly here
+                tech.Roles = await userManager.GetRolesAsync(await userManager.FindByIdAsync(tech.Id));
+            }
 
-			return response;
-		}
+            return techs;
+        }
 
-		public async Task<UserRoleViewModel> GetUser(string id)
-		{
-			var user = await userManager.FindByIdAsync(id);
-			if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
-			var allRoles = await roleManager.Roles.ToListAsync();
-			var viewModel = new UserRoleViewModel()
-			{
-				Id = user.Id,
-				Name = user.FullName!,
-				PhoneNumber = user.PhoneNumber!,
-				Email = user.Email!,
-				Type = user.Type.ToString(),
-				Roles = allRoles.Select(
-					r => new RoleDto()
-					{
-						Id = r.Id,
-						Name = r.Name!,
-						IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
-					}).Where(u => u.IsSelected == true).ToList()
-			};
+        public async Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto)
+        {
+            var user = new ApplicationUser
+            {
+                FullName = createTechnicalDto.Name,
+                PhoneNumber = createTechnicalDto.PhoneNumber,
+                Type = createTechnicalDto.Type,
+                Email = createTechnicalDto.Email,
+                NationalId = createTechnicalDto.NationalId,
+            };
 
-			return viewModel;
-		}
+            var getphone = await userManager.Users
+                .Where(u => u.PhoneNumber == user.PhoneNumber)
+                .FirstOrDefaultAsync();
 
-		public async Task<string> DeleteUser(string id)
-		{
-			var user = await userManager.FindByIdAsync(id);
+            if (getphone is not null && getphone.PhoneNumber == createTechnicalDto.PhoneNumber)
+                throw new UnAuthorizedExeption("Phone is Already Registered");
 
-			if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
+            var email = await userManager.FindByEmailAsync(user.Email);
+            if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
 
-			var result = await userManager.DeleteAsync(user);
+            var result = await userManager.CreateAsync(user, createTechnicalDto.Password);
 
-			if (result.Succeeded)
-				return "Delete Successed";
-			else
-			{
-				return "Operation Faild";
-			}
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
+            // Assign the "User" role to the newly created user
+            var roleResult = await userManager.AddToRoleAsync(user, Types.Technical.ToString());
+            if (!roleResult.Succeeded)
+                throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
 
-		}
+            var refresktoken = GenerateRefreshToken();
 
-		public async Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel)
-		{
+            user.RefreshTokens.Add(new RefreshToken()
+            {
+                Token = refresktoken.Token,
+                ExpireOn = refresktoken.ExpireOn
+            });
 
+            await userManager.UpdateAsync(user);
 
-			var user = await userManager.FindByIdAsync(id);
-			if (user is null) throw new NotFoundExeption("User Not Found", nameof(id));
+            var response = new TechDto
+            {
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber,
+                Type = user.Type.ToString(),
+                FullName = user.FullName,
+                Email = user.Email,
+                NationalId = user.NationalId,
+                Token = await GenerateTokenAsync(user),
+                RefreshToken = refresktoken.Token,
+                RefreshTokenExpirationDate = refresktoken.ExpireOn
+            };
 
-			var userRoles = await userManager.GetRolesAsync(user);
-			if (userRoles is null) throw new NotFoundExeption("Do Not Roles For This User", nameof(id));
+            return response;
+        }
 
+        public async Task<TechRoleViewModel> GetTechnical(string id)
+        {
+            var tech = await userManager.FindByIdAsync(id);
+            if (tech is null) throw new NotFoundExeption("This Technical Not Found", nameof(id));
+            var allRoles = await roleManager.Roles.ToListAsync();
+            var viewModel = new TechRoleViewModel()
+            {
+                Id = tech.Id,
+                Name = tech.FullName!,
+                PhoneNumber = tech.PhoneNumber!,
+                Email = tech.Email!,
+                NationalId = tech.NationalId!,
+                Type = tech.Type.ToString(),
+                ServiceName = tech.ServiceType!.Name,
+                Profit = tech.TechProfit,
+                TechRate = tech.TechRate,
+                Roles = allRoles.Select(
+                    r => new RoleDto()
+                    {
+                        Id = r.Id,
+                        Name = r.Name!,
+                        IsSelected = userManager.IsInRoleAsync(tech, r.Name!).Result
+                    }).Where(u => u.IsSelected == true).ToList()
+            };
 
+            return viewModel;
+        }
 
-			foreach (var role in viewModel.Roles)
-			{
-				if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
-				{
-					await userManager.RemoveFromRoleAsync(user, role.Name);
-				}
+        public async Task<string> DeleteTechnical(string id)
+        {
 
-				if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
-				{
-					await userManager.AddToRoleAsync(user, role.Name);
-				}
-			}
+            var tech = await userManager.FindByIdAsync(id);
 
-			var ExistedRoles = await userManager.GetRolesAsync(user);
+            if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
 
-			var usertoreturn = new UserRoleViewModel()
-			{
+            var result = await userManager.DeleteAsync(tech);
 
-				Id = user.Id,
-				Name = user.FullName!,
-				PhoneNumber = user.PhoneNumber!,
-				Email = user.Email!,
-				Type = user.Type.ToString(),
-				Roles = ExistedRoles
+            if (result.Succeeded)
+                return "Delete Successed";
+            else
+                return "Operation Faild";
 
-			};
+        }
 
-			return usertoreturn;
+        public async Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel)
+        {
+            var tech = await userManager.FindByIdAsync(id);
+            if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
 
-		}
+            var userRoles = await userManager.GetRolesAsync(tech);
+            if (userRoles is null) throw new NotFoundExeption("Do Not Roles For This Technical", nameof(id));
 
-		public async Task<IEnumerable<TechViewModel>> GetAllTechnicals()
-		{
-			var techs = await userManager.Users.Where(u => u.Type == Types.Technical).Include(u => u.ServiceType)
-												.OrderByDescending(t => t.TechRate)
-												.Select(u => new TechViewModel
-												{
-													Id = u.Id,
-													FullName = u.FullName!,
-													PhoneNumber = u.PhoneNumber!,
-													Email = u.Email!,
-													NationalId = u.NationalId!,
-													Type = u.Type.ToString(),
-													ServiceName = u.ServiceType!.Name,
-													TechRate = u.TechRate,
 
-												})
-												 .ToListAsync();
 
-			foreach (var tech in techs)
-			{
-				// Await the GetRolesAsync call properly here
-				tech.Roles = await userManager.GetRolesAsync(await userManager.FindByIdAsync(tech.Id));
-			}
+            foreach (var role in viewModel.Roles)
+            {
+                if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
+                {
+                    await userManager.RemoveFromRoleAsync(tech, role.Name);
+                }
 
-			return techs;
-		}
+                if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
+                {
+                    await userManager.AddToRoleAsync(tech, role.Name);
+                }
+            }
 
-		public async Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto)
-		{
-			var user = new ApplicationUser
-			{
-				FullName = createTechnicalDto.Name,
-				PhoneNumber = createTechnicalDto.PhoneNumber,
-				Type = createTechnicalDto.Type,
-				Email = createTechnicalDto.Email,
-				NationalId = createTechnicalDto.NationalId,
-			};
+            var ExistedRoles = await userManager.GetRolesAsync(tech);
 
-			var getphone = await userManager.Users
-				.Where(u => u.PhoneNumber == user.PhoneNumber)
-				.FirstOrDefaultAsync();
+            var usertoreturn = new TechRoleViewModel()
+            {
 
-			if (getphone is not null && getphone.PhoneNumber == createTechnicalDto.PhoneNumber)
-				throw new UnAuthorizedExeption("Phone is Already Registered");
+                Id = tech.Id,
+                Name = tech.FullName!,
+                PhoneNumber = tech.PhoneNumber!,
+                Email = tech.Email!,
+                NationalId = tech.NationalId!,
+                Type = tech.Type.ToString(),
+                Roles = ExistedRoles,
 
-			var email = await userManager.FindByEmailAsync(user.Email);
-			if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
+            };
 
-			var result = await userManager.CreateAsync(user, createTechnicalDto.Password);
+            return usertoreturn;
+        }
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+        public async Task<BaseUserDto> UpdateAppUserBySelf(ClaimsPrincipal claims, UpdateTechDto appUserDto)
+        {
+            var appUserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			// Assign the "User" role to the newly created user
-			var roleResult = await userManager.AddToRoleAsync(user, Types.Technical.ToString());
-			if (!roleResult.Succeeded)
-				throw new ValidationExeption() { Errors = roleResult.Errors.Select(E => E.Description) };
+            var role = claims.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
-			var refresktoken = GenerateRefreshToken();
+            if (appUserId is null)
+                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			user.RefreshTokens.Add(new RefreshToken()
-			{
-				Token = refresktoken.Token,
-				ExpireOn = refresktoken.ExpireOn
-			});
+            var appUser = await userManager.FindByIdAsync(appUserId);
 
-			await userManager.UpdateAsync(user);
+            if (appUser is null)
+                throw new NotFoundExeption("No User For This Id", nameof(appUserId));
 
-			var response = new TechDto
-			{
-				Id = user.Id,
-				PhoneNumber = user.PhoneNumber,
-				Type = user.Type.ToString(),
-				FullName = user.FullName,
-				Email = user.Email,
-				NationalId = user.NationalId,
-				Token = await GenerateTokenAsync(user),
-				RefreshToken = refresktoken.Token,
-				RefreshTokenExpirationDate = refresktoken.ExpireOn
-			};
+            var getphone = await userManager.Users.Where(u => u.PhoneNumber == appUserDto.PhoneNumber).FirstOrDefaultAsync();
 
-			return response;
-		}
+            if (getphone is not null && getphone.PhoneNumber == appUserDto.PhoneNumber && appUserDto.PhoneNumber != appUser.PhoneNumber)
+                throw new BadRequestExeption("Phone is Already Registered");
 
-		public async Task<TechRoleViewModel> GetTechnical(string id)
-		{
-			var tech = await userManager.FindByIdAsync(id);
-			if (tech is null) throw new NotFoundExeption("This Technical Not Found", nameof(id));
-			var allRoles = await roleManager.Roles.ToListAsync();
-			var viewModel = new TechRoleViewModel()
-			{
-				Id = tech.Id,
-				Name = tech.FullName!,
-				PhoneNumber = tech.PhoneNumber!,
-				Email = tech.Email!,
-				NationalId = tech.NationalId!,
-				Type = tech.Type.ToString(),
-				ServiceName = tech.ServiceType!.Name,
-				Profit = tech.TechProfit,
-				TechRate = tech.TechRate,
-				Roles = allRoles.Select(
-					r => new RoleDto()
-					{
-						Id = r.Id,
-						Name = r.Name!,
-						IsSelected = userManager.IsInRoleAsync(tech, r.Name!).Result
-					}).Where(u => u.IsSelected == true).ToList()
-			};
+            var getEmail = await userManager.Users.Where(u => u.Email == appUserDto.Email).FirstOrDefaultAsync();
 
-			return viewModel;
-		}
 
-		public async Task<string> DeleteTechnical(string id)
-		{
+            if (getEmail is not null && getEmail.Email == appUserDto.Email && appUserDto.Email != appUser.Email)
+                throw new BadRequestExeption("Email is Already Registered");
 
-			var tech = await userManager.FindByIdAsync(id);
+            bool tech = role.Contains(Types.Technical.ToString()) && appUser.Type.ToString() == Roles.Technical;
 
-			if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
+            appUser.PhoneNumber = appUserDto.PhoneNumber;
+            appUser.FullName = appUserDto.FullName!;
+            appUser.Email = appUserDto.Email;
 
-			var result = await userManager.DeleteAsync(tech);
+            if (tech)
+                appUser.NationalId = appUserDto.NationalId;
 
-			if (result.Succeeded)
-				return "Delete Successed";
-			else
-				return "Operation Faild";
 
-		}
+            var result = await userManager.UpdateAsync(appUser);
 
-		public async Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel)
-		{
-			var tech = await userManager.FindByIdAsync(id);
-			if (tech is null) throw new NotFoundExeption("Technical Not Found", nameof(id));
 
-			var userRoles = await userManager.GetRolesAsync(tech);
-			if (userRoles is null) throw new NotFoundExeption("Do Not Roles For This Technical", nameof(id));
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
+            if (tech)
+            {
 
+                var respone = new TechDto
+                {
+                    Id = appUser.Id,
+                    FullName = appUser.FullName!,
+                    PhoneNumber = appUser.PhoneNumber!,
+                    Email = appUser.Email!,
+                    Type = appUser.Type.ToString(),
+                    NationalId = appUser.NationalId!,
+                    Profit = appUser.TechProfit,
+                    ServiceName = appUser.ServiceType!.Name,
 
-			foreach (var role in viewModel.Roles)
-			{
-				if (userRoles.Any(r => r == role.Name) && !role.IsSelected)
-				{
-					await userManager.RemoveFromRoleAsync(tech, role.Name);
-				}
+                    Token = await GenerateTokenAsync(appUser),
+                };
+                return respone;
+            }
+            else
+            {
+                var respone = new UserDto
+                {
+                    Id = appUser.Id,
+                    FullName = appUser.FullName!,
+                    PhoneNumber = appUser.PhoneNumber!,
+                    Email = appUser.Email!,
+                    Type = appUser.Type.ToString(),
+                    Token = await GenerateTokenAsync(appUser),
+                };
+                return respone;
 
-				if (!userRoles.Any(r => r == role.Name) && role.IsSelected)
-				{
-					await userManager.AddToRoleAsync(tech, role.Name);
-				}
-			}
+            }
+        }
 
-			var ExistedRoles = await userManager.GetRolesAsync(tech);
 
-			var usertoreturn = new TechRoleViewModel()
-			{
+        public async Task<ChangePasswordToReturn> ChangePasswordAsync(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto)
+        {
 
-				Id = tech.Id,
-				Name = tech.FullName!,
-				PhoneNumber = tech.PhoneNumber!,
-				Email = tech.Email!,
-				NationalId = tech.NationalId!,
-				Type = tech.Type.ToString(),
-				Roles = ExistedRoles,
 
-			};
 
-			return usertoreturn;
-		}
 
-		public async Task<BaseUserDto> UpdateAppUserBySelf(ClaimsPrincipal claims, UpdateTechDto appUserDto)
-		{
-			var appUserId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value; 
+            // Get the logged-in user's ID from the token
+            var userId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-			var role = claims.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+            if (userId is null) throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			if (appUserId is null)
-				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			var appUser = await userManager.FindByIdAsync(appUserId);
+            // Retrieve the user from the database
+            var user = await userManager.FindByIdAsync(userId);
 
-			if (appUser is null)
-				throw new NotFoundExeption("No User For This Id", nameof(appUserId));
+            if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userId));
 
-			var getphone = await userManager.Users.Where(u => u.PhoneNumber == appUserDto.PhoneNumber).FirstOrDefaultAsync();
 
-			if (getphone is not null && getphone.PhoneNumber == appUserDto.PhoneNumber && appUserDto.PhoneNumber != appUser.PhoneNumber)
-				throw new BadRequestExeption("Phone is Already Registered");
+            // Verify the current password
+            var isCurrentPasswordValid = await userManager.CheckPasswordAsync(user, changePasswordDto.CurrentPassword);
 
-			var getEmail = await userManager.Users.Where(u => u.Email == appUserDto.Email).FirstOrDefaultAsync();
+            if (!isCurrentPasswordValid)
+            {
+                throw new BadRequestExeption("This Current Password InCorrect");
+            }
 
+            // Change the password
+            var result = await userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
 
-			if (getEmail is not null && getEmail.Email == appUserDto.Email && appUserDto.Email != appUser.Email)
-				throw new BadRequestExeption("Email is Already Registered");
+            if (!result.Succeeded)
+            {
+                throw new ValidationExeption() { Errors = result.Errors.Select(p => p.Description) };
+            }
 
-			bool tech = role.Contains(Types.Technical.ToString()) && appUser.Type.ToString() == Roles.Technical;
+            // Optionally, generate a new token for the user
+            var newToken = await GenerateTokenAsync(user);
 
-			appUser.PhoneNumber = appUserDto.PhoneNumber;
-			appUser.FullName = appUserDto.FullName!;
-			appUser.Email = appUserDto.Email;
+            return new ChangePasswordToReturn()
+            {
+                Message = "Password changed successfully.",
+                Token = newToken
+            };
 
-			if (tech)
-				appUser.NationalId = appUserDto.NationalId;
+        }
 
 
-			var result = await userManager.UpdateAsync(appUser);
 
+        private async Task<BaseUserDto> UserReturn(ApplicationUser? user, RefreshToken newrefreshtoken)
+        {
+            if (user.Type == Types.User)
+            {
+                var response = new UserDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName!,
+                    PhoneNumber = user.PhoneNumber!,
+                    Email = user.Email!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user),
+                    RefreshToken = newrefreshtoken.Token,
+                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+                };
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+                return response;
+            }
+            else
+            {
+                var response = new TechDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName!,
+                    Email = user.Email!,
+                    NationalId = user.NationalId!,
+                    PhoneNumber = user.PhoneNumber!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user),
+                    RefreshToken = newrefreshtoken.Token,
+                    RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
+                };
 
-			if (tech)
-			{
+                return response;
+            }
+        }
 
-				var respone = new TechDto
-				{
-					Id = appUser.Id,
-					FullName = appUser.FullName!,
-					PhoneNumber = appUser.PhoneNumber!,
-					Email = appUser.Email!,
-					Type = appUser.Type.ToString(),
-					NationalId = appUser.NationalId!,
-					Profit = appUser.TechProfit,
-					ServiceName = appUser.ServiceType!.Name,
+        #endregion
 
-					Token = await GenerateTokenAsync(appUser),
-				};
-				return respone;
-			}
-			else
-			{
-				var respone = new UserDto
-				{
-					Id = appUser.Id,
-					FullName = appUser.FullName!,
-					PhoneNumber = appUser.PhoneNumber!,
-					Email = appUser.Email!,
-					Type = appUser.Type.ToString(),
-					Token = await GenerateTokenAsync(appUser),
-				};
-				return respone;
 
-			}
-		}
+        #region Token
 
+        private async Task<string> GenerateTokenAsync(ApplicationUser user)
+        {
+            var userClaims = await userManager.GetClaimsAsync(user);
+            var rolesAsClaims = new List<Claim>();
 
-		public async Task<ChangePasswordToReturn> ChangePasswordAsync(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto)
-		{
+            var roles = await userManager.GetRolesAsync(user);
 
 
+            foreach (var role in roles)
+                rolesAsClaims.Add(new Claim(ClaimTypes.Role, role.ToString()));
 
+            IEnumerable<Claim> claims;
 
-			// Get the logged-in user's ID from the token
-			var userId = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            if (user.Type == Types.Technical)
+            {
+                claims = new List<Claim>()
+                {
+                new Claim(ClaimTypes.PrimarySid,user.Id),
+                new Claim(ClaimTypes.Email,user.Email!),
+                new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
+                new Claim("Type",user.Type.ToString()),
+                new Claim("NationalId",user.NationalId!)
+                }
+               .Union(userClaims)
+               .Union(rolesAsClaims);
+            }
+            else
+            {
+                claims = new List<Claim>()
+                {
+                new Claim(ClaimTypes.PrimarySid,user.Id),
+                new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
+                new Claim(ClaimTypes.Email,user.Email!),
+                new Claim("Type",user.Type.ToString()),
+                }
+               .Union(userClaims)
+               .Union(rolesAsClaims);
+            }
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
-			if (userId is null) throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+            var tokenObj = new JwtSecurityToken(
 
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                expires: DateTime.UtcNow.AddDays(_jwtSettings.DurationInDays),
+                claims: claims,
+                signingCredentials: signingCredentials
+                );
 
-			// Retrieve the user from the database
-			var user = await userManager.FindByIdAsync(userId);
 
-			if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userId));
+            return new JwtSecurityTokenHandler().WriteToken(tokenObj);
+        }
 
+        private RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
 
-			// Verify the current password
-			var isCurrentPasswordValid = await userManager.CheckPasswordAsync(user, changePasswordDto.CurrentPassword);
+            var genrator = new RNGCryptoServiceProvider();
 
-			if (!isCurrentPasswordValid)
-			{
-				throw new BadRequestExeption("This Current Password InCorrect");
-			}
+            genrator.GetBytes(randomNumber);
 
-			// Change the password
-			var result = await userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            return new RefreshToken()
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                CreatedOn = DateTime.UtcNow,
+                ExpireOn = DateTime.UtcNow.AddDays(_jwtSettings.JWTRefreshTokenExpire)
 
-			if (!result.Succeeded)
-			{
-				throw new ValidationExeption() { Errors = result.Errors.Select(p => p.Description) };
-			}
 
-			// Optionally, generate a new token for the user
-			var newToken = await GenerateTokenAsync(user);
+            };
 
-			return new ChangePasswordToReturn()
-			{
-				Message = "Password changed successfully.",
-				Token = newToken
-			};
 
-		}
+        }
+        private async Task CheckRefreshToken(UserManager<ApplicationUser> userManager, ApplicationUser? user, BaseUserDto response)
+        {
+            if (user!.RefreshTokens.Any(t => t.IsActice))
+            {
+                var acticetoken = user.RefreshTokens.FirstOrDefault(x => x.IsActice);
+                response.RefreshToken = acticetoken!.Token;
+                response.RefreshTokenExpirationDate = acticetoken.ExpireOn;
+            }
+            else
+            {
 
+                var refreshtoken = GenerateRefreshToken();
+                response.RefreshToken = refreshtoken.Token;
+                response.RefreshTokenExpirationDate = refreshtoken.ExpireOn;
 
+                user.RefreshTokens.Add(new RefreshToken()
+                {
+                    Token = refreshtoken.Token,
+                    ExpireOn = refreshtoken.ExpireOn,
+                });
+                await userManager.UpdateAsync(user);
+            }
+        }
 
-		private async Task<BaseUserDto> UserReturn(ApplicationUser? user, RefreshToken newrefreshtoken)
-		{
-			if (user.Type == Types.User)
-			{
-				var response = new UserDto
-				{
-					Id = user.Id,
-					FullName = user.FullName!,
-					PhoneNumber = user.PhoneNumber!,
-					Email = user.Email!,
-					Type = user.Type.ToString(),
-					Token = await GenerateTokenAsync(user),
-					RefreshToken = newrefreshtoken.Token,
-					RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
-				};
+        private string? ValidateToken(string token)
+        {
+            var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
 
-				return response;
-			}
-			else
-			{
-				var response = new TechDto
-				{
-					Id = user.Id,
-					FullName = user.FullName!,
-					Email = user.Email!,
-					NationalId = user.NationalId!,
-					PhoneNumber = user.PhoneNumber!,
-					Type = user.Type.ToString(),
-					Token = await GenerateTokenAsync(user),
-					RefreshToken = newrefreshtoken.Token,
-					RefreshTokenExpirationDate = newrefreshtoken.ExpireOn
-				};
+            var TokenHandler = new JwtSecurityTokenHandler();
 
-				return response;
-			}
-		}
+            try
+            {
+                TokenHandler.ValidateToken(token, new TokenValidationParameters()
+                {
+                    IssuerSigningKey = authKey,
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ClockSkew = TimeSpan.Zero,
 
-		#endregion
+                }, out SecurityToken validatedToken);
 
+                var jwtToken = (JwtSecurityToken)validatedToken;
 
-		#region Token
+                return jwtToken.Claims.First(x => x.Type == ClaimTypes.PrimarySid).Value;
 
-		private async Task<string> GenerateTokenAsync(ApplicationUser user)
-		{
-			var userClaims = await userManager.GetClaimsAsync(user);
-			var rolesAsClaims = new List<Claim>();
+            }
+            catch
+            {
+                return null;
+            }
+        }
 
-			var roles = await userManager.GetRolesAsync(user);
 
+        public async Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
+        {
+            var userId = ValidateToken(refreshDto.Token);
 
-			foreach (var role in roles)
-				rolesAsClaims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+            if (userId is null) throw new NotFoundExeption("User id Not Found", nameof(userId));
 
-			IEnumerable<Claim> claims;
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) throw new NotFoundExeption("User Do Not Exists", nameof(user.Id));
 
-			if (user.Type == Types.Technical)
-			{
-				claims = new List<Claim>()
-				{
-				new Claim(ClaimTypes.PrimarySid,user.Id),
-				new Claim(ClaimTypes.Email,user.Email!),
-				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
-				new Claim("Type",user.Type.ToString()),
-				new Claim("NationalId",user.NationalId!)
-				}
-			   .Union(userClaims)
-			   .Union(rolesAsClaims);
-			}
-			else
-			{
-				claims = new List<Claim>()
-				{
-				new Claim(ClaimTypes.PrimarySid,user.Id),
-				new Claim(ClaimTypes.MobilePhone,user.PhoneNumber!),
-				new Claim(ClaimTypes.Email,user.Email!),
-				new Claim("Type",user.Type.ToString()),
-				}
-			   .Union(userClaims)
-			   .Union(rolesAsClaims);
-			}
-			var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-			var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
 
-			var tokenObj = new JwtSecurityToken(
+            if (UserRefreshToken is null) throw new NotFoundExeption("Invalid Token", nameof(userId));
 
-				issuer: _jwtSettings.Issuer,
-				audience: _jwtSettings.Audience,
-				expires: DateTime.UtcNow.AddDays(_jwtSettings.DurationInDays),
-				claims: claims,
-				signingCredentials: signingCredentials
-				);
+            UserRefreshToken.RevokedOn = DateTime.UtcNow;
 
+            var newtoken = await GenerateTokenAsync(user);
 
-			return new JwtSecurityTokenHandler().WriteToken(tokenObj);
-		}
+            var newrefreshtoken = GenerateRefreshToken();
 
-		private RefreshToken GenerateRefreshToken()
-		{
-			var randomNumber = new byte[32];
+            user.RefreshTokens.Add(new RefreshToken()
+            {
+                Token = newrefreshtoken.Token,
+                ExpireOn = newrefreshtoken.ExpireOn
+            });
 
-			var genrator = new RNGCryptoServiceProvider();
+            await userManager.UpdateAsync(user);
 
-			genrator.GetBytes(randomNumber);
+            return await UserReturn(user, newrefreshtoken);
 
-			return new RefreshToken()
-			{
-				Token = Convert.ToBase64String(randomNumber),
-				CreatedOn = DateTime.UtcNow,
-				ExpireOn = DateTime.UtcNow.AddDays(_jwtSettings.JWTRefreshTokenExpire)
+        }
 
 
-			};
+        public async Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
+        {
+            var userId = ValidateToken(refreshDto.Token);
 
+            if (userId is null) return false;
 
-		}
-		private async Task CheckRefreshToken(UserManager<ApplicationUser> userManager, ApplicationUser? user, BaseUserDto response)
-		{
-			if (user!.RefreshTokens.Any(t => t.IsActice))
-			{
-				var acticetoken = user.RefreshTokens.FirstOrDefault(x => x.IsActice);
-				response.RefreshToken = acticetoken!.Token;
-				response.RefreshTokenExpirationDate = acticetoken.ExpireOn;
-			}
-			else
-			{
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return false;
 
-				var refreshtoken = GenerateRefreshToken();
-				response.RefreshToken = refreshtoken.Token;
-				response.RefreshTokenExpirationDate = refreshtoken.ExpireOn;
+            var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
 
-				user.RefreshTokens.Add(new RefreshToken()
-				{
-					Token = refreshtoken.Token,
-					ExpireOn = refreshtoken.ExpireOn,
-				});
-				await userManager.UpdateAsync(user);
-			}
-		}
+            if (UserRefreshToken is null) return false;
 
-		private string? ValidateToken(string token)
-		{
-			var authKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            UserRefreshToken.RevokedOn = DateTime.UtcNow;
 
-			var TokenHandler = new JwtSecurityTokenHandler();
+            await userManager.UpdateAsync(user);
+            return true;
+        }
 
-			try
-			{
-				TokenHandler.ValidateToken(token, new TokenValidationParameters()
-				{
-					IssuerSigningKey = authKey,
-					ValidateIssuerSigningKey = true,
-					ValidateIssuer = false,
-					ValidateAudience = false,
-					ValidateLifetime = false,
-					ClockSkew = TimeSpan.Zero,
 
-				}, out SecurityToken validatedToken);
+        #endregion
 
-				var jwtToken = (JwtSecurityToken)validatedToken;
 
-				return jwtToken.Claims.First(x => x.Type == ClaimTypes.PrimarySid).Value;
+        #region Confirmation
 
-			}
-			catch
-			{
-				return null;
-			}
-		}
+        public async Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto)
+        {
+            var user = await userManager.Users.Where(u => u.Email == emailDto.Email).FirstOrDefaultAsync();
 
+            if (user is null)
+                throw new BadRequestExeption("Invalid Email");
 
-		public async Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
-		{
-			var userId = ValidateToken(refreshDto.Token);
+            var ResetCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
 
-			if (userId is null) throw new NotFoundExeption("User id Not Found", nameof(userId));
+            var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
 
-			var user = await userManager.FindByIdAsync(userId);
-			if (user is null) throw new NotFoundExeption("User Do Not Exists", nameof(user.Id));
+            user.EmailConfirmResetCode = ResetCode;
+            user.EmailConfirmResetCodeExpiry = ResetCodeExpire;
 
-			var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
+            var result = await userManager.UpdateAsync(user);
 
-			if (UserRefreshToken is null) throw new NotFoundExeption("Invalid Token", nameof(userId));
+            if (!result.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Sending Reset Code");
 
-			UserRefreshToken.RevokedOn = DateTime.UtcNow;
+            var Email = new EmailDto()
+            {
+                To = emailDto.Email,
+                Subject = "Reset Code For CarCare Account",
+                Body = $"We Have Recived Your Request For Reset Your Account Password, \nYour Reset Code Is ==> [ {ResetCode} ] <== \nNote: This Code Will Be Expired After 15 Minutes!",
+            };
 
-			var newtoken = await GenerateTokenAsync(user);
+            await emailServices.SendEmail(Email);
 
-			var newrefreshtoken = GenerateRefreshToken();
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "We Have Sent You The Reset Code"
+            };
 
-			user.RefreshTokens.Add(new RefreshToken()
-			{
-				Token = newrefreshtoken.Token,
-				ExpireOn = newrefreshtoken.ExpireOn
-			});
+            return SuccessObj;
+        }
 
-			await userManager.UpdateAsync(user);
+        public async Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto)
+        {
+            var user = await userManager.Users.Where(U => U.PhoneNumber == forgetPasswordDto.PhoneNumber).FirstOrDefaultAsync();
+            if (user is null)
+                throw new BadRequestExeption("Invalid Phone Number");
 
-			return await UserReturn(user, newrefreshtoken);
+            var ResetPhoneCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
 
-		}
+            var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
 
+            user.PhoneConfirmResetCode = ResetPhoneCode;
+            user.PhoneConfirmResetCodeExpiry = ResetCodeExpire;
 
-		public async Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default)
-		{
-			var userId = ValidateToken(refreshDto.Token);
+            var result = await userManager.UpdateAsync(user);
 
-			if (userId is null) return false;
+            if (!result.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Sending Reset Code");
 
-			var user = await userManager.FindByIdAsync(userId);
-			if (user is null) return false;
+            var SMSMsg = new SMSDto()
+            {
+                Body = $"Your code is {ResetPhoneCode}. It expires in 15 minutes.",
+                PhoneNumber = forgetPasswordDto.PhoneNumber
+            };
+            await smsServices.SendSMS(SMSMsg);
 
-			var UserRefreshToken = user!.RefreshTokens.SingleOrDefault(x => x.Token == refreshDto.RefreshToken && x.IsActice);
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "We Have Sent You The Reset Code"
+            };
+            return SuccessObj;
+        }
 
-			if (UserRefreshToken is null) return false;
+        public async Task<SuccessDto> VerifyCodeByEmailAsync(ResetCodeConfirmationByEmailDto resetCodeDto)
+        {
+            var user = await userManager.Users.Where(u => u.Email == resetCodeDto.Email).FirstOrDefaultAsync();
 
-			UserRefreshToken.RevokedOn = DateTime.UtcNow;
+            if (user is null)
+                throw new BadRequestExeption("Invalid Email");
 
-			await userManager.UpdateAsync(user);
-			return true;
-		}
+            if (user.EmailConfirmResetCode != resetCodeDto.ResetCode)
+                throw new BadRequestExeption("The Provided Code Is Invalid");
 
+            if (user.EmailConfirmResetCodeExpiry < DateTime.UtcNow)
+                throw new BadRequestExeption("The Provided Code Has Been Expired");
 
-		#endregion
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "Reset Code Is Verified, Please Proceed To Change Your Password"
+            };
 
+            return SuccessObj;
+        }
 
-		#region Confirmation
+        public async Task<SuccessDto> VerifyCodeByPhoneAsync(ResetCodeConfirmationByPhoneDto resetCodeDto)
+        {
+            var user = await userManager.Users.Where(U => U.PhoneNumber == resetCodeDto.PhoneNumber).FirstOrDefaultAsync();
 
-		public async Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto)
-		{
-			var user = await userManager.Users.Where(u => u.Email == emailDto.Email).FirstOrDefaultAsync();
+            if (user is null)
+                throw new BadRequestExeption("Invalid Phone Number");
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Email");
+            if (user.PhoneConfirmResetCode != resetCodeDto.ResetCode)
+                throw new BadRequestExeption("The Provided Code Is Invalid");
 
-			var ResetCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
+            if (user.PhoneConfirmResetCodeExpiry < DateTime.UtcNow)
+                throw new BadRequestExeption("The Provided Code Has Been Expired");
 
-			var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "Reset Code Is Verified, Please Proceed To Change Your Password"
+            };
 
-			user.EmailConfirmResetCode = ResetCode;
-			user.EmailConfirmResetCodeExpiry = ResetCodeExpire;
+            return SuccessObj;
+        }
 
-			var result = await userManager.UpdateAsync(user);
+        public async Task<UserDto> ResetPasswordByEmailAsync(ResetPasswordByEmailDto resetCodeDto)
+        {
+            var user = await userManager.Users.Where(u => u.Email == resetCodeDto.Email).FirstOrDefaultAsync();
 
-			if (!result.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Sending Reset Code");
+            if (user is null)
+                throw new BadRequestExeption("Invalid Email");
 
-			var Email = new EmailDto()
-			{
-				To = emailDto.Email,
-				Subject = "Reset Code For CarCare Account",
-				Body = $"We Have Recived Your Request For Reset Your Account Password, \nYour Reset Code Is ==> [ {ResetCode} ] <== \nNote: This Code Will Be Expired After 15 Minutes!",
-			};
+            var RemovePass = await userManager.RemovePasswordAsync(user);
 
-			await emailServices.SendEmail(Email);
+            if (!RemovePass.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "We Have Sent You The Reset Code"
-			};
+            var newPass = await userManager.AddPasswordAsync(user, resetCodeDto.NewPassword);
 
-			return SuccessObj;
-		}
+            if (!newPass.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-		public async Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto)
-		{
-			var user = await userManager.Users.Where(U => U.PhoneNumber == forgetPasswordDto.PhoneNumber).FirstOrDefaultAsync();
-			if (user is null)
-				throw new BadRequestExeption("Invalid Phone Number");
+            var mappedUser = new UserDto
+            {
+                FullName = user.FullName!,
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber!,
+                Email = user.Email!,
+                Type = user.Type.ToString(),
+                Token = await GenerateTokenAsync(user),
+            };
 
-			var ResetPhoneCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
+            return mappedUser;
+        }
 
-			var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
 
-			user.PhoneConfirmResetCode = ResetPhoneCode;
-			user.PhoneConfirmResetCodeExpiry = ResetCodeExpire;
+        public async Task<UserDto> ResetPasswordByPhoneAsync(ResetPasswordByPhoneDto resetPasswordDto)
+        {
+            var user = await userManager.Users.Where(U => U.PhoneNumber == resetPasswordDto.PhoneNumber).FirstOrDefaultAsync();
 
-			var result = await userManager.UpdateAsync(user);
+            if (user is null)
+                throw new BadRequestExeption("Invalid Phone Number");
 
-			if (!result.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Sending Reset Code");
+            var removedPassword = await userManager.RemovePasswordAsync(user);
 
-			var SMSMsg = new SMSDto()
-			{
-				Body = $"Your code is {ResetPhoneCode}. It expires in 15 minutes.",
-				PhoneNumber = forgetPasswordDto.PhoneNumber
-			};
-			await smsServices.SendSMS(SMSMsg);
+            if (!removedPassword.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "We Have Sent You The Reset Code"
-			};
-			return SuccessObj;
-		}
+            var newPassword = await userManager.AddPasswordAsync(user, resetPasswordDto.NewPassword);
 
-		public async Task<SuccessDto> VerifyCodeByEmailAsync(ResetCodeConfirmationByEmailDto resetCodeDto)
-		{
-			var user = await userManager.Users.Where(u => u.Email == resetCodeDto.Email).FirstOrDefaultAsync();
+            if (!newPassword.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Email");
+            var mappedUser = new UserDto
+            {
+                FullName = user.FullName!,
+                Id = user.Id,
+                PhoneNumber = user.PhoneNumber!,
+                Email = user.Email!,
+                Type = user.Type.ToString(),
+                Token = await GenerateTokenAsync(user),
+            };
 
-			if (user.EmailConfirmResetCode != resetCodeDto.ResetCode)
-				throw new BadRequestExeption("The Provided Code Is Invalid");
+            return mappedUser;
+        }
 
-			if (user.EmailConfirmResetCodeExpiry < DateTime.UtcNow)
-				throw new BadRequestExeption("The Provided Code Has Been Expired");
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "Reset Code Is Verified, Please Proceed To Change Your Password"
-			};
+        public async Task<SuccessDto> ConfirmEmailAsync(ConfirmationEmailCodeDto codeDto)
+        {
+            var user = await userManager.Users.Where(U => U.Email == codeDto.Email).FirstOrDefaultAsync();
 
-			return SuccessObj;
-		}
+            if (user is null)
+                throw new BadRequestExeption("Invalid Email");
 
-		public async Task<SuccessDto> VerifyCodeByPhoneAsync(ResetCodeConfirmationByPhoneDto resetCodeDto)
-		{
-			var user = await userManager.Users.Where(U => U.PhoneNumber == resetCodeDto.PhoneNumber).FirstOrDefaultAsync();
+            if (user.EmailConfirmResetCode != codeDto.ConfirmationCode)
+                throw new BadRequestExeption("The Provided Code Is Invalid");
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Phone Number");
+            if (user.EmailConfirmResetCodeExpiry < DateTime.UtcNow)
+                throw new BadRequestExeption("The Provided Code Has Been Expired");
 
-			if (user.PhoneConfirmResetCode != resetCodeDto.ResetCode)
-				throw new BadRequestExeption("The Provided Code Is Invalid");
+            user.EmailConfirmed = true;
 
-			if (user.PhoneConfirmResetCodeExpiry < DateTime.UtcNow)
-				throw new BadRequestExeption("The Provided Code Has Been Expired");
+            var result = await userManager.UpdateAsync(user);
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "Reset Code Is Verified, Please Proceed To Change Your Password"
-			};
+            if (!result.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Confirming Email");
 
-			return SuccessObj;
-		}
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "Email Has Been Confirmed"
+            };
 
-		public async Task<UserDto> ResetPasswordByEmailAsync(ResetPasswordByEmailDto resetCodeDto)
-		{
-			var user = await userManager.Users.Where(u => u.Email == resetCodeDto.Email).FirstOrDefaultAsync();
+            return SuccessObj;
+        }
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Email");
 
-			var RemovePass = await userManager.RemovePasswordAsync(user);
+        public async Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto)
+        {
+            var user = await userManager.Users.Where(U => U.PhoneNumber == codeDto.PhoneNumber).FirstOrDefaultAsync();
+            if (user is null)
+                throw new BadRequestExeption("Invalid Phone Number");
 
-			if (!RemovePass.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
+            if (user.PhoneConfirmResetCode != codeDto.ConfirmationCode)
+                throw new BadRequestExeption("The Provided Code Is Invalid");
 
-			var newPass = await userManager.AddPasswordAsync(user, resetCodeDto.NewPassword);
+            if (user.PhoneConfirmResetCodeExpiry < DateTime.UtcNow)
+                throw new BadRequestExeption("The Provided Code Has Been Expired");
 
-			if (!newPass.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
+            user.PhoneNumberConfirmed = true;
 
-			var mappedUser = new UserDto
-			{
-				FullName = user.FullName!,
-				Id = user.Id,
-				PhoneNumber = user.PhoneNumber!,
-				Email = user.Email!,
-				Type = user.Type.ToString(),
-				Token = await GenerateTokenAsync(user),
-			};
+            var result = await userManager.UpdateAsync(user);
 
-			return mappedUser;
-		}
+            if (!result.Succeeded)
+                throw new BadRequestExeption("Something Went Wrong While Confirming Phone Number");
 
+            var SuccessObj = new SuccessDto()
+            {
+                Status = "Success",
+                Message = "Phone Number Has Been Confirmed"
+            };
 
-		public async Task<UserDto> ResetPasswordByPhoneAsync(ResetPasswordByPhoneDto resetPasswordDto)
-		{
-			var user = await userManager.Users.Where(U => U.PhoneNumber == resetPasswordDto.PhoneNumber).FirstOrDefaultAsync();
+            return SuccessObj;
+        }
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Phone Number");
 
-			var removedPassword = await userManager.RemovePasswordAsync(user);
 
-			if (!removedPassword.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-			var newPassword = await userManager.AddPasswordAsync(user, resetPasswordDto.NewPassword);
 
-			if (!newPassword.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Reseting Your Password");
 
-			var mappedUser = new UserDto
-			{
-				FullName = user.FullName!,
-				Id = user.Id,
-				PhoneNumber = user.PhoneNumber!,
-				Email = user.Email!,
-				Type = user.Type.ToString(),
-				Token = await GenerateTokenAsync(user),
-			};
+        #endregion
 
-			return mappedUser;
-		}
+        public async Task<TechDto> UpdateOrSetTechnicalLocation(UpdateTechnicalLocationDto request)
+        {
+            if (string.IsNullOrEmpty(request.Id))
+                throw new BadRequestExeption("Technical id Is Reuequerd");
 
+            var Tech = await userManager.Users.FirstOrDefaultAsync(t => t.Id == request.Id);
+            if (Tech is null)
+                throw new NotFoundExeption("No Found Technical With This Id", nameof(request.Id));
 
-		public async Task<SuccessDto> ConfirmEmailAsync(ConfirmationEmailCodeDto codeDto)
-		{
-			var user = await userManager.Users.Where(U => U.Email == codeDto.Email).FirstOrDefaultAsync();
+            Tech.TechLongitude = request.TechLongitude;
+            Tech.TechLatitude = request.TechLatitude;
 
-			if (user is null)
-				throw new BadRequestExeption("Invalid Email");
+            var result = await userManager.UpdateAsync(Tech);
 
-			if (user.EmailConfirmResetCode != codeDto.ConfirmationCode)
-				throw new BadRequestExeption("The Provided Code Is Invalid");
+            if (!result.Succeeded)
+                throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
-			if (user.EmailConfirmResetCodeExpiry < DateTime.UtcNow)
-				throw new BadRequestExeption("The Provided Code Has Been Expired");
+            var returnedTech = mapper.Map<TechDto>(Tech);
+            return returnedTech;
 
-			user.EmailConfirmed = true;
+        }
 
-			var result = await userManager.UpdateAsync(user);
+        public async Task<string> RateTechnical(ClaimsPrincipal claims, decimal rate, string technicalid)
+        {
+            if (rate < 1 || rate > 5)
+                throw new BadRequestExeption("Rate must be between 1 and 5.");
 
-			if (!result.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Confirming Email");
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "Email Has Been Confirmed"
-			};
+            var userid = claims.FindFirstValue(ClaimTypes.PrimarySid);
 
-			return SuccessObj;
-		}
+            if (userid is null)
+                throw new NotFoundExeption("User not found. With This id", nameof(userid));
 
 
-		public async Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto)
-		{
-			var user = await userManager.Users.Where(U => U.PhoneNumber == codeDto.PhoneNumber).FirstOrDefaultAsync();
-			if (user is null)
-				throw new BadRequestExeption("Invalid Phone Number");
 
-			if (user.PhoneConfirmResetCode != codeDto.ConfirmationCode)
-				throw new BadRequestExeption("The Provided Code Is Invalid");
 
-			if (user.PhoneConfirmResetCodeExpiry < DateTime.UtcNow)
-				throw new BadRequestExeption("The Provided Code Has Been Expired");
+            var technicalUser = await userManager.FindByIdAsync(technicalid);
+            if (technicalUser is null)
+            {
+                throw new NotFoundExeption("Technical not found. With This id", nameof(technicalid));
+            }
 
-			user.PhoneNumberConfirmed = true;
+            // Update the technical user's rating
+            technicalUser.TechRate = (technicalUser.TechRate * technicalUser.Count + rate) / (technicalUser.Count + 1);
+            technicalUser.Count += 1;
 
-			var result = await userManager.UpdateAsync(user);
+            // Save changes to the database
+            var result = await userManager.UpdateAsync(technicalUser);
+            if (!result.Succeeded)
+                throw new BadRequestExeption("Failed to update the technical user's rating");
 
-			if (!result.Succeeded)
-				throw new BadRequestExeption("Something Went Wrong While Confirming Phone Number");
 
-			var SuccessObj = new SuccessDto()
-			{
-				Status = "Success",
-				Message = "Phone Number Has Been Confirmed"
-			};
+            return "Rating submitted successfully.";
+        }
 
-			return SuccessObj;
-		}
+        public async Task<BaseUserDto> GetCurrentUserByRole(ClaimsPrincipal claims)
+        {
+            var userid = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
+            if (userid is null) throw new NotFoundExeption("Do Not Exsists This User", nameof(userid));
+            var user = userManager.Users.FirstOrDefault(u => u.Id == userid);
+            if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userid));
+            var userroles = await userManager.GetRolesAsync(user);
+            var accesstoken = await GenerateTokenAsync(user);
 
+            if (userroles.Contains(Types.User.ToString()) && user.Type.ToString() == Roles.User)
+            {
+                var mappeduser = mapper.Map<UserDto>(user);
+                mappeduser.Token = accesstoken;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else if (userroles.Contains(Types.Technical.ToString()) && user.Type.ToString() == Roles.Technical)
+            {
+                var servicespec = new ServiceRequestForSpecificTechnical(user.Id);
+                var serviceRequests = await unitOfWork.GetRepository<ServiceRequest, int>().GetAllWithSpecAsync(servicespec);
+                var compeletedrequestes = serviceRequests.Where(s => s.BusnissStatus == BusnissStatus.Completed).Count();
+                var mappeduser = mapper.Map<TechDto>(user);
+                mappeduser.Token = accesstoken;
+                mappeduser.CompletedRequestes = compeletedrequestes;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else if (userroles.Contains(Types.Admin.ToString()))
+            {
+                var mappeduser = mapper.Map<UserDto>(user);
+                mappeduser.Token = accesstoken;
+                await CheckRefreshToken(userManager, user, mappeduser);
+                return mappeduser;
+            }
+            else
+            {
+                throw new NotFoundExeption("No User For This Id", nameof(userid));
+            }
 
 
 
 
+        }
 
-		#endregion
 
-		public async Task<TechDto> UpdateOrSetTechnicalLocation(UpdateTechnicalLocationDto request)
-		{
-			if (string.IsNullOrEmpty(request.Id))
-				throw new BadRequestExeption("Technical id Is Reuequerd");
+        private ApplicationUser CreateRegularUser(RegisterDto dto)
+        {
+            return new ApplicationUser
+            {
+                PhoneNumber = dto.PhoneNumber,
+                FullName = dto.FullName,
+                Type = dto.Type,
+                Email = dto.Email,
+                UserName = dto.Email
+            };
+        }
 
-			var Tech = await userManager.Users.FirstOrDefaultAsync(t => t.Id == request.Id);
-			if (Tech is null)
-				throw new NotFoundExeption("No Found Technical With This Id", nameof(request.Id));
+        private ApplicationUser CreateTechnicalUser(RegisterDto dto)
+        {
+            return new ApplicationUser
+            {
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                UserName = dto.Email,
+                NationalId = dto.NationalId,
+                Type = dto.Type,
+                ServiceId = dto.ServiceId,
+            };
+        }
 
-			Tech.TechLongitude = request.TechLongitude;
-			Tech.TechLatitude = request.TechLatitude;
+        private async Task<BaseUserDto> CreateUserResponse(ApplicationUser user, Types userType)
+        {
+            if (userType == Types.Technical)
+            {
+                // Fetch the service name for technical users
+                var serviceType = await unitOfWork.GetRepository<ServiceType, int>()
+                    .GetAsync(user.ServiceId ?? 0);
+                // Check if the service type is null
+                if (serviceType == null)
+                    throw new NotFoundExeption("No Found Service With This Id", nameof(user.ServiceId));
 
-			var result = await userManager.UpdateAsync(Tech);
 
-			if (!result.Succeeded)
-				throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+                string serviceName = serviceType?.Name ?? string.Empty;
 
-			var returnedTech = mapper.Map<TechDto>(Tech);
-			return returnedTech;
+                return new TechDto
+                {
+                    Id = user.Id,
+                    Email = user.Email!,
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber!,
+                    NationalId = user.NationalId!,
+                    Type = user.Type.ToString(),
+                    ServiceName = serviceName,
+                    Token = await GenerateTokenAsync(user)
+                };
+            }
+            else
+            {
+                return new UserDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber!,
+                    Email = user.Email!,
+                    Type = user.Type.ToString(),
+                    Token = await GenerateTokenAsync(user)
+                };
+            }
+        }
 
-		}
 
-		public async Task<string> RateTechnical(ClaimsPrincipal claims, decimal rate, string technicalid)
-		{
-			if (rate < 1 || rate > 5)
-				throw new BadRequestExeption("Rate must be between 1 and 5.");
-
-
-			var userid = claims.FindFirstValue(ClaimTypes.PrimarySid);
-
-			if (userid is null)
-				throw new NotFoundExeption("User not found. With This id", nameof(userid));
-
-
-
-
-			var technicalUser = await userManager.FindByIdAsync(technicalid);
-			if (technicalUser is null)
-			{
-				throw new NotFoundExeption("Technical not found. With This id", nameof(technicalid));
-			}
-
-			// Update the technical user's rating
-			technicalUser.TechRate = (technicalUser.TechRate * technicalUser.Count + rate) / (technicalUser.Count + 1);
-			technicalUser.Count += 1;
-
-			// Save changes to the database
-			var result = await userManager.UpdateAsync(technicalUser);
-			if (!result.Succeeded)
-				throw new BadRequestExeption("Failed to update the technical user's rating");
-
-
-			return "Rating submitted successfully.";
-		}
-
-		public async Task<BaseUserDto> GetCurrentUserByRole(ClaimsPrincipal claims)
-		{
-			var userid = claims.FindFirst(ClaimTypes.PrimarySid)?.Value;
-			if (userid is null) throw new NotFoundExeption("Do Not Exsists This User", nameof(userid));
-			var user = userManager.Users.FirstOrDefault(u => u.Id == userid);
-			if (user is null) throw new NotFoundExeption("No User For This Id", nameof(userid));
-			var userroles = await userManager.GetRolesAsync(user);
-			var accesstoken = await GenerateTokenAsync(user);
-
-			if (userroles.Contains(Types.User.ToString()) && user.Type.ToString() == Roles.User)
-			{
-				var mappeduser = mapper.Map<UserDto>(user);
-				mappeduser.Token = accesstoken;
-				await CheckRefreshToken(userManager, user, mappeduser);
-				return mappeduser;
-			}
-			else if (userroles.Contains(Types.Technical.ToString()) && user.Type.ToString() == Roles.Technical)
-			{
-				var servicespec = new ServiceRequestForSpecificTechnical(user.Id);
-				var serviceRequests = await unitOfWork.GetRepository<ServiceRequest, int>().GetAllWithSpecAsync(servicespec);
-				var compeletedrequestes = serviceRequests.Where(s => s.BusnissStatus == BusnissStatus.Completed).Count();
-				var mappeduser = mapper.Map<TechDto>(user);
-				mappeduser.Token = accesstoken;
-				mappeduser.CompletedRequestes = compeletedrequestes;
-				await CheckRefreshToken(userManager, user, mappeduser);
-				return mappeduser;
-			}
-			else if (userroles.Contains(Types.Admin.ToString()))
-			{
-				var mappeduser = mapper.Map<UserDto>(user);
-				mappeduser.Token = accesstoken;
-				await CheckRefreshToken(userManager, user, mappeduser);
-				return mappeduser;
-			}
-			else
-			{
-				throw new NotFoundExeption("No User For This Id", nameof(userid));
-			}
-
-
-
-
-		}
-	}
+    }
 
 }

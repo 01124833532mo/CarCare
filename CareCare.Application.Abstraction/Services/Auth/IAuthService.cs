@@ -13,94 +13,94 @@ using System.Security.Claims;
 
 namespace CareCare.Core.Application.Abstraction.Services.Auth
 {
-	public interface IAuthService
-	{
-		#region Role
+    public interface IAuthService
+    {
+        #region Role
 
-		Task<IEnumerable<RolesToReturn>> GetRolesAsync();
+        Task<IEnumerable<RolesToReturn>> GetRolesAsync();
 
-		Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto);
+        Task<RolesToReturn> CreateRoleAsync(RoleDtoBase roleDto);
 
-		Task DeleteRole(string id);
+        Task DeleteRole(string id);
 
-		Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
+        Task<RolesToReturn> UpdateRole(string id, RoleDtoBase roleDto);
 
-		#endregion
-
-
-		#region Sign (in-up)
-
-		Task<BaseUserDto> LoginAsync(LoginDto loginDto);
-		Task<UserDto> RegisterUserAsync(UserRegisterDto userRegisterDto);
-		Task<TechDto> RegisterTechAsync(TechRegisterDto userRegisterDto);
-		Task<TechDto> GetTechLocationAsync(ClaimsPrincipal claimsPrincipaldouble, TechLocationDto techLocationDto);
+        #endregion
 
 
-		#endregion
+        #region Sign (in-up)
+
+        Task<BaseUserDto> LoginAsync(LoginDto loginDto);
+
+        Task<BaseUserDto> RegisterAsync(RegisterDto userRegisterDto);
+        Task<TechDto> GetTechLocationAsync(ClaimsPrincipal claimsPrincipaldouble, TechLocationDto techLocationDto);
 
 
-		#region Dashboard
-		Task<IEnumerable<UserViewModel>> GetAllUsers();
-		Task<UserDto> CreateUser(CreateUserDro createUserDro);
-
-		Task<UserRoleViewModel> GetUser(string id);
-
-		Task<string> DeleteUser(string id);
-
-		Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel);
+        #endregion
 
 
+        #region Dashboard
+        Task<IEnumerable<UserViewModel>> GetAllUsers();
+        Task<UserDto> CreateUser(CreateUserDro createUserDro);
 
+        Task<UserRoleViewModel> GetUser(string id);
 
-		Task<IEnumerable<TechViewModel>> GetAllTechnicals();
+        Task<string> DeleteUser(string id);
 
-		Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto);
-		Task<TechRoleViewModel> GetTechnical(string id);
-
-		Task<string> DeleteTechnical(string id);
-		Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel);
+        Task<UserRoleViewModel> EditeUser(string id, EditDashDto viewModel);
 
 
 
 
-		Task<ChangePasswordToReturn> ChangePasswordAsync(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto);
+        Task<IEnumerable<TechViewModel>> GetAllTechnicals();
+
+        Task<TechDto> CreateTech(CreateTechnicalDto createTechnicalDto);
+        Task<TechRoleViewModel> GetTechnical(string id);
+
+        Task<string> DeleteTechnical(string id);
+        Task<TechRoleViewModel> EditeTechnical(string id, EditDashDto viewModel);
 
 
-		Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
-
-		Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
-
-		#endregion
 
 
-		#region Confirmation (Email - Phone)
-
-		Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto);
-
-		Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto);
-
-		Task<SuccessDto> VerifyCodeByEmailAsync(ResetCodeConfirmationByEmailDto resetCodeDto);
-
-		Task<SuccessDto> VerifyCodeByPhoneAsync(ResetCodeConfirmationByPhoneDto resetCode);
-
-		Task<UserDto> ResetPasswordByEmailAsync(ResetPasswordByEmailDto resetCodeDto);
-
-		Task<UserDto> ResetPasswordByPhoneAsync(ResetPasswordByPhoneDto resetPasswordDto);
-
-		Task<SuccessDto> ConfirmEmailAsync(ConfirmationEmailCodeDto codeDto);
-
-		Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto);
-
-		#endregion
-
-		Task<BaseUserDto> UpdateAppUserBySelf(ClaimsPrincipal claims, UpdateTechDto appUserDto);
-		Task<TechDto> UpdateOrSetTechnicalLocation(UpdateTechnicalLocationDto request);
+        Task<ChangePasswordToReturn> ChangePasswordAsync(ClaimsPrincipal claims, ChangePasswordDto changePasswordDto);
 
 
-		Task<string> RateTechnical(ClaimsPrincipal claims, decimal rate, string technicalid);
+        Task<BaseUserDto> GetRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
+
+        Task<bool> RevokeRefreshTokenAsync(RefreshDto refreshDto, CancellationToken cancellationToken = default);
+
+        #endregion
 
 
-		Task<BaseUserDto> GetCurrentUserByRole(ClaimsPrincipal claims);
+        #region Confirmation (Email - Phone)
 
-	}
+        Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto);
+
+        Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto);
+
+        Task<SuccessDto> VerifyCodeByEmailAsync(ResetCodeConfirmationByEmailDto resetCodeDto);
+
+        Task<SuccessDto> VerifyCodeByPhoneAsync(ResetCodeConfirmationByPhoneDto resetCode);
+
+        Task<UserDto> ResetPasswordByEmailAsync(ResetPasswordByEmailDto resetCodeDto);
+
+        Task<UserDto> ResetPasswordByPhoneAsync(ResetPasswordByPhoneDto resetPasswordDto);
+
+        Task<SuccessDto> ConfirmEmailAsync(ConfirmationEmailCodeDto codeDto);
+
+        Task<SuccessDto> ConfirmPhoneAsync(ConfirmationPhoneCodeDto codeDto);
+
+        #endregion
+
+        Task<BaseUserDto> UpdateAppUserBySelf(ClaimsPrincipal claims, UpdateTechDto appUserDto);
+        Task<TechDto> UpdateOrSetTechnicalLocation(UpdateTechnicalLocationDto request);
+
+
+        Task<string> RateTechnical(ClaimsPrincipal claims, decimal rate, string technicalid);
+
+
+        Task<BaseUserDto> GetCurrentUserByRole(ClaimsPrincipal claims);
+
+    }
 }

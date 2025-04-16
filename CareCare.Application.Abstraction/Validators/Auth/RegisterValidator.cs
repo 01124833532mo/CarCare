@@ -5,10 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace CareCare.Core.Application.Abstraction.Validators.Auth
 {
-    public class RegisterForTechnicalValidator : AbstractValidator<TechRegisterDto>
+    public class RegisterValidator : AbstractValidator<RegisterDto>
     {
-
-        public RegisterForTechnicalValidator()
+        public RegisterValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
@@ -17,44 +16,50 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
                 .Matches(RegexPatterns.Email,
          RegexOptions.IgnoreCase).WithMessage("Invalid Email Address,Only Gmail/Google or Egyptian university emails (@____.edu.eg) are allowed");
 
+
             RuleFor(x => x.FullName).NotEmpty().WithMessage("FullName Must Not Empty , Plz Add a {PropertyName}");
 
             RuleFor(x => x.PhoneNumber)
                 .NotEmpty()
                 .WithMessage("PhoneNumber Must Not Empty , Plz Add a {PropertyName}")
                 .Matches(RegexPatterns.PhoneNumber).WithMessage("Invalid Egyptian phone number.");
+
+
             RuleFor(x => x.Password)
-                            .NotEmpty()
-                            .WithMessage("\"Password Must Not Empty ,Plz Add a {PropertyName}\"")
-                            .Matches(RegexPatterns.Password).WithMessage("Password must be at least 8 characters long and contain at least one digit.");
-
-            RuleFor(x => x.Type)
-              .Must(type => (int)type == 0)
-                 .WithMessage("Type must be  (Technical).");
-
-            //RuleFor(x => x.NationalId)
-            //      .NotEmpty()
-            //      .WithMessage("\"NationalId Must Not Empty , Plz Add a {PropertyName}\"")
-            //      .Length(14, 14)
-            //      .WithMessage("National ID must be exactly 14 digits long.")
-            //      .Matches(RegexPatterns.NationalId)
-            //      .WithMessage("National ID must contain only numbers (0-9).");
+                .NotEmpty()
+                .WithMessage("\"Password Must Not Empty ,Plz Add a {PropertyName}\"")
+                .Matches(RegexPatterns.Password).WithMessage("Password must be at least 8 characters long and contain at least one digit.");
 
 
             RuleFor(x => x.NationalId)
-           .NotEmpty()
-           .WithMessage("\"NationalId Must Not Empty , Plz Add a {PropertyName}\"")
-          .Length(14)
-          .WithMessage("Egyptian national ID must be exactly 14 digits")
-          .Matches(RegexPatterns.NationalId)
-          .WithMessage("National ID must start with 2 (for 1900s) or 3 (for 2000s) followed by 13 digits")
-          .Must(BeAValidNationalIdDate)
-          .WithMessage("Invalid birth date in national ID");
+      .NotEmpty()
+      .When(x => x.Type == 0)
+      .WithMessage("NationalId Must Not Be Empty. Please enter a {PropertyName}")
+      .Length(14)
+      .When(x => x.Type == 0)
+      .WithMessage("Egyptian national ID must be exactly 14 digits")
+      .Matches(RegexPatterns.NationalId)
+      .When(x => x.Type == 0)
+      .WithMessage("National ID must start with 2 (for 1900s) or 3 (for 2000s) followed by 13 digits")
+      .Must(BeAValidNationalIdDate)
+      .When(x => x.Type == 0)
+      .WithMessage("Invalid birth date in national ID");
+
+            RuleFor(x => x.ServiceId)
+                .NotEmpty()
+                .When(x => x.Type == 0)
+                .WithMessage("Service Id Must Be Assigned. Please enter {PropertyName}");
 
 
-            RuleFor(x => x.ServiceId).NotEmpty().WithMessage("Service Id Must Be Assigend , Plz Enter {PropertyName}");
+
+
+
+            RuleFor(x => x.Type)
+                .Must(type => (int)type == 0 || (int)type == 1)
+                     .WithMessage("Type must be  (Technical or User).");
 
         }
+
         private bool BeAValidNationalIdDate(string nationalId)
         {
             if (string.IsNullOrWhiteSpace(nationalId) || nationalId.Length != 14)
