@@ -14,558 +14,524 @@ using System.Security.Claims;
 
 namespace CarCare.Core.Application.Services.ServiceRequests
 {
-    public class RequestService
-        (IUnitOfWork _unitOfWork,
-        UserManager<ApplicationUser> userManager,
-        IMapper _mapper,
-        IPaymentService paymentService)
-        : IRequestService
-    {
+	public class RequestService
+		(IUnitOfWork _unitOfWork,
+		UserManager<ApplicationUser> userManager,
+		IMapper _mapper,
+		IPaymentService paymentService)
+		: IRequestService
+	{
 
-        #region User Request
+		#region User Request
 
-        /// Notes
-        /// will request be pending after 10 minutes will chosse another technical and make the current technical inactive
-        /// 
+		/// Notes
+		/// will request be pending after 10 minutes will chosse another technical and make the current technical inactive
+		/// 
 
-        public async Task<ReturnRequestDto> CreateRequestAutomatic(CreateRequestDto requestDto)
-        {
+		public async Task<ReturnRequestDto> CreateRequestAutomatic(CreateRequestDto requestDto)
+		{
 
-            var repo = _unitOfWork.serviceRequestRepository;
+			var repo = _unitOfWork.serviceRequestRepository;
 
-            var activeTechnicals = await repo.GetNearestTechincal(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
+			var activeTechnicals = await repo.GetNearestTechincal(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
 
-            if (activeTechnicals.Count() == 0)
-                throw new BadRequestExeption("There is no Available Techincals");
+			if (activeTechnicals.Count() == 0)
+				throw new BadRequestExeption("There is no Available Techincals");
 
-            if (requestDto.ServiceQuantity is null)
-                requestDto.ServiceQuantity = 1;
+			if (requestDto.ServiceQuantity is null)
+				requestDto.ServiceQuantity = 1;
 
-            var request = _mapper.Map<ServiceRequest>(requestDto);
+			var request = _mapper.Map<ServiceRequest>(requestDto);
 
 
-            request.TechId = activeTechnicals.FirstOrDefault()!.Technical.Id;
+			request.TechId = activeTechnicals.FirstOrDefault()!.Technical.Id;
 
-            request.IsAutomatic = true;
+			request.IsAutomatic = true;
 
-            request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
+			request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
 
-            request.ServicePrice = ((decimal)request.Distance * 10) + request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
+			request.ServicePrice = ((decimal)request.Distance * 10) + request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
 
-            await _unitOfWork.serviceRequestRepository.AddAsync(request);
+			await _unitOfWork.serviceRequestRepository.AddAsync(request);
 
 
-            var complete = await _unitOfWork.CompleteAsync() > 0;
+			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            if (!complete)
-                throw new BadRequestExeption("There is an Error in Request");
+			if (!complete)
+				throw new BadRequestExeption("There is an Error in Request");
 
-            var Orderid = request.Id;
+			var Orderid = request.Id;
 
-            var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
+			var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
 
-            var returnedData = _mapper.Map<ReturnRequestDto>(request);
-            returnedData.PaymentIntentId = result.PaymentIntentId;
-            returnedData.ClientSecret = result.ClientSecret;
+			var returnedData = _mapper.Map<ReturnRequestDto>(request);
+			returnedData.PaymentIntentId = result.PaymentIntentId;
+			returnedData.ClientSecret = result.ClientSecret;
 
 
-            RecurringJob.AddOrUpdate(request.Id.ToString(), () => CheckStatusAutomatic(returnedData.Id), Cron.Minutely());
+			RecurringJob.AddOrUpdate(request.Id.ToString(), () => CheckStatusAutomatic(returnedData.Id), Cron.Minutely());
 
 
-            return returnedData;
+			return returnedData;
 
-        }
-        public async Task<ReturnRequestDto> CreateRequestManually(CreateRequestDto requestDto)
-        {
+		}
+		public async Task<ReturnRequestDto> CreateRequestManually(CreateRequestDto requestDto)
+		{
 
-            var repo = _unitOfWork.serviceRequestRepository;
+			var repo = _unitOfWork.serviceRequestRepository;
 
-            var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
+			var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId, requestDto.UserLatitude, requestDto.UserLongitude);
 
-            if (activeTechnicals.Count() == 0)
-                throw new BadRequestExeption("There is no Available Techincals");
+			if (activeTechnicals.Count() == 0)
+				throw new BadRequestExeption("There is no Available Techincals");
 
-            if (!activeTechnicals.Where(t => t.Technician.Id == requestDto.TechId).Any())
-                throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
-            if (requestDto.ServiceQuantity is null)
-                requestDto.ServiceQuantity = 1;
+			if (!activeTechnicals.Where(t => t.Technician.Id == requestDto.TechId).Any())
+				throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
+			if (requestDto.ServiceQuantity is null)
+				requestDto.ServiceQuantity = 1;
 
-            var request = _mapper.Map<ServiceRequest>(requestDto);
+			var request = _mapper.Map<ServiceRequest>(requestDto);
 
-            #region Calculate Price
-            var technical = await userManager.FindByIdAsync(requestDto.TechId ?? string.Empty);
+			#region Calculate Price
+			var technical = await userManager.FindByIdAsync(requestDto.TechId ?? string.Empty);
 
-            if (technical is null)
-                throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
+			if (technical is null)
+				throw new NotFoundExeption("No Technical Found For This Id ", nameof(requestDto.TechId));
 
-            var distance = repo.CalculateDistance(requestDto.UserLatitude, requestDto.UserLongitude, technical.TechLatitude, technical.TechLongitude);
+			var distance = repo.CalculateDistance(requestDto.UserLatitude, requestDto.UserLongitude, technical.TechLatitude, technical.TechLongitude);
 
 
-            request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice) + (decimal)(distance * 10);
+			request.ServicePrice = request.BasePrice + (request.ServiceQuantity * request.ServicePrice) + (decimal)(distance * 10);
 
-            request.Distance = distance;
-            #endregion
+			request.Distance = distance;
+			#endregion
 
-            await _unitOfWork.serviceRequestRepository.AddAsync(request);
+			await _unitOfWork.serviceRequestRepository.AddAsync(request);
 
-            var complete = await _unitOfWork.CompleteAsync() > 0;
+			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            if (!complete)
-                throw new BadRequestExeption("There is an Error in Request");
+			if (!complete)
+				throw new BadRequestExeption("There is an Error in Request");
 
-            var Orderid = request.Id;
+			var Orderid = request.Id;
 
-            var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
+			var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
 
-            var returnedData = _mapper.Map<ReturnRequestDto>(request);
-            returnedData.PaymentIntentId = result.PaymentIntentId;
-            returnedData.ClientSecret = result.ClientSecret;
+			var returnedData = _mapper.Map<ReturnRequestDto>(request);
+			returnedData.PaymentIntentId = result.PaymentIntentId;
+			returnedData.ClientSecret = result.ClientSecret;
 
-            return returnedData;
-        }
+			return returnedData;
+		}
 
 
-        public async Task<ReturnRequestDto> ResendRequestAutomatic(int requestId, double userLatitude, double userLongitude)
-        {
-            var repo = _unitOfWork.serviceRequestRepository;
+		public async Task<ReturnRequestDto> ResendRequestAutomatic(int requestId, double userLatitude, double userLongitude)
+		{
+			var repo = _unitOfWork.serviceRequestRepository;
 
-            var request = repo.GetAsync(requestId).Result;
+			var request = repo.GetAsync(requestId).Result;
 
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), requestId);
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), requestId);
 
-            var activeTechnicals = await repo.GetNearestTechincal(request.ServiceTypeId, userLatitude, userLongitude);
+			var activeTechnicals = await repo.GetNearestTechincal(request.ServiceTypeId, userLatitude, userLongitude);
 
-            if (activeTechnicals.Count() == 0)
-            {
-                //BackgroundJob.Delete(request.JopId);
-                RecurringJob.RemoveIfExists(request.Id.ToString());
-                throw new BadRequestExeption("There is no Available Techincals");
-            }
+			if (activeTechnicals.Count() == 0)
+			{
+				//BackgroundJob.Delete(request.JopId);
+				RecurringJob.RemoveIfExists(request.Id.ToString());
+				throw new BadRequestExeption("There is no Available Techincals");
+			}
 
-            request.TechId = activeTechnicals.FirstOrDefault()!.Technical.Id;
+			request.TechId = activeTechnicals.FirstOrDefault()!.Technical.Id;
 
-            request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
+			request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
 
-            request.ServicePrice = ((decimal)request.Distance * 10) + request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
+			request.ServicePrice = ((decimal)request.Distance * 10) + request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
 
-            repo.Update(request);
+			repo.Update(request);
 
-            var complete = await _unitOfWork.CompleteAsync() > 0;
+			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            if (!complete)
-                throw new BadRequestExeption("There is an Error in Request");
+			if (!complete)
+				throw new BadRequestExeption("There is an Error in Request");
 
-            var returnedData = _mapper.Map<ReturnRequestDto>(request);
+			var returnedData = _mapper.Map<ReturnRequestDto>(request);
 
-            return returnedData;
+			return returnedData;
 
-        }
+		}
 
-        public async Task<ReturnRequestDto> UpdateTechnicalinRequest(int requestid, string techid, int serviceId)
-        {
-            var repo = _unitOfWork.serviceRequestRepository;
+		public async Task<ReturnRequestDto> UpdateTechnicalinRequest(int requestid, string techid, int serviceId)
+		{
+			var repo = _unitOfWork.serviceRequestRepository;
 
-            var technicians = await userManager.Users
-                .Where(t => t.IsActive == true && t.Type == Types.Technical && t.ServiceType!.Id == serviceId)
-                .ToListAsync();
+			var technicians = await userManager.Users
+				.Where(t => t.IsActive == true && t.Type == Types.Technical && t.ServiceType!.Id == serviceId)
+				.ToListAsync();
 
-            if (string.IsNullOrEmpty(techid))
-                throw new BadRequestExeption("Technical id is null or empty");
+			if (string.IsNullOrEmpty(techid))
+				throw new BadRequestExeption("Technical id is null or empty");
 
 
-            if (technicians.Count == 0)
-                throw new BadRequestExeption("There is no Available Techincals Or Servic Id Incorrect");
+			if (technicians.Count == 0)
+				throw new BadRequestExeption("There is no Available Techincals Or Servic Id Incorrect");
 
-            var checkexsistingtechnical = await userManager.Users.FirstOrDefaultAsync(e => e.Id == techid);
-            if (checkexsistingtechnical is null) throw new NotFoundExeption("No Technical Found For This Id", nameof(techid));
+			var checkexsistingtechnical = await userManager.Users.FirstOrDefaultAsync(e => e.Id == techid);
+			if (checkexsistingtechnical is null) throw new NotFoundExeption("No Technical Found For This Id", nameof(techid));
 
 
-            var request = await repo.GetAsync(requestid);
-            if (request is null)
-                throw new NotFoundExeption("Request not found", nameof(requestid));
+			var request = await repo.GetAsync(requestid);
+			if (request is null)
+				throw new NotFoundExeption("Request not found", nameof(requestid));
 
-            request.ServicePrice -= (decimal)(request.Distance * 10);
+			request.ServicePrice -= (decimal)(request.Distance * 10);
 
-            request!.TechId = techid;
+			request!.TechId = techid;
 
-            var distance = repo.CalculateDistance(request.UserLatitude, request.UserLongitude, checkexsistingtechnical.TechLatitude, checkexsistingtechnical.TechLongitude);
-            request.Distance = distance;
-            request.ServicePrice = request.ServicePrice + (decimal)(distance * 10);
-            repo.Update(request);
+			var distance = repo.CalculateDistance(request.UserLatitude, request.UserLongitude, checkexsistingtechnical.TechLatitude, checkexsistingtechnical.TechLongitude);
+			request.Distance = distance;
+			request.ServicePrice = request.ServicePrice + (decimal)(distance * 10);
+			repo.Update(request);
 
-            var complete = await _unitOfWork.CompleteAsync() > 0;
+			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            if (!complete)
-                throw new BadRequestExeption("There is an Error in Update Request");
+			if (!complete)
+				throw new BadRequestExeption("There is an Error in Update Request");
 
-            var Orderid = request.Id;
+			var Orderid = request.Id;
 
-            var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
+			var result = await paymentService.CreateOrUpdatePaymentIntent(Orderid);
 
-            var returnedData = _mapper.Map<ReturnRequestDto>(request);
-            returnedData.PaymentIntentId = result.PaymentIntentId;
-            returnedData.ClientSecret = result.ClientSecret;
+			var returnedData = _mapper.Map<ReturnRequestDto>(request);
+			returnedData.PaymentIntentId = result.PaymentIntentId;
+			returnedData.ClientSecret = result.ClientSecret;
 
 
 
 
 
-            return returnedData;
+			return returnedData;
 
-        }
+		}
 
-        public async Task<string> DeleteRequest(int requestid)
-        {
-            var repo = _unitOfWork.GetRepository<ServiceRequest, int>();
-            var request = await repo.GetAsync(requestid);
+		public async Task<string> DeleteRequest(int requestid)
+		{
+			var repo = _unitOfWork.GetRepository<ServiceRequest, int>();
+			var request = await repo.GetAsync(requestid);
 
-            if (request is null) throw new NotFoundExeption("Not request With This Id:", nameof(requestid));
+			if (request is null) throw new NotFoundExeption("Not request With This Id:", nameof(requestid));
 
 
-            if (request.BusnissStatus == BusnissStatus.Pending || request.BusnissStatus == BusnissStatus.Canceled)
-            {
-                repo.Delete(request);
+			if (request.BusnissStatus == BusnissStatus.Pending || request.BusnissStatus == BusnissStatus.Canceled)
+			{
+				repo.Delete(request);
 
-                var result = await _unitOfWork.CompleteAsync() > 0;
+				var result = await _unitOfWork.CompleteAsync() > 0;
 
-                if (result is true) return "Deleted Successfully";
+				if (result is true) return "Deleted Successfully";
 
-                else
-                    throw new BadRequestExeption("Operation Faild");
-            }
-            else
-            {
-                throw new BadRequestExeption("This Request Not Pending ,Is Already Proccessing");
-            }
+				else
+					throw new BadRequestExeption("Operation Faild");
+			}
+			else
+			{
+				throw new BadRequestExeption("This Request Not Pending ,Is Already Proccessing");
+			}
 
-        }
+		}
 
 
+		public async Task<ReturnRequestDto> ReturnRequest(int requestId)
+		{
+			var repo = _unitOfWork.serviceRequestRepository;
 
-        //public async Task<ReturnRequestDto> UpdateRequest(UpdateRequestDto requestDto, int requestId)
-        //{
-        //	var repo = _unitOfWork.serviceRequestRepository;
+			var request = await repo.GetAsync(requestId);
 
-        //	var activeTechnicals = await repo.GetAvailableTechniciansAsync(requestDto.ServiceTypeId);
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), requestId);
 
-        //	if (activeTechnicals is null)
-        //		throw new BadRequestExeption("There is no Available Techincals");
+			var returnedData = _mapper.Map<ReturnRequestDto>(request);
 
-        //	if (!activeTechnicals.Where(t => t.Id == requestDto.TechId).Any())
-        //		throw new BadRequestExeption("not Available Techincal");
+			if (returnedData is null)
+				throw new BadRequestExeption("Error While Returning Request Data");
 
-        //	var returnedRequest = await ReturnRequest(requestId);
+			return returnedData;
+		}
 
-        //	var newTechincal = activeTechnicals.FirstOrDefault();
+		public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForAdmin(string UserId)
+		{
+			var requests = await _unitOfWork.serviceRequestRepository.GetAllAsync();
 
-        //	if (newTechincal is null)
-        //		throw new BadRequestExeption("not Available Techincal");
+			if (!requests.Any())
+				throw new NotFoundExeption(nameof(requests), UserId);
 
-        //	returnedRequest.TechId = newTechincal.Id;
+			var userRequests = requests.Where(r => r.UserId == UserId);
 
-        //	var request = _mapper.Map<ServiceRequest>(returnedRequest);
+			if (!userRequests.Any())
+				throw new NotFoundExeption(nameof(userRequests), UserId);
 
-        //	_unitOfWork.GetRepository<ServiceRequest, int>().Update(request);
+			var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
 
-        //	var updated = await _unitOfWork.CompleteAsync() > 0;
+			return returnedData;
 
-        //	if (!updated)
-        //		throw new BadRequestExeption("Error While Updating Request!!");
+		}
 
-        //	return returnedRequest;
-        //}
+		public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal)
+		{
+			var userId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-        public async Task<ReturnRequestDto> ReturnRequest(int requestId)
-        {
-            var repo = _unitOfWork.serviceRequestRepository;
+			if (userId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-            var request = await repo.GetAsync(requestId);
+			return await GetAllRequeststoUserForAdmin(userId);
 
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), requestId);
+		}
 
-            var returnedData = _mapper.Map<ReturnRequestDto>(request);
+		public async Task<IEnumerable<ReturnTechRequestDto>> GetNearestTechnicals(int serviceTypeId, double UserLatitude, double UserLongitude)
+		{
+			var techs = await _unitOfWork.serviceRequestRepository.GetNearestTechincal(serviceTypeId, UserLatitude, UserLongitude);
+			return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(techs);
+		}
 
-            if (returnedData is null)
-                throw new BadRequestExeption("Error While Returning Request Data");
 
-            return returnedData;
-        }
+		//public async Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId)
+		//{
+		//	var activeTechnicals = await _unitOfWork.serviceRequestRepository.GetAvailableTechniciansAsync(serviceTypeId);
 
-        public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForAdmin(string UserId)
-        {
-            var requests = await _unitOfWork.serviceRequestRepository.GetAllAsync();
 
-            if (!requests.Any())
-                throw new NotFoundExeption(nameof(requests), UserId);
+		//	return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(activeTechnicals);
+		//}
 
-            var userRequests = requests.Where(r => r.UserId == UserId);
+		public async Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId, double userlongitude, double userlatitdute)
+		{
+			var activeTechnicals = await _unitOfWork.serviceRequestRepository.GetAvailableTechniciansAsync(serviceTypeId, userlongitude, userlatitdute);
 
-            if (!userRequests.Any())
-                throw new NotFoundExeption(nameof(userRequests), UserId);
 
-            var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
+			return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(activeTechnicals);
+		}
 
-            return returnedData;
 
-        }
 
-        public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal)
-        {
-            var userId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
+		#endregion
 
-            if (userId is null)
-                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-            return await GetAllRequeststoUserForAdmin(userId);
+		#region Techincal Received Request
 
-        }
+		public async Task<string> ReceivedRequest(int requestId, BusnissStatus status)
+		{
+			var repo = _unitOfWork.serviceRequestRepository;
 
-        public async Task<IEnumerable<ReturnTechRequestDto>> GetNearestTechnicals(int serviceTypeId, double UserLatitude, double UserLongitude)
-        {
-            var techs = await _unitOfWork.serviceRequestRepository.GetNearestTechincal(serviceTypeId, UserLatitude, UserLongitude);
-            return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(techs);
-        }
+			var request = await repo.GetAsync(requestId);
 
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), requestId);
 
-        //public async Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId)
-        //{
-        //	var activeTechnicals = await _unitOfWork.serviceRequestRepository.GetAvailableTechniciansAsync(serviceTypeId);
 
+			var technicalId = request.TechId;
 
-        //	return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(activeTechnicals);
-        //}
+			var technical = await userManager.FindByIdAsync(technicalId);
 
-        public async Task<IEnumerable<ReturnTechRequestDto>> GetActiveTechincals(int serviceTypeId, double userlongitude, double userlatitdute)
-        {
-            var activeTechnicals = await _unitOfWork.serviceRequestRepository.GetAvailableTechniciansAsync(serviceTypeId, userlongitude, userlatitdute);
+			if (technical is null)
+				throw new NotFoundExeption("No Technical For This Id", nameof(technicalId));
 
 
-            return _mapper.Map<IEnumerable<ReturnTechRequestDto>>(activeTechnicals);
-        }
+			request.BusnissStatus = status;
+			repo.Update(request);
 
 
+			switch (status)
+			{
 
-        #endregion
+				case BusnissStatus.Completed:
+					technical.IsActive = true;
+					technical.TechProfit += (double)request.ServicePrice * 80 / 100;
+					break;
 
+				case BusnissStatus.InProgress:
 
-        #region Techincal Received Request
+					technical.IsActive = false;
 
-        public async Task<string> ReceivedRequest(int requestId, BusnissStatus status)
-        {
-            var repo = _unitOfWork.serviceRequestRepository;
+					break;
 
-            var request = await repo.GetAsync(requestId);
+				case BusnissStatus.Canceled:
 
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), requestId);
+					technical.IsActive = false;
 
 
-            var technicalId = request.TechId;
+					if (request.IsAutomatic)
+					{
+						var updatedrequest = _mapper.Map<CreateRequestDto>(request);
 
-            var technical = await userManager.FindByIdAsync(technicalId);
+						await ResendRequestAutomatic(requestId, updatedrequest.UserLatitude, updatedrequest.UserLongitude);
+					}
+					break;
 
-            if (technical is null)
-                throw new NotFoundExeption("No Technical For This Id", nameof(technicalId));
+			}
 
+			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            request.BusnissStatus = status;
-            repo.Update(request);
+			if (!complete)
+				throw new BadRequestExeption("Request Can't Received");
 
+			return $"Request status updated to {status}";
 
-            switch (status)
-            {
+		}
 
-                case BusnissStatus.Completed:
-                    technical.IsActive = true;
-                    technical.TechProfit += (double)request.ServicePrice * 80 / 100;
-                    break;
 
-                case BusnissStatus.InProgress:
+		public async Task<string> AcceptRequest(int requestId)
+		{
+			var result = await ReceivedRequest(requestId, BusnissStatus.InProgress);
+			return result;
+		}
 
-                    technical.IsActive = false;
+		public async Task<string> RejectRequest(int requestId)
+		{
+			var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
 
-                    break;
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), requestId);
 
-                case BusnissStatus.Canceled:
+			string result = await ReceivedRequest(requestId, BusnissStatus.Canceled);
 
-                    technical.IsActive = false;
+			return result;
+		}
 
+		public async Task<string> CompleteRequest(int requestId)
+		{
+			var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
 
-                    if (request.IsAutomatic)
-                    {
-                        var updatedrequest = _mapper.Map<CreateRequestDto>(request);
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), requestId);
 
-                        await ResendRequestAutomatic(requestId, updatedrequest.UserLatitude, updatedrequest.UserLongitude);
-                    }
-                    break;
+			var result = await ReceivedRequest(requestId, BusnissStatus.Completed);
 
-            }
+			return result;
+		}
 
-            var complete = await _unitOfWork.CompleteAsync() > 0;
 
-            if (!complete)
-                throw new BadRequestExeption("Request Can't Received");
 
-            return $"Request status updated to {status}";
+		public async Task<IEnumerable<ReturnRequestDto>> GetAllRequestsToTechnical(ClaimsPrincipal claimsPrincipal, BusnissStatus? status)
+		{
+			var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
-        }
+			if (techId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
+			var specs = new ServiceRequestSpecifications(status);
 
-        public async Task<string> AcceptRequest(int requestId)
-        {
-            var result = await ReceivedRequest(requestId, BusnissStatus.InProgress);
-            return result;
-        }
+			var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(specs);
 
-        public async Task<string> RejectRequest(int requestId)
-        {
-            var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
+			if (!requests.Any())
+				throw new NotFoundExeption(nameof(requests), techId);
 
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), requestId);
 
-            string result = await ReceivedRequest(requestId, BusnissStatus.Canceled);
+			var userRequests = requests.Where(r => r.TechId == techId);
 
-            return result;
-        }
+			if (!userRequests.Any())
+				throw new NotFoundExeption(nameof(userRequests), techId);
 
-        public async Task<string> CompleteRequest(int requestId)
-        {
-            var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
+			var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
 
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), requestId);
+			return returnedData;
 
-            var result = await ReceivedRequest(requestId, BusnissStatus.Completed);
+		}
 
-            return result;
-        }
+		public async Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal, string? sort)
+		{
+			var spec = new GetAllRequestsPenddingOrderingSpec(sort);
+			var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
+			if (techId is null)
+				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+			var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(spec);
+			if (!requests.Any())
+				throw new NotFoundExeption(nameof(requests), techId);
+			var userRequests = requests.Where(r => r.TechId == techId && (r.BusnissStatus == BusnissStatus.Pending));
+			if (!userRequests.Any())
+				throw new NotFoundExeption("Not Exsist Pendding Requestes With This Technical", nameof(techId));
+			var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
+			return returnedData;
 
+		}
+		public async Task<string> TechincalBeActive(ClaimsPrincipal claimsPrincipal)
+		{
+			var techId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
 
+			if (techId is null)
+				throw new UnAuthorizedExeption("You are not allowed!!");
 
-        public async Task<IEnumerable<ReturnRequestDto>> GetAllRequestsToTechnical(ClaimsPrincipal claimsPrincipal, BusnissStatus? status)
-        {
-            var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
+			var techincal = await userManager.FindByIdAsync(techId);
 
-            if (techId is null)
-                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
+			if (techincal is null)
+				throw new NotFoundExeption("No User For This Id", nameof(techId));
 
-            var specs = new ServiceRequestSpecifications(status);
+			techincal.IsActive = true;
 
-            var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(specs);
+			var succeed = await userManager.UpdateAsync(techincal);
 
-            if (!requests.Any())
-                throw new NotFoundExeption(nameof(requests), techId);
+			if (!succeed.Succeeded)
+				throw new BadRequestExeption("Error While Save Details");
 
+			return $"Techincal {techincal.FullName} is Actived!!";
+		}
 
-            var userRequests = requests.Where(r => r.TechId == techId);
+		public async Task<string> TechincalBeInActive(ClaimsPrincipal claimsPrincipal)
+		{
+			var techId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
 
-            if (!userRequests.Any())
-                throw new NotFoundExeption(nameof(userRequests), techId);
+			if (techId is null)
+				throw new UnAuthorizedExeption("You are not allowed!!");
 
-            var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
+			var techincal = await userManager.FindByIdAsync(techId);
 
-            return returnedData;
+			if (techincal is null)
+				throw new NotFoundExeption("No User For This Id", nameof(techId));
 
-        }
+			techincal.IsActive = false;
 
-        public async Task<IEnumerable<ReturnRequestDto>> GetAllPendingRequestsToTechnical(ClaimsPrincipal claimsPrincipal, string? sort)
-        {
-            var spec = new GetAllRequestsPenddingOrderingSpec(sort);
-            var techId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
-            if (techId is null)
-                throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
-            var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(spec);
-            if (!requests.Any())
-                throw new NotFoundExeption(nameof(requests), techId);
-            var userRequests = requests.Where(r => r.TechId == techId && (r.BusnissStatus == BusnissStatus.Pending));
-            if (!userRequests.Any())
-                throw new NotFoundExeption("Not Exsist Pendding Requestes With This Technical", nameof(techId));
-            var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
-            return returnedData;
+			var succeed = await userManager.UpdateAsync(techincal);
 
-        }
-        public async Task<string> TechincalBeActive(ClaimsPrincipal claimsPrincipal)
-        {
-            var techId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
+			if (!succeed.Succeeded)
+				throw new BadRequestExeption("Error While Save Details");
 
-            if (techId is null)
-                throw new UnAuthorizedExeption("You are not allowed!!");
+			return $"Techincal {techincal.FullName} is Inactived!!";
+		}
 
-            var techincal = await userManager.FindByIdAsync(techId);
 
-            if (techincal is null)
-                throw new NotFoundExeption("No User For This Id", nameof(techId));
 
-            techincal.IsActive = true;
 
-            var succeed = await userManager.UpdateAsync(techincal);
+		public async Task CheckStatusAutomatic(int requestId)
+		{
+			var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
 
-            if (!succeed.Succeeded)
-                throw new BadRequestExeption("Error While Save Details");
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), nameof(requestId));
 
-            return $"Techincal {techincal.FullName} is Actived!!";
-        }
+			double time = (DateTime.UtcNow - request.LastModifiedOn).TotalMinutes;
 
-        public async Task<string> TechincalBeInActive(ClaimsPrincipal claimsPrincipal)
-        {
-            var techId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
+			if ((time >= 5) || request.BusnissStatus == BusnissStatus.InProgress)
+			{
+				if (request.BusnissStatus == BusnissStatus.Pending || request.BusnissStatus == BusnissStatus.Canceled)
+					await RejectRequest(requestId);
+				else
+					RecurringJob.RemoveIfExists(request.Id.ToString());
+			}
+		}
+		public async Task<object> CheckStatusManual(int requestId)
+		{
+			var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
 
-            if (techId is null)
-                throw new UnAuthorizedExeption("You are not allowed!!");
+			if (request is null)
+				throw new NotFoundExeption(nameof(request), nameof(requestId));
 
-            var techincal = await userManager.FindByIdAsync(techId);
+			object Status = new { status = request.BusnissStatus.ToString() };
 
-            if (techincal is null)
-                throw new NotFoundExeption("No User For This Id", nameof(techId));
+			return Status;
+		}
 
-            techincal.IsActive = false;
 
-            var succeed = await userManager.UpdateAsync(techincal);
 
-            if (!succeed.Succeeded)
-                throw new BadRequestExeption("Error While Save Details");
+		#endregion
 
-            return $"Techincal {techincal.FullName} is Inactived!!";
-        }
-
-
-
-
-        public async Task CheckStatusAutomatic(int requestId)
-        {
-            var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
-
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), nameof(requestId));
-
-            double time = (DateTime.UtcNow - request.LastModifiedOn).TotalMinutes;
-
-            if ((time >= 5) || request.BusnissStatus == BusnissStatus.InProgress)
-            {
-                if (request.BusnissStatus == BusnissStatus.Pending || request.BusnissStatus == BusnissStatus.Canceled)
-                    await RejectRequest(requestId);
-                else
-                    RecurringJob.RemoveIfExists(request.Id.ToString());
-            }
-        }
-        public async Task<object> CheckStatusManual(int requestId)
-        {
-            var request = await _unitOfWork.serviceRequestRepository.GetAsync(requestId);
-
-            if (request is null)
-                throw new NotFoundExeption(nameof(request), nameof(requestId));
-
-            object Status = new { status = request.BusnissStatus.ToString() };
-
-            return Status;
-        }
-
-
-
-        #endregion
-
-    }
+	}
 }

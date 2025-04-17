@@ -9,7 +9,6 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.ForgetPasswordByEmai
 {
 	public class ResetPasswordByEmailDto : SendCodeByEmailDto
 	{
-		[Required]
 		public required string NewPassword { get; set; }
 	}
 }

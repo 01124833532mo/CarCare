@@ -13,9 +13,13 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 	{
 		public ChangePasswordValidator()
 		{
+			RuleFor(x => x.CurrentPassword)
+				.NotEmpty()
+				.WithMessage("Current Password Must Not Empty ,Plz Add a {PropertyName}");
+
 			RuleFor(x => x.NewPassword)
 				.NotEmpty()
-				.WithMessage("\"Password Must Not Empty ,Plz Add a {PropertyName}\"")
+				.WithMessage("Password Must Not Empty ,Plz Add a {PropertyName}")
 				.Matches(RegexPatterns.Password)
 				.WithMessage("Password must be at least 8 characters long and contain at least one digit.");
 		}
