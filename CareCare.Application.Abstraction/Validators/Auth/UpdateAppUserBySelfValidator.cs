@@ -18,7 +18,7 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 
 			RuleFor(x => x.Email)
 					.NotEmpty()
-					.WithMessage("\"Email Must Not Empty , Plz Add a {PropertyName}\"")
+					.WithMessage("Email Must Not Empty , Plz Add a {PropertyName}")
 					.EmailAddress().WithMessage("Must Be Email Address")
 					.Matches(RegexPatterns.Email,
 			 RegexOptions.IgnoreCase).WithMessage("Invalid Email Address,Only Gmail/Google or Egyptian university emails (@____.edu.eg) are allowed");
