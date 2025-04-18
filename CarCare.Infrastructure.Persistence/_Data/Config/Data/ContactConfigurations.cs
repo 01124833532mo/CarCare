@@ -1,5 +1,6 @@
 ﻿using CarCare.Core.Domain.Entities.Contacts;
 using CarCare.Core.Domain.Entities.FeedBacks;
+using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Infrastructure.Persistence._Data.Config.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -24,10 +25,12 @@ namespace CarCare.Infrastructure.Persistence._Data.Config.Data
 				   .HasColumnType("nvarchar")
 				   .HasMaxLength(200);
 
-			builder.HasOne(c => c.User)
-				   .WithMany(u => u.Contacts)
-				   .HasForeignKey(u => u.UserId)
-				   .OnDelete(DeleteBehavior.Cascade);
+			builder.Property(user => user.MessageFor)
+				.HasConversion
+				(
+				(UStatus) => UStatus.ToString(),
+				(UStatus) => (Types)Enum.Parse(typeof(Types), UStatus)
+				);
 
 		}
 	}

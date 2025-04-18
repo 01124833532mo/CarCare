@@ -17,7 +17,7 @@ namespace CarCare.Apis.Controllers.Controllers.Contacts
 		[HttpGet("GetAllMessages")]
 		public async Task<ActionResult<IEnumerable<ReturnContactDto>>> GetAllContacts()
 		{
-			var result = await serviceManager.ContactService.GetAllContactsAsync();
+			var result = await serviceManager.ContactService.GetAllContactsAsync(User);
 			return Ok(result);
 		}
 	}

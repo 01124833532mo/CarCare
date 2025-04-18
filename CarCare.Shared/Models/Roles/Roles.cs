@@ -8,6 +8,7 @@
 
         public const string User = "User";
 
+		public const string All = "All";
 
-    }
+	}
 }

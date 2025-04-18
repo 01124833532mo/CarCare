@@ -9,6 +9,7 @@ namespace CareCare.Core.Application.Abstraction.Models.Contacts
 	public class CreateContactDto
 	{
 		public required string Message { get; set; }
+		public required int MessageFor { get; set; }
 
 	}
 }

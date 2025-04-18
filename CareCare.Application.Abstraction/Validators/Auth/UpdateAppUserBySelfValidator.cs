@@ -17,21 +17,33 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 
 
 			RuleFor(x => x.Email)
+					.NotNull()
+					.WithMessage("Email Must Not Null , Plz Add a {PropertyName}")
 					.NotEmpty()
 					.WithMessage("Email Must Not Empty , Plz Add a {PropertyName}")
 					.EmailAddress().WithMessage("Must Be Email Address")
 					.Matches(RegexPatterns.Email,
 			 RegexOptions.IgnoreCase).WithMessage("Invalid Email Address,Only Gmail/Google or Egyptian university emails (@____.edu.eg) are allowed");
 
-			RuleFor(x => x.FullName).NotEmpty().WithMessage("FullName Must Not Empty , Plz Add a {PropertyName}");
+			RuleFor(x => x.FullName)
+				.NotNull()
+				.WithMessage("FullName Must Not Null , Plz Add a {PropertyName}")
+				.NotEmpty()
+				.WithMessage("FullName Must Not Empty , Plz Add a {PropertyName}");
 
 			RuleFor(x => x.PhoneNumber)
+					.NotNull()
+					.WithMessage("PhoneNumber Must Not Null , Plz Add a {PropertyName}")
 					.NotEmpty()
 					.WithMessage("PhoneNumber Must Not Empty , Plz Add a {PropertyName}")
 					.Matches(RegexPatterns.PhoneNumber).WithMessage("Invalid Egyptian phone number.");
 
 
 			RuleFor(x => x.NationalId)
+			  .NotNull()
+			  .WithMessage("National ID Must Not Null , Plz Add a {PropertyName}")
+			  .NotEmpty()
+			  .WithMessage("National ID Must Not Empty , Plz Add a {PropertyName}")
 			  .Length(14)
 			  .WithMessage("Egyptian national ID must be exactly 14 digits")
 			  .Matches(RegexPatterns.NationalId)

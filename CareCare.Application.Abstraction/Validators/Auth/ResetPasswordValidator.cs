@@ -13,6 +13,8 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 		public ResetPasswordValidator()
 		{
 			RuleFor(x => x.NewPassword)
+				.NotNull()
+				.WithMessage(errorMessage: "New Password is required.")
 				.NotEmpty()
 				.WithMessage("New Password is required.")
 				.MinimumLength(6)

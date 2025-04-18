@@ -10,6 +10,7 @@ namespace CarCare.Core.Domain.Entities.Identity
 	{
 		Technical,
 		User,
-		Admin
+		Admin,
+		All
 	}
 }

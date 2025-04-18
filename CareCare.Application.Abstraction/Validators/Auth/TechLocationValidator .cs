@@ -13,10 +13,18 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 		public TechLocationValidator()
 		{
 			RuleFor(x => x.TechLatitude)
+				.NotNull()
+				.WithMessage("Latitude Must Not Null , Plz Add a {PropertyName}")
+				.NotEmpty()
+				.WithMessage("Latitude Must Not Empty , Plz Add a {PropertyName}")
 				.InclusiveBetween(22.0, 31.7)
 				.WithMessage("Latitude must be between 22.0 and 31.7 to be inside Egypt.");
 
 			RuleFor(x => x.TechLongitude)
+				.NotNull()
+				.WithMessage("Longitude Must Not Null , Plz Add a {PropertyName}")
+				.NotEmpty()
+				.WithMessage("Longitude Must Not Empty , Plz Add a {PropertyName}")
 				.InclusiveBetween(24.7, 36.9)
 				.WithMessage("Longitude must be between 24.7 and 36.9 to be inside Egypt.");
 		}
