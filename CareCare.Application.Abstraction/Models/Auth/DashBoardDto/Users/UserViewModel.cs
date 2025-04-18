@@ -8,6 +8,7 @@
         public required string Email { get; set; }
 
         public required string Type { get; set; }
+        public string? IsActive { get; set; }
 
         public IEnumerable<string> Roles { get; set; }
 

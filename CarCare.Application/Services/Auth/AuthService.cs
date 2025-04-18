@@ -260,7 +260,8 @@ namespace CarCare.Core.Application.Services.Auth
         FullName = u.FullName!,
         PhoneNumber = u.PhoneNumber!,
         Email = u.Email!,
-        Type = u.Type.ToString()
+        Type = u.Type.ToString(),
+        IsActive = u.IsActive.ToString(),
     })
     .ToListAsync();
 
