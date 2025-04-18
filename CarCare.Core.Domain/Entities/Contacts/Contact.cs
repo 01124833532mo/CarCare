@@ -13,7 +13,10 @@ namespace CarCare.Core.Domain.Entities.Contacts
 	{
 		public required string Message { get; set; }
 
-		public required string UserId { get; set; }	
+		public required Types MessageFor { get; set; }
+
+
+		public required string UserId { get; set; }
 		public virtual required ApplicationUser User { get; set; }
 
 

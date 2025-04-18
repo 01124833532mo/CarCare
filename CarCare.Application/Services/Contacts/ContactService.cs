@@ -7,10 +7,11 @@ using CareCare.Core.Application.Abstraction.Models.Contacts;
 using CareCare.Core.Application.Abstraction.Services.Contacts;
 using Microsoft.AspNetCore.Identity;
 using System.Linq;
+using System.Security.Claims;
 
 namespace CarCare.Core.Application.Services.Contacts
 {
-	public class ContactService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> userManager) : IContactService
+	public class ContactService(IUnitOfWork _unitOfWork, IMapper _mapper, UserManager<ApplicationUser> _userManager) : IContactService
 	{
 		public async Task<ReturnContactDto> CreateContactAsync(CreateContactDto contactDto)
 		{
@@ -34,7 +35,7 @@ namespace CarCare.Core.Application.Services.Contacts
 			if (!created)
 				throw new BadRequestExeption("Contact not Created!");
 
-			var user = await userManager.FindByIdAsync(contact.UserId);
+			var user = await _userManager.FindByIdAsync(contact.UserId);
 			if (user is null)
 				throw new NotFoundExeption(nameof(ApplicationUser), contact.UserId);
 
@@ -44,13 +45,24 @@ namespace CarCare.Core.Application.Services.Contacts
 		}
 
 
-		public async Task<IEnumerable<ReturnContactDto>> GetAllContactsAsync()
+		public async Task<IEnumerable<ReturnContactDto>> GetAllContactsAsync(ClaimsPrincipal claimsPrincipal)
 		{
-			var contact = await _unitOfWork.GetRepository<Contact, int>().GetAllAsync();
 
-			var orderedContact = contact.OrderByDescending(contact => contact.CreatedOn);
+			var userId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
 
-			return _mapper.Map<IEnumerable<ReturnContactDto>>(orderedContact);
+			if (userId is null)
+				throw new UnAuthorizedExeption("Not Allowed");
+
+			var user = await _userManager.FindByIdAsync(userId!);
+
+			if (user is null)
+				throw new UnAuthorizedExeption("Not Allowed");
+
+			var contacts = await _unitOfWork.GetRepository<Contact, int>().GetAllAsync();
+
+			var orderedContacts = contacts.Where(contact => contact.MessageFor == Types.All || contact.MessageFor == user.Type || user.Type == Types.Admin).OrderByDescending(contact => contact.CreatedOn);
+
+			return _mapper.Map<IEnumerable<ReturnContactDto>>(orderedContacts);
 		}
 
 

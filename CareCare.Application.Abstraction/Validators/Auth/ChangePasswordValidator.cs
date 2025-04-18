@@ -14,10 +14,14 @@ namespace CareCare.Core.Application.Abstraction.Validators.Auth
 		public ChangePasswordValidator()
 		{
 			RuleFor(x => x.CurrentPassword)
+				.NotNull()
+				.WithMessage("Current Password Must Not Null ,Plz Add a {PropertyName}")
 				.NotEmpty()
 				.WithMessage("Current Password Must Not Empty ,Plz Add a {PropertyName}");
 
 			RuleFor(x => x.NewPassword)
+				.NotNull()
+				.WithMessage("New Password Must Not Null ,Plz Add a {PropertyName}")
 				.NotEmpty()
 				.WithMessage("Password Must Not Empty ,Plz Add a {PropertyName}")
 				.Matches(RegexPatterns.Password)
