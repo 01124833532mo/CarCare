@@ -3,6 +3,7 @@ using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Entities.Contacts;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Shared.ErrorModoule.Exeptions;
+using CarCare.Shared.Models.Roles;
 using CareCare.Core.Application.Abstraction.Models.Contacts;
 using CareCare.Core.Application.Abstraction.Services.Contacts;
 using Microsoft.AspNetCore.Identity;
@@ -50,6 +51,8 @@ namespace CarCare.Core.Application.Services.Contacts
 
 			var userId = claimsPrincipal.FindFirstValue(ClaimTypes.PrimarySid);
 
+			var roles = claimsPrincipal.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
+
 			if (userId is null)
 				throw new UnAuthorizedExeption("Not Allowed");
 
@@ -60,7 +63,17 @@ namespace CarCare.Core.Application.Services.Contacts
 
 			var contacts = await _unitOfWork.GetRepository<Contact, int>().GetAllAsync();
 
-			var orderedContacts = contacts.Where(contact => contact.MessageFor == Types.All || contact.MessageFor == user.Type || user.Type == Types.Admin).OrderByDescending(contact => contact.CreatedOn);
+
+			IOrderedEnumerable<Contact> orderedContacts;
+
+			if (roles.Any(r => r == Roles.Admin))
+				orderedContacts = contacts.OrderByDescending(contact => contact.CreatedOn);
+			else if (roles.Any(R => R == Roles.Technical))
+				orderedContacts = contacts.Where(c => c.MessageFor == Types.All || c.MessageFor == Types.Technical).OrderByDescending(contact => contact.CreatedOn);
+			else
+				orderedContacts = contacts.Where(c => c.MessageFor == Types.All || c.MessageFor == Types.User).OrderByDescending(contact => contact.CreatedOn);
+
+
 
 			return _mapper.Map<IEnumerable<ReturnContactDto>>(orderedContacts);
 		}

@@ -22,9 +22,7 @@ namespace CareCare.Core.Application.Abstraction.Validators.Contact
 			RuleFor(x => x.MessageFor)
 				.NotNull()
 				.WithMessage("MessageFor Must Not Null ,Plz Add a {PropertyName}")
-				.NotEmpty()
-				.WithMessage("MessageFor Must Not Empty ,Plz Add a {PropertyName}")
-				.ExclusiveBetween(0, 3)
+				.InclusiveBetween(0, 3)
 				.WithMessage("MessageFor Must be between 0 to 3");
 		}
 	}

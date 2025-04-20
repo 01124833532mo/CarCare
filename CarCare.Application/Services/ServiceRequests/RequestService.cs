@@ -140,6 +140,16 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 			{
 				//BackgroundJob.Delete(request.JopId);
 				RecurringJob.RemoveIfExists(request.Id.ToString());
+				
+				request.BusnissStatus = BusnissStatus.Canceled;
+
+				repo.Update(request);
+
+				var Canceledcomplete = await _unitOfWork.CompleteAsync() > 0;
+
+				if (!Canceledcomplete)
+					throw new BadRequestExeption("There is an Error in Request");
+
 				throw new BadRequestExeption("There is no Available Techincals");
 			}
 
@@ -148,6 +158,8 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 			request.Distance = activeTechnicals.FirstOrDefault()!.Distance;
 
 			request.ServicePrice = ((decimal)request.Distance * 10) + request.BasePrice + (request.ServiceQuantity * request.ServicePrice);
+
+			request.BusnissStatus = BusnissStatus.Pending;
 
 			repo.Update(request);
 
@@ -346,12 +358,24 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 				case BusnissStatus.Completed:
 					technical.IsActive = true;
 					technical.TechProfit += (double)request.ServicePrice * 80 / 100;
+					RecurringJob.RemoveIfExists(request.Id.ToString());
+
+					var complete = await _unitOfWork.CompleteAsync() > 0;
+
+					if (!complete)
+						throw new BadRequestExeption("Request Can't Received");
 					break;
 
 				case BusnissStatus.InProgress:
 
 					technical.IsActive = false;
 
+					RecurringJob.RemoveIfExists(request.Id.ToString());
+
+					complete = await _unitOfWork.CompleteAsync() > 0;
+
+					if (!complete)
+						throw new BadRequestExeption("Request Can't Received");
 					break;
 
 				case BusnissStatus.Canceled:
@@ -369,10 +393,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 
 			}
 
-			var complete = await _unitOfWork.CompleteAsync() > 0;
 
-			if (!complete)
-				throw new BadRequestExeption("Request Can't Received");
 
 			return $"Request status updated to {status}";
 
