@@ -200,6 +200,7 @@ namespace CarCare.Core.Application.Services.ServiceRequests
             request.ServicePrice -= (decimal)(request.Distance * 10);
 
             request!.TechId = techid;
+            request.BusnissStatus = BusnissStatus.Pending;
 
             var distance = repo.CalculateDistance(request.UserLatitude, request.UserLongitude, checkexsistingtechnical.TechLatitude, checkexsistingtechnical.TechLongitude);
             request.Distance = distance;

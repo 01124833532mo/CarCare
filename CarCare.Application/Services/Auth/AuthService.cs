@@ -282,7 +282,8 @@ namespace CarCare.Core.Application.Services.Auth
                 FullName = createUserDro.Name,
                 PhoneNumber = createUserDro.PhoneNumber,
                 Type = createUserDro.Type,
-                Email = createUserDro.Email
+                Email = createUserDro.Email,
+                UserName = createUserDro.Email
             };
 
             var getphone = await userManager.Users
@@ -300,6 +301,8 @@ namespace CarCare.Core.Application.Services.Auth
 
             if (!result.Succeeded)
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+
+            user.EmailConfirmed = true;
 
 
 
@@ -351,7 +354,7 @@ namespace CarCare.Core.Application.Services.Auth
                     {
                         Id = r.Id,
                         Name = r.Name!,
-                        IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
+                        IsSelected = userManager.IsInRoleAsync(user, r.Name!).Result
                     }).Where(u => u.IsSelected == true).ToList()
             };
 
@@ -452,9 +455,10 @@ namespace CarCare.Core.Application.Services.Auth
             {
                 FullName = createTechnicalDto.Name,
                 PhoneNumber = createTechnicalDto.PhoneNumber,
-                Type = createTechnicalDto.Type,
                 Email = createTechnicalDto.Email,
+                UserName = createTechnicalDto.Email,
                 NationalId = createTechnicalDto.NationalId,
+                ServiceId = createTechnicalDto.ServiceId,
             };
 
             var getphone = await userManager.Users
@@ -467,10 +471,23 @@ namespace CarCare.Core.Application.Services.Auth
             var email = await userManager.FindByEmailAsync(user.Email);
             if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
 
+            var existingNationalId = await userManager.Users
+                   .FirstOrDefaultAsync(u => u.NationalId == createTechnicalDto.NationalId);
+            if (existingNationalId != null)
+                throw new BadRequestExeption("NationalId is Already Registered");
+
+            var serviceType = await unitOfWork.GetRepository<ServiceType, int>()
+                .GetAsync(createTechnicalDto.ServiceId ?? 0);
+            if (serviceType == null)
+                throw new NotFoundExeption("No Found Service With This Id", nameof(createTechnicalDto.ServiceId));
+
             var result = await userManager.CreateAsync(user, createTechnicalDto.Password);
 
             if (!result.Succeeded)
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+            user.EmailConfirmed = true;
+            user.TechLongitude = 11.2;
+            user.TechLatitude = 11.1;
 
             // Assign the "User" role to the newly created user
             var roleResult = await userManager.AddToRoleAsync(user, Types.Technical.ToString());
