@@ -301,6 +301,8 @@ namespace CarCare.Core.Application.Services.Auth
             if (!result.Succeeded)
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
+            user.EmailConfirmed = true;
+
 
 
             // Assign the "User" role to the newly created user
@@ -351,7 +353,7 @@ namespace CarCare.Core.Application.Services.Auth
                     {
                         Id = r.Id,
                         Name = r.Name!,
-                        IsSelected = userManager.IsInRoleAsync(user, r.Name).Result
+                        IsSelected = userManager.IsInRoleAsync(user, r.Name!).Result
                     }).Where(u => u.IsSelected == true).ToList()
             };
 
@@ -471,6 +473,9 @@ namespace CarCare.Core.Application.Services.Auth
 
             if (!result.Succeeded)
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
+            user.EmailConfirmed = true;
+            user.TechLongitude = 11.2;
+            user.TechLatitude = 11.1;
 
             // Assign the "User" role to the newly created user
             var roleResult = await userManager.AddToRoleAsync(user, Types.Technical.ToString());
