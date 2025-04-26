@@ -282,7 +282,8 @@ namespace CarCare.Core.Application.Services.Auth
                 FullName = createUserDro.Name,
                 PhoneNumber = createUserDro.PhoneNumber,
                 Type = createUserDro.Type,
-                Email = createUserDro.Email
+                Email = createUserDro.Email,
+                UserName = createUserDro.Email
             };
 
             var getphone = await userManager.Users
@@ -454,9 +455,10 @@ namespace CarCare.Core.Application.Services.Auth
             {
                 FullName = createTechnicalDto.Name,
                 PhoneNumber = createTechnicalDto.PhoneNumber,
-                Type = createTechnicalDto.Type,
                 Email = createTechnicalDto.Email,
+                UserName = createTechnicalDto.Email,
                 NationalId = createTechnicalDto.NationalId,
+                ServiceId = createTechnicalDto.ServiceId,
             };
 
             var getphone = await userManager.Users
@@ -468,6 +470,16 @@ namespace CarCare.Core.Application.Services.Auth
 
             var email = await userManager.FindByEmailAsync(user.Email);
             if (email is not null) throw new BadRequestExeption($" Email is Already Exsist ,Please Enter Anthor Email!");
+
+            var existingNationalId = await userManager.Users
+                   .FirstOrDefaultAsync(u => u.NationalId == createTechnicalDto.NationalId);
+            if (existingNationalId != null)
+                throw new BadRequestExeption("NationalId is Already Registered");
+
+            var serviceType = await unitOfWork.GetRepository<ServiceType, int>()
+                .GetAsync(createTechnicalDto.ServiceId ?? 0);
+            if (serviceType == null)
+                throw new NotFoundExeption("No Found Service With This Id", nameof(createTechnicalDto.ServiceId));
 
             var result = await userManager.CreateAsync(user, createTechnicalDto.Password);
 

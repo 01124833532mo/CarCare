@@ -25,6 +25,8 @@ namespace CareCare.Core.Application.Abstraction.Models.Auth.DashBoardDto.Technic
 
         //to do Service
 
+        public int? ServiceId { get; set; }
+
 
         public Types Type = Types.Technical;
 
