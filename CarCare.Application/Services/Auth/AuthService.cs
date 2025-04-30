@@ -155,6 +155,8 @@ namespace CarCare.Core.Application.Services.Auth
                     NationalId = user.NationalId!,
                     Type = user.Type.ToString(),
                     ServiceName = servicetype?.Name,
+                    TechLongitude = user.TechLongitude,
+                    TechLatitude = user.TechLatitude,
                     Token = await GenerateTokenAsync(user)
                 };
                 await CheckRefreshToken(userManager, user, response);
