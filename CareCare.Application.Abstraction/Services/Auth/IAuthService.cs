@@ -75,7 +75,7 @@ namespace CareCare.Core.Application.Abstraction.Services.Auth
 
         #region Confirmation (Email - Phone)
 
-        Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto);
+        Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto, bool isRegistration = false);
 
         Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto);
 

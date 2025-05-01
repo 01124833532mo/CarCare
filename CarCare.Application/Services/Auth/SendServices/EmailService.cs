@@ -5,52 +5,45 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CarCare.Core.Application.Services.Auth.SendServices
 {
-	public class EmailService(IOptions<EmailSettings> emailSettings) : IEmailServices
-	{
-		private readonly EmailSettings _emailSettings = emailSettings.Value;
-		public async Task SendEmail(EmailDto emailDto)
-		{
+    public class EmailService(IOptions<EmailSettings> emailSettings) : IEmailServices
+    {
+        private readonly EmailSettings _mailSettings = emailSettings.Value;
 
-			var Email = new MimeMessage()
-			{
-				Sender = MailboxAddress.Parse(_emailSettings.Email),
-				Subject = emailDto.Subject
-			};
+        public async Task SendEmail(EmailDto emailDto)
+        {
+            var email = new MimeMessage()
+            {
+                Sender = MailboxAddress.Parse(_mailSettings.Email),
+                Subject = emailDto.Subject
+            };
 
-			Email.To.Add(MailboxAddress.Parse(emailDto.To));
-			Email.From.Add(new MailboxAddress(_emailSettings.DisplayName, _emailSettings.Email));
+            email.To.Add(MailboxAddress.Parse(emailDto.To));
+            email.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Email));
 
+            var emailBody = new BodyBuilder();
 
-			var EmailBody = new BodyBuilder();
-			EmailBody.TextBody = emailDto.Body;
+            if (emailDto.IsBodyHtml)
+            {
+                emailBody.HtmlBody = emailDto.Body;
+            }
+            else
+            {
+                emailBody.TextBody = emailDto.Body;
+            }
 
+            email.Body = emailBody.ToMessageBody();
 
-			Email.Body = EmailBody.ToMessageBody();
+            using var smtp = new SmtpClient();
+            smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-
-			using var Smtp = new SmtpClient();
-
-			Smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-			await Smtp.ConnectAsync(_emailSettings.Host, _emailSettings.Port, SecureSocketOptions.StartTls);
-
-
-			await Smtp.AuthenticateAsync(_emailSettings.Email, _emailSettings.Password);
-
-
-			await Smtp.SendAsync(Email);
-
-
-			await Smtp.DisconnectAsync(true);
-		}
-	}
+            await smtp.ConnectAsync(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_mailSettings.Email, _mailSettings.Password);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
+        }
+    }
 }
 

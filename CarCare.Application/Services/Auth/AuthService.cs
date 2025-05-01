@@ -200,7 +200,7 @@ namespace CarCare.Core.Application.Services.Auth
                 throw new ValidationExeption() { Errors = result.Errors.Select(E => E.Description) };
 
             var email = new SendCodeByEmailDto() { Email = user.Email! };
-            await SendCodeByEmailasync(email);
+            await SendCodeByEmailasync(email, true);
 
             var role = registerDto.Type == Types.Technical ? Roles.Technical : Roles.User;
             var roleResult = await userManager.AddToRoleAsync(user, role);
@@ -957,41 +957,47 @@ namespace CarCare.Core.Application.Services.Auth
 
         #region Confirmation
 
-        public async Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto)
+        public async Task<SuccessDto> SendCodeByEmailasync(SendCodeByEmailDto emailDto, bool IsRegistration = false)
         {
             var user = await userManager.Users.Where(u => u.Email == emailDto.Email).FirstOrDefaultAsync();
 
             if (user is null)
                 throw new BadRequestExeption("Invalid Email");
 
-            var ResetCode = RandomNumberGenerator.GetInt32(100_0, 999_9);
+            var code = RandomNumberGenerator.GetInt32(100_0, 999_9);
+            var codeExpire = DateTime.UtcNow.AddMinutes(15);
 
-            var ResetCodeExpire = DateTime.UtcNow.AddMinutes(15);
-
-            user.EmailConfirmResetCode = ResetCode;
-            user.EmailConfirmResetCodeExpiry = ResetCodeExpire;
+            if (IsRegistration)
+            {
+                user.EmailConfirmResetCode = code;
+                user.EmailConfirmResetCodeExpiry = codeExpire;
+            }
+            else
+            {
+                user.EmailConfirmResetCode = code;
+                user.EmailConfirmResetCodeExpiry = codeExpire;
+            }
 
             var result = await userManager.UpdateAsync(user);
 
             if (!result.Succeeded)
-                throw new BadRequestExeption("Something Went Wrong While Sending Reset Code");
+                throw new BadRequestExeption("Something Went Wrong While Sending Code");
 
             var Email = new EmailDto()
             {
                 To = emailDto.Email,
-                Subject = "Reset Code For CarCare Account",
-                Body = $"We Have Recived Your Request For Reset Your Account Password, \nYour Reset Code Is ==> [ {ResetCode} ] <== \nNote: This Code Will Be Expired After 15 Minutes!",
+                Subject = IsRegistration ? "Confirm Your CarCare Account" : "Your CarCare Password Reset Code",
+                Body = IsRegistration ? BuildConfirmationEmail(code) : BuildResetPasswordEmail(code),
+                IsBodyHtml = true
             };
 
             await emailServices.SendEmail(Email);
 
-            var SuccessObj = new SuccessDto()
+            return new SuccessDto()
             {
                 Status = "Success",
-                Message = "We Have Sent You The Reset Code"
+                Message = IsRegistration ? "Confirmation code has been sent" : "Reset code has been sent"
             };
-
-            return SuccessObj;
         }
 
         public async Task<SuccessDto> ForgetPasswordByPhoneAsync(ForgetPasswordByPhoneDto forgetPasswordDto)
@@ -1324,6 +1330,7 @@ namespace CarCare.Core.Application.Services.Auth
             };
         }
 
+
         private async Task<BaseUserDto> CreateUserResponse(ApplicationUser user, Types userType)
         {
             if (userType == Types.Technical)
@@ -1363,6 +1370,71 @@ namespace CarCare.Core.Application.Services.Auth
                 };
             }
         }
+
+        private string BuildResetPasswordEmail(int resetCode)
+        {
+            return $@"
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
+            .code {{ font-size: 24px; font-weight: bold; color: #e74c3c; margin: 20px 0; text-align: center; }}
+            .footer {{ margin-top: 20px; font-size: 12px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; }}
+            .button {{ background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h2>Password Reset Request</h2>
+        </div>
+        
+        <p>We received a request to reset your password. Please use the following verification code:</p>
+        
+        <div class='code'>{resetCode}</div>
+        
+        <p>This code will expire in <strong>15 minutes</strong>. If you didn't request this, please ignore this email or contact support if you have questions.</p>
+        
+        <div class='footer'>
+            <p>Thank you,<br>The Support Team</p>
+        </div>
+    </body>
+    </html>";
+        }
+        private string BuildConfirmationEmail(int confirmationCode)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
+        .code {{ font-size: 24px; font-weight: bold; color: #2ecc71; margin: 20px 0; text-align: center; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; }}
+        .button {{ background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }}
+    </style>
+</head>
+<body>
+    <div class='header'>
+        <h2>Email Confirmation</h2>
+    </div>
+    
+    <p>Thank you for registering with us. Please use the following verification code to confirm your email:</p>
+    
+    <div class='code'>{confirmationCode}</div>
+    
+    <p>This code will expire in <strong>15 minutes</strong>. If you didn't register, please ignore this email.</p>
+    
+    <div class='footer'>
+        <p>Thank you,<br>The Support Team</p>
+    </div>
+</body>
+</html>";
+        }
+
+
 
 
     }
