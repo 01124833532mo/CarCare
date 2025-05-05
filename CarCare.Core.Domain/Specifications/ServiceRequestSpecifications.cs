@@ -1,5 +1,6 @@
 ﻿using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Orders;
+using CarCare.Core.Domain.Entities.ServiceTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,17 @@ namespace CarCare.Core.Domain.Specifications
 			: base(request => request.Technical.Type == type && request.ServiceType.Name == serviceType)
 		{
 			AddIncludes();
+		}
+
+		public ServiceRequestSpecifications(string userId, int pageSize, int pageIndex)
+			: base(request => request.UserId == userId)
+		{
+			AddIncludes();
+
+			AddOrderByDesc(p => p.CreatedOn);
+
+			ApplyPagination((pageIndex - 1) * pageSize, pageSize);
+
 		}
 
 		public ServiceRequestSpecifications(BusnissStatus? status)
