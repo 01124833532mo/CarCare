@@ -2,13 +2,17 @@
 using CarCare.Core.Domain.Contracts.Persistence;
 using CarCare.Core.Domain.Entities.Identity;
 using CarCare.Core.Domain.Entities.Orders;
+using CarCare.Core.Domain.Entities.Vehicles;
 using CarCare.Core.Domain.Specifications;
+using CarCare.Core.Domain.Specifications.SpecsHandlers.Vehicles;
 using CarCare.Shared.ErrorModoule.Exeptions;
+using CareCare.Core.Application.Abstraction.Common;
 using CareCare.Core.Application.Abstraction.Common.Contract.Infrastructure;
 using CareCare.Core.Application.Abstraction.Models.ServiceRequest.UserRequests;
 using CareCare.Core.Application.Abstraction.Services.ServiceRequests.UserRequestService;
 using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -277,32 +281,31 @@ namespace CarCare.Core.Application.Services.ServiceRequests
 			return returnedData;
 		}
 
-		public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForAdmin(string UserId)
+		public async Task<Pagination<ReturnRequestDto>> GetAllRequeststoUserForAdmin(string userId, int pageSize, int pageIndex)
 		{
-			var requests = await _unitOfWork.serviceRequestRepository.GetAllAsync();
 
-			if (!requests.Any())
-				throw new NotFoundExeption(nameof(requests), UserId);
+			var specs = new ServiceRequestSpecifications(userId, pageSize, pageIndex);
 
-			var userRequests = requests.Where(r => r.UserId == UserId);
+			var requests = await _unitOfWork.serviceRequestRepository.GetAllWithSpecAsync(specs);
 
-			if (!userRequests.Any())
-				throw new NotFoundExeption(nameof(userRequests), UserId);
+			var countSpec = new ServiceRequestSpecificationsCount(userId);
 
-			var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(userRequests);
+			var count = await _unitOfWork.GetRepository<ServiceRequest, int>().GetCountAsync(countSpec);
 
-			return returnedData;
+			var returnedData = _mapper.Map<IEnumerable<ReturnRequestDto>>(requests);
+
+			return new Pagination<ReturnRequestDto>(pageIndex, pageSize, count) { Data = returnedData };
 
 		}
 
-		public async Task<IEnumerable<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal)
+		public async Task<Pagination<ReturnRequestDto>> GetAllRequeststoUserForUser(ClaimsPrincipal claimsPrincipal, int pageSize, int pageIndex)
 		{
 			var userId = claimsPrincipal.FindFirst(ClaimTypes.PrimarySid)?.Value;
 
 			if (userId is null)
 				throw new UnAuthorizedExeption("UnAuthorized , You Are Not Allowed");
 
-			return await GetAllRequeststoUserForAdmin(userId);
+			return await GetAllRequeststoUserForAdmin(userId, pageSize, pageIndex);
 
 		}
 
