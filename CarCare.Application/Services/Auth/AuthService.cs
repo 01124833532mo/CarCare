@@ -817,7 +817,7 @@ namespace CarCare.Core.Application.Services.Auth
 
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
-                expires: DateTime.UtcNow.AddDays(_jwtSettings.DurationInMinutes),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
                 claims: claims,
                 signingCredentials: signingCredentials
                 );
