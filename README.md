@@ -56,21 +56,20 @@ The **CarCare System** is a complete web-based application built with ASP.NET Co
 - Admin can Update messages
 - Admin can Delete messages
 
-### Phase 06: Feedback
+### Phase 07: Feedback
 - Users and technician can send Feedback to the app with a message
 - they can get thier feedback or update it
 
-### Phase 07: Dashboard & Management
+### Phase 08: Dashboard & Management
 - Admin dashboard for overview of:
   - (Create, Update or Delete) Service Type
   - Total users, technician, requests.
   - Feedback and contact inquiries.
 - Export reports.
 
-### Phase 08: Payment Integration
-Integrated Stripe for payment processing.
-Developed and tested payment endpoints with webhooks for event notifications.
----
+### Phase 09: Payment Integration
+- Integrated Stripe for payment processing.
+- Developed and tested payment endpoints with webhooks for event notifications.
 
 ## 🛠️ Technologies Used
 - **Framework:** ASP.NET Core 8
