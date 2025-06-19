@@ -68,8 +68,8 @@ The **CarCare System** is a complete web-based application built with ASP.NET Co
 - Export reports.
 
 ### Phase 08: Payment Integration
-Integrated Stripe for payment processing.
-Developed and tested payment endpoints with webhooks for event notifications.
+-Integrated Stripe for payment processing.
+-Developed and tested payment endpoints with webhooks for event notifications.
 ---
 
 ## 🛠️ Technologies Used
