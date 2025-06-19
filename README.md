@@ -18,12 +18,13 @@ The **CarCare System** is a complete web-based application built with ASP.NET Co
 
 ### Phase 02: Core Functionalities
 - Developed modules: `Auth`, `Service Requests`, `Vehicles`, `Mechanics`, `Customers`.
-- Applied Specification Pattern for dynamic filtering and sorting.
+- Applied Specification Pattern for dynamic filtering , Search , Ordering and sorting.
 - Added image upload functionality for profiles.
 - Integrated **Hangfire** to:
   - Auto resend requests.
 - Implemented **Fluent Validation** on all DTOs.
 - Caching enabled via in-memory or distributed cache.
+- Integrate With Remote Database To Implement Caching With Redis **Up Stash**
 - Email/SMS services abstraction via `CarCare.Application.Abstraction`.
 
 ### Phase 03: Service Request Module
