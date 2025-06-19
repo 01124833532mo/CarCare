@@ -79,7 +79,7 @@ The **CarCare System** is a complete web-based application built with ASP.NET Co
 - **Authentication:** ASP.NET Identity, JWT, Refresh Tokens
 - **Validation:** FluentValidation
 - **Payment:** Stripe abstraction supported
-- **Notifications:** FCM + Email + SMS via abstraction layer
+- **Notifications:** Email + SMS via abstraction layer
 - **Documentation:** Swagger, Postman
 
 ---
