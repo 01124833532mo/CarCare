@@ -9,7 +9,7 @@ using FakeItEasy;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-namespace ContactServiceTest
+namespace CarCare.Application.Testss.Services.Contacts
 {
     public class ContactServiceTest
     {
