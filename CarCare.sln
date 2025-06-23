@@ -45,6 +45,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vehicles", "Vehicles", "{80
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VehicleServiceTest", "VehicleServiceTest\VehicleServiceTest.csproj", "{3E0AF603-E201-4E65-B3D3-792E51C78748}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{5EE0B256-75B2-4960-B114-4270D61145FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurityServiceTest", "SecurityServiceTest\SecurityServiceTest.csproj", "{A204FBF1-231B-496A-A516-7923A3D0F2FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +99,10 @@ Global
 		{3E0AF603-E201-4E65-B3D3-792E51C78748}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E0AF603-E201-4E65-B3D3-792E51C78748}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E0AF603-E201-4E65-B3D3-792E51C78748}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A204FBF1-231B-496A-A516-7923A3D0F2FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A204FBF1-231B-496A-A516-7923A3D0F2FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A204FBF1-231B-496A-A516-7923A3D0F2FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A204FBF1-231B-496A-A516-7923A3D0F2FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -120,6 +128,8 @@ Global
 		{6A03D81D-A71B-475F-9E8E-FB99A295AD56} = {19E7CBC2-349F-40B1-950B-76BEBCF63DA5}
 		{8095FF92-A273-4AAC-B2E2-45D192B488B5} = {2E2F2C50-4447-48C5-AD26-783CA01FBC65}
 		{3E0AF603-E201-4E65-B3D3-792E51C78748} = {8095FF92-A273-4AAC-B2E2-45D192B488B5}
+		{5EE0B256-75B2-4960-B114-4270D61145FF} = {2E2F2C50-4447-48C5-AD26-783CA01FBC65}
+		{A204FBF1-231B-496A-A516-7923A3D0F2FF} = {5EE0B256-75B2-4960-B114-4270D61145FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CDDFD5FF-8B00-48BB-BB4B-E76AE9CE3655}
