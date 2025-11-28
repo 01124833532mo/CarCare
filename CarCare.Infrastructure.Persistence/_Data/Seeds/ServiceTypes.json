@@ -1,0 +1,65 @@
+[
+  {
+    "Id": 0,
+    "Name": "Winch",
+    "NormalizedName": "WINCH",
+
+    "Description": "The winch can pull all vehicles anywhere",
+    "PictureUrl": "images/ServiceTypes/winch.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Tires",
+    "NormalizedName": "TIRES",
+    "Description": "We can provide all types and sizes of tires",
+    "PictureUrl": "images/ServiceTypes/tair.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Fuel",
+    "NormalizedName": "FUEL",
+
+    "Description": "We can provide all types of fuel anywhere and in the fastest time",
+    "PictureUrl": "images/ServiceTypes/fuel.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Batteries",
+    "NormalizedName": "BATTERIES",
+
+    "Description": "We can provide all types and sizes of batteries",
+    "PictureUrl": "images/ServiceTypes/battery.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Oil",
+    "NormalizedName": "OIL",
+
+    "Description": "We can provide all types of oil",
+    "PictureUrl": "images/ServiceTypes/oil_change.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Washing",
+    "NormalizedName": "WASHING",
+
+    "Description": "We can provide washing car for you or nearest washing car",
+    "PictureUrl": "images/ServiceTypes/washin_car.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Parking",
+    "NormalizedName": "PARKING",
+
+    "Description": "We can provide the nearest parking and reserve a place for you",
+    "PictureUrl": "images/ServiceTypes/parking.png"
+  },
+  {
+    "Id": 0,
+    "Name": "Mechanic",
+    "NormalizedName": "MECHANIC",
+
+    "Description": "Highly qualified mechanics can be provided",
+    "PictureUrl": "images/ServiceTypes/Mechanic.png"
+  }
+]
